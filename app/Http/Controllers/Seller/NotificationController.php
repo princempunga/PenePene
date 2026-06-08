@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Buyer;
+namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -11,14 +11,21 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user();
+        $userId = $request->user()->id;
 
-        $notifications = Notification::where('user_id', $user->id)
+        $unread = Notification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->latest()
+            ->get();
+
+        $read = Notification::where('user_id', $userId)
+            ->where('is_read', true)
             ->latest()
             ->paginate(15);
 
-        return Inertia::render('Buyer/Notifications', [
-            'notifications' => $notifications,
+        return Inertia::render('Seller/Notifications', [
+            'unread' => $unread,
+            'read'   => $read,
         ]);
     }
 
@@ -29,10 +36,6 @@ class NotificationController extends Controller
         }
 
         $notification->update(['is_read' => true, 'read_at' => now()]);
-
-        if ($notification->action_url) {
-            return redirect($notification->action_url);
-        }
 
         return back();
     }

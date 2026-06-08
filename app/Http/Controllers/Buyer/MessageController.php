@@ -19,9 +19,9 @@ class MessageController extends Controller
         $conversations = Conversation::with(['seller.user', 'messages' => function ($q) {
                 $q->latest()->take(1);
             }])
-            ->where('buyer_id', $buyer->id)
+            ->where('buyer_id', $user->id)
             ->withCount(['messages as unread_count' => function ($q) use ($user) {
-                $q->where('is_read', false)->where('sender_id', '!=', $user->id);
+                $q->whereNull('read_at')->where('sender_id', '!=', $user->id);
             }])
             ->latest('updated_at')
             ->get();
@@ -36,15 +36,14 @@ class MessageController extends Controller
         $user  = $request->user();
         $buyer = $user->buyer;
 
-        if ($conversation->buyer_id !== $buyer->id) {
+        if ($conversation->buyer_id !== $user->id) {
             abort(403);
         }
 
-        // Mark messages from seller as read
         Message::where('conversation_id', $conversation->id)
             ->where('sender_id', '!=', $user->id)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         $messages = Message::where('conversation_id', $conversation->id)
             ->with('sender')
@@ -65,8 +64,7 @@ class MessageController extends Controller
         $buyer = $user->buyer;
 
         $conversation = Conversation::firstOrCreate(
-            ['buyer_id' => $buyer->id, 'seller_id' => $seller->id],
-            ['subject'  => 'General Enquiry']
+            ['buyer_id' => $user->id, 'seller_id' => $seller->id],
         );
 
         return redirect()->route('buyer.messages.show', $conversation);
@@ -77,7 +75,7 @@ class MessageController extends Controller
         $user  = $request->user();
         $buyer = $user->buyer;
 
-        if ($conversation->buyer_id !== $buyer->id) {
+        if ($conversation->buyer_id !== $user->id) {
             abort(403);
         }
 

@@ -20,7 +20,7 @@ class ReportController extends Controller
     public function index()
     {
         $stats = [
-            'total_gmv'       => Order::whereIn('status', ['delivered'])->sum('total_amount'),
+            'total_gmv'       => Order::whereIn('status', ['delivered'])->sum('total'),
             'total_orders'    => Order::count(),
             'total_sellers'   => Seller::where('status', 'verified')->count(),
             'total_products'  => Product::where('status', 'active')->count(),
@@ -90,7 +90,7 @@ class ReportController extends Controller
             'products' => Product::with(['seller', 'category'])->whereBetween('created_at', [$from, $to])->get(),
             'platform' => collect([
                 'orders'   => Order::whereBetween('created_at', [$from, $to])->count(),
-                'revenue'  => Order::whereIn('status', ['delivered'])->whereBetween('created_at', [$from, $to])->sum('total_amount'),
+                'revenue'  => Order::whereIn('status', ['delivered'])->whereBetween('created_at', [$from, $to])->sum('total'),
                 'sellers'  => Seller::whereBetween('created_at', [$from, $to])->count(),
                 'products' => Product::whereBetween('created_at', [$from, $to])->count(),
             ]),

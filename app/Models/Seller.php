@@ -13,7 +13,7 @@ class Seller extends Model
 
     protected $fillable = [
         'user_id', 'business_name', 'slug', 'logo', 'banner', 'description',
-        'phone', 'whatsapp', 'email', 'website',
+        'phone', 'whatsapp', 'email', 'website', 'business_hours',
         'address', 'neighborhood', 'municipality', 'city', 'province', 'country',
         'latitude', 'longitude',
         'status', 'rejection_reason', 'verified_at', 'verified_by',
@@ -24,10 +24,11 @@ class Seller extends Model
     protected function casts(): array
     {
         return [
-            'verified_at'    => 'datetime',
-            'average_rating' => 'decimal:2',
-            'latitude'       => 'decimal:8',
-            'longitude'      => 'decimal:8',
+            'verified_at'     => 'datetime',
+            'average_rating'  => 'decimal:2',
+            'latitude'        => 'decimal:8',
+            'longitude'       => 'decimal:8',
+            'business_hours'  => 'array',
         ];
     }
 
@@ -60,6 +61,8 @@ class Seller extends Model
     public function documents()     { return $this->hasMany(SellerDocument::class); }
     public function subscriptions() { return $this->hasMany(Subscription::class); }
     public function sponsoredProducts() { return $this->hasMany(SponsoredProduct::class); }
+    public function commissions()       { return $this->hasMany(Commission::class); }
+    public function payouts()           { return $this->hasMany(Payout::class); }
 
     public function activeSubscription()
     {

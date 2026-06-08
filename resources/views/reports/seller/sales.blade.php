@@ -51,7 +51,7 @@
             </div>
             <div class="summary-card">
                 <label>Total Revenue</label>
-                <p>TZS {{ number_format($data->sum('total_amount'), 2) }}</p>
+                <p>TZS {{ number_format($data->sum('total'), 2) }}</p>
             </div>
             <div class="summary-card">
                 <label>Delivered</label>

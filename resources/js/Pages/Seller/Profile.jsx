@@ -1,21 +1,36 @@
 import React, { useRef } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
-import { Upload } from 'lucide-react';
+import { Upload, User, Shield, CreditCard } from 'lucide-react';
 
-export default function Profile({ user, seller }) {
+function FlashAlert({ flash }) {
+    if (!flash?.success && !flash?.error) return null;
+
+    const isError = !!flash?.error;
+    return (
+        <div className={`mb-6 p-4 rounded-xl text-sm font-medium border ${
+            isError
+                ? 'bg-red-50 border-red-200 text-red-800'
+                : 'bg-green-50 border-green-200 text-green-800'
+        }`}>
+            {flash.success || flash.error}
+        </div>
+    );
+}
+
+function FieldError({ message }) {
+    if (!message) return null;
+    return <p className="mt-1 text-xs text-red-600">{message}</p>;
+}
+
+export default function Profile({ user }) {
     const { flash } = usePage().props;
-    const bannerRef = useRef(null);
+    const avatarRef = useRef(null);
 
     const profileForm = useForm({
         name: user.name || '',
         phone: user.phone || '',
-        business_name: seller.business_name || '',
-        description: seller.description || '',
-        address: seller.address || '',
-        city: seller.city || '',
-        country: seller.country || 'Tanzania',
-        banner: null,
+        avatar: null,
     });
 
     const passwordForm = useForm({
@@ -24,10 +39,15 @@ export default function Profile({ user, seller }) {
         password_confirmation: '',
     });
 
+    const avatarPreview = profileForm.data.avatar
+        ? URL.createObjectURL(profileForm.data.avatar)
+        : null;
+
     const updateProfile = (e) => {
         e.preventDefault();
         profileForm.post('/seller/profile', {
             preserveScroll: true,
+            forceFormData: true,
         });
     };
 
@@ -41,132 +61,100 @@ export default function Profile({ user, seller }) {
 
     return (
         <>
-            <Head title="Store Profile" />
-            <SellerLayout title="Store Profile">
-                {flash?.success && (
-                    <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl text-sm font-medium">
-                        {flash.success}
-                    </div>
-                )}
+            <Head title="My Profile" />
+            <SellerLayout title="Account Profile">
+                <FlashAlert flash={flash} />
+
+                <div className="mb-6 flex items-center gap-3 text-sm text-gray-500">
+                    <User size={16} />
+                    <span>Manage your personal account details and security.</span>
+                    <Link href="/seller/store/settings" className="ml-auto text-primary-600 hover:underline font-medium">
+                        Store settings →
+                    </Link>
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Profile Information */}
+                    {/* Personal Information */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100">
-                            <h2 className="font-bold text-gray-900">Store Information</h2>
-                            <p className="text-sm text-gray-500 mt-1">Update your public store details and contact info.</p>
+                            <h2 className="font-bold text-gray-900">Personal Information</h2>
+                            <p className="text-sm text-gray-500 mt-1">Update your name, contact number, and profile photo.</p>
                         </div>
                         <form onSubmit={updateProfile} className="p-6 space-y-5">
-                            
-                            {/* Banner Upload */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Store Banner Image</label>
-                                <div 
-                                    onClick={() => bannerRef.current?.click()}
-                                    className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-gray-50 transition-colors"
+                            {/* Avatar */}
+                            <div className="flex items-center gap-5">
+                                <div
+                                    onClick={() => avatarRef.current?.click()}
+                                    className="relative w-20 h-20 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-2xl cursor-pointer overflow-hidden border-2 border-dashed border-amber-200 hover:border-primary-500 transition-colors shrink-0"
                                 >
-                                    {seller.banner_path && !profileForm.data.banner ? (
-                                        <div className="text-center">
-                                            <img src={`/storage/${seller.banner_path}`} alt="Banner" className="h-24 object-cover rounded-md mb-2 mx-auto" />
-                                            <span className="text-sm text-primary-600">Click to change</span>
-                                        </div>
+                                    {avatarPreview ? (
+                                        <img src={avatarPreview} alt="Avatar preview" className="w-full h-full object-cover" />
+                                    ) : user.avatar ? (
+                                        <img src={`/storage/${user.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
-                                        <>
-                                            <Upload size={24} className="text-gray-400 mb-2" />
-                                            <p className="text-sm text-gray-600">{profileForm.data.banner ? profileForm.data.banner.name : 'Click to upload banner (Max 2MB)'}</p>
-                                        </>
+                                        user.name?.charAt(0)?.toUpperCase()
                                     )}
-                                    <input 
-                                        type="file" 
-                                        ref={bannerRef}
-                                        onChange={e => profileForm.setData('banner', e.target.files[0])}
-                                        className="hidden" 
+                                </div>
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={() => avatarRef.current?.click()}
+                                        className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1.5"
+                                    >
+                                        <Upload size={14} />
+                                        {profileForm.data.avatar ? profileForm.data.avatar.name : 'Upload photo'}
+                                    </button>
+                                    <p className="text-xs text-gray-500 mt-1">JPG, PNG up to 2MB</p>
+                                    <input
+                                        type="file"
+                                        ref={avatarRef}
+                                        onChange={e => profileForm.setData('avatar', e.target.files[0])}
+                                        className="hidden"
                                         accept="image/*"
                                     />
                                 </div>
-                                {profileForm.errors.banner && <p className="mt-1 text-xs text-red-600">{profileForm.errors.banner}</p>}
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                                    <input
-                                        type="text"
-                                        value={profileForm.data.name}
-                                        onChange={e => profileForm.setData('name', e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
-                                    />
-                                    {profileForm.errors.name && <p className="mt-1 text-xs text-red-600">{profileForm.errors.name}</p>}
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                    <input
-                                        type="text"
-                                        value={profileForm.data.phone}
-                                        onChange={e => profileForm.setData('phone', e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
-                                    />
-                                    {profileForm.errors.phone && <p className="mt-1 text-xs text-red-600">{profileForm.errors.phone}</p>}
-                                </div>
-                            </div>
+                            <FieldError message={profileForm.errors.avatar} />
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                 <input
                                     type="text"
-                                    value={profileForm.data.business_name}
-                                    onChange={e => profileForm.setData('business_name', e.target.value)}
+                                    value={profileForm.data.name}
+                                    onChange={e => profileForm.setData('name', e.target.value)}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                 />
-                                {profileForm.errors.business_name && <p className="mt-1 text-xs text-red-600">{profileForm.errors.business_name}</p>}
+                                <FieldError message={profileForm.errors.name} />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Store Description</label>
-                                <textarea
-                                    value={profileForm.data.description}
-                                    onChange={e => profileForm.setData('description', e.target.value)}
-                                    rows={3}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none"
-                                ></textarea>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                                 <input
-                                    type="text"
-                                    value={profileForm.data.address}
-                                    onChange={e => profileForm.setData('address', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+                                    type="email"
+                                    value={user.email}
+                                    disabled
+                                    className="w-full border border-gray-200 bg-gray-50 text-gray-500 rounded-lg px-4 py-2 text-sm cursor-not-allowed"
                                 />
+                                <p className="text-xs text-gray-400 mt-1">Contact support to change your email.</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                    <input
-                                        type="text"
-                                        value={profileForm.data.city}
-                                        onChange={e => profileForm.setData('city', e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                                    <input
-                                        type="text"
-                                        value={profileForm.data.country}
-                                        onChange={e => profileForm.setData('country', e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    value={profileForm.data.phone}
+                                    onChange={e => profileForm.setData('phone', e.target.value)}
+                                    placeholder="+255..."
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+                                />
+                                <FieldError message={profileForm.errors.phone} />
                             </div>
 
                             <div className="pt-2">
                                 <button
                                     type="submit"
                                     disabled={profileForm.processing}
-                                    className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors"
+                                    className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors disabled:opacity-60"
                                 >
                                     {profileForm.processing ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -174,13 +162,15 @@ export default function Profile({ user, seller }) {
                         </form>
                     </div>
 
-                    {/* Security & Subscription */}
                     <div className="space-y-6">
                         {/* Security */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-fit">
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-6 border-b border-gray-100">
-                                <h2 className="font-bold text-gray-900">Change Password</h2>
-                                <p className="text-sm text-gray-500 mt-1">Keep your account secure.</p>
+                                <h2 className="font-bold text-gray-900 flex items-center gap-2">
+                                    <Shield size={18} className="text-gray-600" />
+                                    Change Password
+                                </h2>
+                                <p className="text-sm text-gray-500 mt-1">Keep your account secure with a strong password.</p>
                             </div>
                             <form onSubmit={updatePassword} className="p-6 space-y-4">
                                 <div>
@@ -191,7 +181,7 @@ export default function Profile({ user, seller }) {
                                         onChange={e => passwordForm.setData('current_password', e.target.value)}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                     />
-                                    {passwordForm.errors.current_password && <p className="mt-1 text-xs text-red-600">{passwordForm.errors.current_password}</p>}
+                                    <FieldError message={passwordForm.errors.current_password} />
                                 </div>
 
                                 <div>
@@ -202,7 +192,7 @@ export default function Profile({ user, seller }) {
                                         onChange={e => passwordForm.setData('password', e.target.value)}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                     />
-                                    {passwordForm.errors.password && <p className="mt-1 text-xs text-red-600">{passwordForm.errors.password}</p>}
+                                    <FieldError message={passwordForm.errors.password} />
                                 </div>
 
                                 <div>
@@ -219,7 +209,7 @@ export default function Profile({ user, seller }) {
                                     <button
                                         type="submit"
                                         disabled={passwordForm.processing}
-                                        className="bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors"
+                                        className="bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors disabled:opacity-60"
                                     >
                                         {passwordForm.processing ? 'Updating...' : 'Update Password'}
                                     </button>
@@ -227,19 +217,21 @@ export default function Profile({ user, seller }) {
                             </form>
                         </div>
 
-                        {/* Subscription info */}
+                        {/* Subscription shortcut */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                            <h2 className="font-bold text-gray-900 mb-4">Subscription Plan</h2>
-                            
-                            <div className="p-4 bg-primary-50 rounded-lg border border-primary-100 flex justify-between items-center">
-                                <div>
-                                    <p className="font-bold text-primary-900">{seller.plan?.name || 'Standard Plan'}</p>
-                                    <p className="text-sm text-primary-700">Expires: {new Date(seller.subscription_expires_at).toLocaleDateString()}</p>
-                                </div>
-                                <button className="text-sm font-medium bg-white px-3 py-1.5 rounded-md text-primary-700 border border-primary-200 hover:bg-primary-100">
-                                    Upgrade
-                                </button>
-                            </div>
+                            <h2 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <CreditCard size={18} className="text-primary-600" />
+                                Subscription & Billing
+                            </h2>
+                            <p className="text-sm text-gray-500 mb-4">
+                                View your current plan, compare options, and manage billing history.
+                            </p>
+                            <Link
+                                href="/seller/subscriptions"
+                                className="inline-flex items-center gap-2 text-sm font-medium bg-primary-50 text-primary-700 px-4 py-2 rounded-lg hover:bg-primary-100 transition-colors"
+                            >
+                                Manage subscription
+                            </Link>
                         </div>
                     </div>
                 </div>
