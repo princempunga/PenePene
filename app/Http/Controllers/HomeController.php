@@ -12,19 +12,15 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $featuredProducts = Product::with(['seller', 'images', 'category'])
-            ->active()
+        $baseProductQuery = Product::with(['seller', 'images', 'category'])->active();
+
+        $featuredProducts = (clone $baseProductQuery)
             ->featured()
             ->take(8)
             ->get();
 
-        // If no featured, just get some random active products
         if ($featuredProducts->isEmpty()) {
-             $featuredProducts = Product::with(['seller', 'images', 'category'])
-                ->active()
-                ->inRandomOrder()
-                ->take(8)
-                ->get();
+             $featuredProducts = (clone $baseProductQuery)->inRandomOrder()->take(8)->get();
         }
 
         $popularCategories = Category::withCount(['products' => function ($query) {
@@ -32,19 +28,46 @@ class HomeController extends Controller
             }])
             ->active()
             ->orderByDesc('products_count')
-            ->take(6)
+            ->take(12)
             ->get();
 
         $topSellers = Seller::with('user')
             ->active()
             ->orderByDesc('average_rating')
-            ->take(4)
+            ->take(8)
+            ->get();
+
+        // New Collections for the Homepage Redesign
+        // If specific scopes don't exist yet, we simulate them so the frontend has structural data
+
+        $sponsoredProducts = (clone $baseProductQuery)
+            ->inRandomOrder() // Simulate sponsored
+            ->take(6)
+            ->get();
+
+        $nearbyProducts = (clone $baseProductQuery)
+            ->inRandomOrder() // Simulate nearby
+            ->take(6)
+            ->get();
+
+        $trendingProducts = (clone $baseProductQuery)
+            ->inRandomOrder() // Simulate trending
+            ->take(10)
+            ->get();
+
+        $flashDeals = (clone $baseProductQuery)
+            ->inRandomOrder() // Simulate deals
+            ->take(6)
             ->get();
 
         return Inertia::render('Home/Index', [
             'featuredProducts' => $featuredProducts,
             'popularCategories' => $popularCategories,
             'topSellers' => $topSellers,
+            'sponsoredProducts' => $sponsoredProducts,
+            'nearbyProducts' => $nearbyProducts,
+            'trendingProducts' => $trendingProducts,
+            'flashDeals' => $flashDeals,
         ]);
     }
 }

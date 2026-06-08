@@ -17,10 +17,10 @@ class DashboardController extends Controller
     {
         // Global Platform Stats
         $stats = [
-            'totalUsers'   => User::whereIn('role', ['buyer'])->count(),
-            'totalSellers' => Seller::where('is_verified', true)->count(),
+            'totalUsers'   => User::whereIn('role', ['buyer', 'seller'])->count(),
+            'totalSellers' => Seller::where('status', 'verified')->count(),
             'totalOrders'  => Order::count(),
-            'totalRevenue' => Order::whereIn('payment_status', ['paid', 'completed'])->sum('total_amount'),
+            'totalRevenue' => Order::whereIn('status', ['delivered'])->sum('total'),
         ];
 
         // Pending verifications

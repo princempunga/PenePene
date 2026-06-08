@@ -15,7 +15,7 @@ export default function AppLayout({ children }) {
                 onClose={() => setIsMobileMenuOpen(false)} 
             />
 
-            <main className="flex-grow pt-16">
+            <main className="flex-grow pt-20 lg:pt-[136px]">
                 {children}
             </main>
 

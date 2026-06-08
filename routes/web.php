@@ -11,6 +11,18 @@ use App\Http\Controllers\PageController;
 // ─── Public Routes ───────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Generic /dashboard redirect — sends users to their role-specific dashboard
+Route::get('/dashboard', function () {
+    $user = auth()->user();
+    if (!$user) return redirect()->route('login');
+    return match ($user->role) {
+        'super_admin', 'admin' => redirect()->route('admin.dashboard'),
+        'seller'               => redirect()->route('seller.dashboard'),
+        default                => redirect()->route('buyer.dashboard'),
+    };
+})->middleware('auth')->name('dashboard');
+
+
 // Products
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
