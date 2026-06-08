@@ -13,7 +13,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'phone', 'avatar', 'is_active', 'locale',
+        'name', 'email', 'password', 'role', 'phone', 'avatar', 'is_active', 'locale', 'is_online', 'last_seen_at'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -24,7 +24,22 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
             'is_active'         => 'boolean',
+            'is_online'         => 'boolean',
+            'last_seen_at'      => 'datetime',
         ];
+    }
+
+    public function getLastSeenText(): string
+    {
+        if ($this->is_online && $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5) {
+            return 'Online now';
+        }
+
+        if (!$this->last_seen_at) {
+            return 'Offline';
+        }
+
+        return 'Last seen: ' . $this->last_seen_at->diffForHumans();
     }
 
     // Role helpers
@@ -40,6 +55,11 @@ class User extends Authenticatable
     public function sentMessages()
     {
         return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
     }
 
     public function productViews()

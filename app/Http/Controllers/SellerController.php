@@ -14,6 +14,7 @@ class SellerController extends Controller
             abort(404);
         }
 
+        $seller->load('user');
         $seller->increment('total_views');
 
         $products = $seller->products()
@@ -29,10 +30,16 @@ class SellerController extends Controller
             ->take(5)
             ->get();
 
+        // Append the helper method result to the user
+        $seller->user->last_seen_text = $seller->user->getLastSeenText();
+
         return Inertia::render('Sellers/Store', [
             'seller' => $seller,
             'products' => $products,
             'reviews' => $reviews,
+            'auth' => [
+                'user' => auth()->user(),
+            ],
         ]);
     }
 }

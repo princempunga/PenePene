@@ -45,4 +45,9 @@ class PageController extends Controller
     {
         return Inertia::render('Static/Privacy');
     }
+
+    public function helpCenter()
+    {
+        return Inertia::render('Static/HelpCenter');
+    }
 }

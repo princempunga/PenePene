@@ -32,8 +32,10 @@ export default function Footer() {
                 {/* Main Footer Links */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
                     <div className="lg:col-span-2">
-                        <Link href="/" className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-2 mb-6">
-                            PenePene<span className="w-2 h-2 rounded-full bg-amber-400 mb-2"></span>
+                        <Link href="/" className="flex items-center mb-6">
+                            <div className="bg-white rounded-xl px-3 py-2 inline-block shadow-md">
+                                <img src="/images/logo.png" alt="PenePene" className="h-10 w-auto object-contain" />
+                            </div>
                         </Link>
                         <p className="text-gray-400 mb-8 leading-relaxed max-w-md">
                             Your premium local marketplace. Connect with verified sellers, discover great deals, and grow your business with our modern e-commerce tools.

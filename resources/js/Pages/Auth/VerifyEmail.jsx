@@ -16,7 +16,9 @@ export default function VerifyEmail() {
             <Head title="Verify Email" />
             <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
                 <div className="w-full max-w-md text-center">
-                    <Link href="/" className="text-3xl font-extrabold text-primary-600">PenePene</Link>
+                    <Link href="/" className="inline-block">
+                        <img src="/images/logo.png" alt="PenePene" className="h-12 w-auto object-contain mx-auto" />
+                    </Link>
 
                     <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 mt-8">
                         <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-5">

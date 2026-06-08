@@ -33,7 +33,7 @@ export default function Navbar({ onMenuClick }) {
                     <div className="flex gap-4">
                         <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
                         <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-                        <Link href="/help" className="hover:text-white transition-colors">Help Center</Link>
+                        <Link href="/help-center" className="hover:text-white transition-colors">Help Center</Link>
                     </div>
                     <div className="flex gap-4">
                         <span className="flex items-center gap-1"><MapPin size={12}/> Deliver to: <strong>Kinshasa</strong></span>
@@ -53,8 +53,8 @@ export default function Navbar({ onMenuClick }) {
                         <Menu size={24} />
                     </button>
                     
-                    <Link href="/" className="text-2xl md:text-3xl font-extrabold tracking-tight text-primary-600 flex items-center gap-2">
-                        PenePene<span className="w-2 h-2 rounded-full bg-amber-400 mb-2"></span>
+                    <Link href="/" className="flex items-center gap-2">
+                        <img src="/images/logo.png" alt="PenePene" className="h-10 md:h-12 w-auto object-contain" />
                     </Link>
                 </div>
 

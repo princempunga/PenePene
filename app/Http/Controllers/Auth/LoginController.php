@@ -25,6 +25,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+            $user->update(['is_online' => true, 'last_seen_at' => now()]);
 
             // Redirect based on role
             return match ($user->role) {
@@ -41,6 +42,10 @@ class LoginController extends Controller
 
     public function destroy(Request $request)
     {
+        if (Auth::check()) {
+            Auth::user()->update(['is_online' => false, 'last_seen_at' => now()]);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

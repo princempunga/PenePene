@@ -45,6 +45,7 @@ Route::get('/pricing',         [PageController::class, 'pricing'])->name('pricin
 Route::get('/become-a-seller', [PageController::class, 'becomeSeller'])->name('become-seller');
 Route::get('/terms',           [PageController::class, 'terms'])->name('terms');
 Route::get('/privacy',         [PageController::class, 'privacy'])->name('privacy');
+Route::get('/help-center',     [PageController::class, 'helpCenter'])->name('help-center');
 
 
 // ─── Auth (Guest Only) ───────────────────────────────────────────────────────
@@ -75,6 +76,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'resend'])
         ->middleware('throttle:6,1')->name('verification.send');
 
+    // ─── Internal Chat System ─────────────────────────────────────────────────
+    Route::get('/conversations', [\App\Http\Controllers\ChatController::class, 'index'])->name('conversations.index');
+    Route::post('/conversations/start', [\App\Http\Controllers\ChatController::class, 'startConversation'])->name('conversations.start');
+    Route::get('/conversations/{conversation}', [\App\Http\Controllers\ChatController::class, 'show'])->name('conversations.show');
+    Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('conversations.messages.send');
+    Route::patch('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'editMessage'])->name('messages.edit');
+    Route::delete('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'deleteMessage'])->name('messages.delete');
+    Route::post('/messages/{message}/read', [\App\Http\Controllers\ChatController::class, 'markAsRead'])->name('messages.read');
+
     // ─── Buyer Routes ─────────────────────────────────────────────────────────
     Route::middleware('role:buyer')->prefix('buyer')->name('buyer.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Buyer\DashboardController::class, 'index'])->name('dashboard');
@@ -90,11 +100,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders/{order}',         [\App\Http\Controllers\Buyer\OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/cancel',[\App\Http\Controllers\Buyer\OrderController::class, 'cancel'])->name('orders.cancel');
 
-        // Messages
-        Route::get('/messages',                         [\App\Http\Controllers\Buyer\MessageController::class, 'index'])->name('messages.index');
-        Route::get('/messages/{conversation}',          [\App\Http\Controllers\Buyer\MessageController::class, 'show'])->name('messages.show');
-        Route::post('/messages/seller/{seller}',        [\App\Http\Controllers\Buyer\MessageController::class, 'startOrShow'])->name('messages.start');
-        Route::post('/messages/{conversation}/send',    [\App\Http\Controllers\Buyer\MessageController::class, 'send'])->name('messages.send');
 
         // Reviews
         Route::get('/reviews',                [\App\Http\Controllers\Buyer\ReviewController::class, 'index'])->name('reviews.index');
@@ -139,10 +144,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders/{order}',        [\App\Http\Controllers\Seller\OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/status', [\App\Http\Controllers\Seller\OrderController::class, 'updateStatus'])->name('orders.status');
 
-        // Messages
-        Route::get('/messages',                      [\App\Http\Controllers\Seller\MessageController::class, 'index'])->name('messages.index');
-        Route::get('/messages/{conversation}',       [\App\Http\Controllers\Seller\MessageController::class, 'show'])->name('messages.show');
-        Route::post('/messages/{conversation}/send', [\App\Http\Controllers\Seller\MessageController::class, 'send'])->name('messages.send');
 
         // Profile
         Route::get('/profile',            [\App\Http\Controllers\Seller\ProfileController::class, 'edit'])->name('profile');
