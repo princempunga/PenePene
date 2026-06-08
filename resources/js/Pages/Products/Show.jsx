@@ -1,16 +1,34 @@
 import React, { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Link } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { MapPin, ShieldCheck, Truck, ArrowRight, MessageCircle, Heart, Phone } from 'lucide-react';
 import ImageGallery from '@/Components/Product/ImageGallery';
 import RatingStars from '@/Components/UI/RatingStars';
 import ProductCard from '@/Components/Product/ProductCard';
 
 export default function Show({ product, relatedProducts }) {
+    const { auth } = usePage().props;
     const [quantity, setQuantity] = useState(1);
+    const [adding, setAdding] = useState(false);
     const seller = product.seller;
 
     const availableStock = product.initial_stock - product.confirmed_sales;
+
+    const addToCart = (redirect = false) => {
+        setAdding(true);
+        router.post('/cart/add', {
+            product_id: product.id,
+            quantity: quantity,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setAdding(false),
+            onSuccess: () => {
+                if (redirect) {
+                    router.visit('/cart');
+                }
+            }
+        });
+    };
 
     return (
         <AppLayout>
@@ -101,10 +119,18 @@ export default function Show({ product, relatedProducts }) {
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4">
-                                <button className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                <button 
+                                    onClick={() => addToCart(true)}
+                                    disabled={adding || availableStock < 1}
+                                    className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-bold py-3.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                >
                                     Buy Now
                                 </button>
-                                <button className="flex-1 bg-white hover:bg-gray-50 text-primary-600 border border-primary-600 font-bold py-3.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                <button 
+                                    onClick={() => addToCart(false)}
+                                    disabled={adding || availableStock < 1}
+                                    className="flex-1 bg-white hover:bg-gray-50 disabled:opacity-50 text-primary-600 border border-primary-600 font-bold py-3.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                >
                                     Add to Cart
                                 </button>
                                 <button className="p-3.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-500 rounded-lg transition-colors flex items-center justify-center">

@@ -9,18 +9,20 @@ class Message extends Model
     protected $fillable = [
         'conversation_id', 'sender_id', 'receiver_id', 'message_type', 'body', 
         'attachment_path', 'attachment_mime', 'attachment_size', 
-        'is_read', 'read_at', 'is_edited', 'edited_at', 'is_deleted', 'deleted_at'
+        'is_read', 'read_at', 'is_edited', 'edited_at', 'is_deleted', 'deleted_at',
+        'deleted_for',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_read' => 'boolean',
-            'read_at' => 'datetime',
-            'is_edited' => 'boolean',
-            'edited_at' => 'datetime',
-            'is_deleted' => 'boolean',
-            'deleted_at' => 'datetime',
+            'is_read'     => 'boolean',
+            'read_at'     => 'datetime',
+            'is_edited'   => 'boolean',
+            'edited_at'   => 'datetime',
+            'is_deleted'  => 'boolean',
+            'deleted_at'  => 'datetime',
+            'deleted_for' => 'array',
         ];
     }
 
@@ -37,4 +39,10 @@ class Message extends Model
             ]);
         }
     }
+
+    public function isDeletedFor(int $userId): bool
+    {
+        return in_array($userId, $this->deleted_for ?? []);
+    }
 }
+

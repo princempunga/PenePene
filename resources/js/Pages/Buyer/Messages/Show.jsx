@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, usePage } from '@inertiajs/react';
-import BuyerLayout from '@/Layouts/BuyerLayout';
+import AppLayout from '@/Layouts/AppLayout';
 import ConversationList from '@/Components/Chat/ConversationList';
 import ChatWindow from '@/Components/Chat/ChatWindow';
 
@@ -8,12 +8,14 @@ export default function MessageShow({ conversations, conversation }) {
     const { auth } = usePage().props;
 
     return (
-        <BuyerLayout title={`Chat with ${conversation.seller?.business_name}`}>
+        <AppLayout>
             <Head title={`Chat with ${conversation.seller?.business_name}`} />
             
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex h-[70vh] min-h-[500px]">
-                {/* Conversation List Sidebar (hidden on mobile when a chat is open) */}
-                <div className="hidden md:block w-80 lg:w-96 border-r border-gray-200 shrink-0 h-full">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                <h1 className="text-2xl font-bold text-gray-900 mb-6">Messages</h1>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex h-[70vh] min-h-[500px]">
+                    {/* Conversation List Sidebar (hidden on mobile when a chat is open) */}
+                    <div className="hidden md:block w-80 lg:w-96 border-r border-gray-200 shrink-0 h-full">
                     <ConversationList 
                         conversations={conversations} 
                         currentConversationId={conversation.id} 
@@ -29,7 +31,8 @@ export default function MessageShow({ conversations, conversation }) {
                         otherUser={conversation.seller.user}
                     />
                 </div>
+                </div>
             </div>
-        </BuyerLayout>
+        </AppLayout>
     );
 }

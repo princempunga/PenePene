@@ -45,6 +45,7 @@ class HandleInertiaRequests extends Middleware
             'unread_notifications' => $request->user()
                 ? $request->user()->unreadNotifications()->count()
                 : 0,
+            'cart_count' => collect(session('cart', []))->sum('quantity'),
         ]);
     }
 }
