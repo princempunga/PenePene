@@ -99,8 +99,9 @@ export default function AdminLayout({ children, title }) {
                 </button>
 
                 {/* Logo */}
-                <Link href="/admin/dashboard" className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                    PenePene<span className="text-xs font-semibold bg-primary-600 text-white px-2 py-0.5 rounded-md ml-1">Admin</span>
+                <Link href="/admin/dashboard" className="flex items-center gap-2">
+                    <img src="/images/logo.png" alt="PenePene" className="h-8 w-auto object-contain" />
+                    <span className="text-xs font-semibold bg-amber-500 text-white px-2 py-0.5 rounded-md ml-1">Admin</span>
                 </Link>
 
                 <div className="flex-1" />

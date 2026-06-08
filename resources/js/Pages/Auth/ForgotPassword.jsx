@@ -16,7 +16,9 @@ export default function ForgotPassword() {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
                 <div className="w-full max-w-md">
                     <div className="text-center mb-8">
-                        <Link href="/" className="text-3xl font-extrabold text-primary-600">PenePene</Link>
+                        <Link href="/" className="inline-block">
+                            <img src="/images/logo.png" alt="PenePene" className="h-12 w-auto object-contain mx-auto" />
+                        </Link>
                         <h2 className="mt-4 text-2xl font-bold text-gray-900">Forgot your password?</h2>
                         <p className="mt-2 text-gray-500">Enter your email and we'll send you a reset link.</p>
                     </div>

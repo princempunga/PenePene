@@ -7,21 +7,34 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     protected $fillable = [
-        'conversation_id', 'sender_id', 'body', 'attachment', 'attachment_type', 'read_at',
+        'conversation_id', 'sender_id', 'receiver_id', 'message_type', 'body', 
+        'attachment_path', 'attachment_mime', 'attachment_size', 
+        'is_read', 'read_at', 'is_edited', 'edited_at', 'is_deleted', 'deleted_at'
     ];
 
     protected function casts(): array
     {
-        return ['read_at' => 'datetime'];
+        return [
+            'is_read' => 'boolean',
+            'read_at' => 'datetime',
+            'is_edited' => 'boolean',
+            'edited_at' => 'datetime',
+            'is_deleted' => 'boolean',
+            'deleted_at' => 'datetime',
+        ];
     }
 
     public function conversation() { return $this->belongsTo(Conversation::class); }
     public function sender()       { return $this->belongsTo(User::class, 'sender_id'); }
+    public function receiver()     { return $this->belongsTo(User::class, 'receiver_id'); }
 
     public function markAsRead(): void
     {
-        if (is_null($this->read_at)) {
-            $this->update(['read_at' => now()]);
+        if (!$this->is_read) {
+            $this->update([
+                'is_read' => true,
+                'read_at' => now()
+            ]);
         }
     }
 }

@@ -1,11 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
 import ProductCard from '@/Components/Product/ProductCard';
 import Pagination from '@/Components/UI/Pagination';
 import RatingStars from '@/Components/UI/RatingStars';
-import { MapPin, Phone, MessageCircle, Calendar, ShieldCheck, Mail } from 'lucide-react';
+import { MapPin, Phone, MessageCircle, Calendar, ShieldCheck, Mail, MessageSquareText, Package, Star } from 'lucide-react';
+import ChatWindow from '@/Components/Chat/ChatWindow';
+import OnlineStatusBadge from '@/Components/Chat/OnlineStatusBadge';
 
-export default function Store({ seller, products, reviews }) {
+export default function Store({ seller, products, reviews, auth }) {
+    const [showChatModal, setShowChatModal] = useState(false);
+    const [conversationId, setConversationId] = useState(null);
+    const [startingChat, setStartingChat] = useState(false);
+
+    const handleChatClick = async () => {
+        if (!auth.user) {
+            router.get('/login');
+            return;
+        }
+
+        setStartingChat(true);
+        try {
+            const res = await axios.post('/chat/conversations/start', { seller_id: seller.id });
+            setConversationId(res.data.conversation_id);
+            setShowChatModal(true);
+        } catch (error) {
+            console.error("Failed to start chat", error);
+            alert("Unable to start chat. Please try again later.");
+        } finally {
+            setStartingChat(false);
+        }
+    };
     return (
         <AppLayout>
             {/* Store Header/Banner */}
@@ -29,36 +55,49 @@ export default function Store({ seller, products, reviews }) {
                         </div>
                         
                         <div className="flex-1 pb-2">
-                            <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-3xl font-bold text-gray-900">{seller.business_name}</h1>
-                                {seller.status === 'verified' && (
-                                    <ShieldCheck className="text-blue-500" size={24} title="Verified Seller" />
-                                )}
+                            <div className="flex flex-col gap-2 mb-3">
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-3xl font-bold text-gray-900">{seller.business_name}</h1>
+                                    {seller.status === 'verified' && (
+                                        <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full text-xs font-semibold border border-blue-100">
+                                            <ShieldCheck size={14} />
+                                            Verified
+                                        </div>
+                                    )}
+                                </div>
+                                <OnlineStatusBadge isOnline={seller.user.is_online} lastSeenText={seller.user.last_seen_text} />
                             </div>
                             
-                            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600">
-                                <div className="flex items-center gap-1">
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
                                     <MapPin size={16} className="text-gray-400" />
                                     <span>{seller.city}, {seller.country}</span>
                                 </div>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
                                     <Calendar size={16} className="text-gray-400" />
-                                    <span>Joined {new Date(seller.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                                    <span>Joined {new Date(seller.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                                 </div>
-                                {seller.average_rating > 0 && (
-                                    <div className="flex items-center gap-2">
-                                        <RatingStars rating={seller.average_rating} count={seller.total_reviews} />
-                                    </div>
-                                )}
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                                    <Package size={16} className="text-gray-400" />
+                                    <span>{products.total} Products</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                                    <Star size={16} className="text-gray-400" />
+                                    <span>{seller.total_reviews} Reviews</span>
+                                </div>
                             </div>
                         </div>
                         
                         <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto pb-2 shrink-0">
-                            <a href={`https://wa.me/${seller.phone?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 py-2 px-6 bg-[#25D366] hover:bg-[#1EBE5D] text-white rounded-md font-medium transition-colors shadow-sm">
-                                <MessageCircle size={18} />
-                                WhatsApp
-                            </a>
-                            <a href={`tel:${seller.phone}`} className="flex-1 md:flex-none flex items-center justify-center gap-2 py-2 px-6 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-md font-medium transition-colors shadow-sm">
+                            <button 
+                                onClick={handleChatClick}
+                                disabled={startingChat}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                <MessageSquareText size={18} />
+                                {startingChat ? 'Connecting...' : 'Chat with Seller'}
+                            </button>
+                            <a href={`tel:${seller.phone}`} className="flex-1 md:flex-none flex items-center justify-center gap-2 py-2.5 px-6 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-lg font-medium transition-colors shadow-sm">
                                 <Phone size={18} />
                                 Call Seller
                             </a>
@@ -135,6 +174,21 @@ export default function Store({ seller, products, reviews }) {
 
                 </div>
             </div>
+
+            {/* Chat Modal */}
+            {showChatModal && conversationId && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="w-full max-w-2xl animate-in fade-in zoom-in duration-200">
+                        <ChatWindow 
+                            conversationId={conversationId}
+                            currentUserId={auth.user?.id}
+                            otherUser={seller.user}
+                            onClose={() => setShowChatModal(false)}
+                            isModal={true}
+                        />
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

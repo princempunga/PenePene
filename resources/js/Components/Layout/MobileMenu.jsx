@@ -23,7 +23,7 @@ export default function MobileMenu({ isOpen, onClose }) {
                         className="fixed inset-y-0 left-0 w-4/5 max-w-sm bg-white shadow-xl z-50 lg:hidden flex flex-col"
                     >
                         <div className="flex items-center justify-between p-4 border-b">
-                            <span className="text-xl font-bold text-primary-600">PenePene</span>
+                            <img src="/images/logo.png" alt="PenePene" className="h-8 w-auto object-contain" />
                             <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-900">
                                 <X size={24} />
                             </button>

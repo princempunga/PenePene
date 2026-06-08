@@ -20,5 +20,8 @@
         "tailwind-merge": "^3.6.0",
         "tailwindcss": "^4.3.0",
         "vite": "^8.0.16"
+    },
+    "dependencies": {
+        "date-fns": "^4.4.0"
     }
 }

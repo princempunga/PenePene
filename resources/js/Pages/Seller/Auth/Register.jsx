@@ -36,7 +36,9 @@ export default function SellerRegister({ plans }) {
             <div className="min-h-screen bg-gray-50 flex flex-col py-12 px-4">
                 <div className="w-full max-w-4xl mx-auto">
                     <div className="text-center mb-10">
-                        <Link href="/" className="text-3xl font-extrabold text-primary-600">PenePene</Link>
+                        <Link href="/" className="inline-block">
+                            <img src="/images/logo.png" alt="PenePene" className="h-12 w-auto object-contain mx-auto" />
+                        </Link>
                         <h2 className="mt-4 text-3xl font-bold text-gray-900">Become a Seller</h2>
                         <p className="mt-2 text-gray-500">Reach thousands of buyers today.</p>
                     </div>
