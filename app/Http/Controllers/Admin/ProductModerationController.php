@@ -39,10 +39,11 @@ class ProductModerationController extends Controller
         $product->update(['status' => 'active']);
 
         Notification::create([
-            'user_id' => $product->seller->user_id,
-            'title'   => 'Product Approved',
-            'body'    => "Your product \"{$product->name}\" has been approved and is now live on the marketplace.",
-            'type'    => 'system',
+            'user_id'    => $product->seller->user_id,
+            'title'      => 'Product Approved',
+            'body'       => "Your product \"{$product->name}\" has been approved and is now live on the marketplace.",
+            'type'       => 'system',
+            'action_url' => "/seller/products/{$product->id}/edit",
         ]);
 
         return back()->with('success', 'Product approved and is now live.');

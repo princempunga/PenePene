@@ -17,20 +17,31 @@ class ProductController extends Controller
     {
         $seller = $request->user()->seller;
 
-        $products = Product::with('category')
+        $query = Product::with(['category', 'images'])
             ->where('seller_id', $seller->id)
-            ->latest()
-            ->paginate(15);
+            ->latest();
+
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $products = $query->paginate(15)->withQueryString();
 
         return Inertia::render('Seller/Products/Index', [
             'products' => $products,
+            'filters'  => $request->only(['search', 'status']),
         ]);
     }
 
     public function create(Request $request)
     {
-        $categories = Category::whereNull('parent_id')
-            ->with('children')
+        $categories = Category::active()
+            ->with(['subcategories' => fn ($q) => $q->active()->orderBy('sort_order')])
+            ->orderBy('sort_order')
             ->get();
 
         return Inertia::render('Seller/Products/Create', [
@@ -44,18 +55,19 @@ class ProductController extends Controller
 
         $request->validate([
             'category_id'    => 'required|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:subcategories,id',
             'name'           => 'required|string|max:255',
             'description'    => 'required|string',
             'price'          => 'required|numeric|min:0',
             'sale_price'     => 'nullable|numeric|min:0|lt:price',
             'initial_stock'  => 'required|integer|min:1',
-            'condition'      => 'required|in:new,used,refurbished',
             'images.*'       => 'nullable|image|max:2048',
         ]);
 
         $product = Product::create([
             'seller_id'       => $seller->id,
             'category_id'     => $request->category_id,
+            'subcategory_id'  => $request->subcategory_id,
             'name'            => $request->name,
             'slug'            => Str::slug($request->name) . '-' . uniqid(),
             'description'     => $request->description,
@@ -63,8 +75,8 @@ class ProductController extends Controller
             'sale_price'      => $request->sale_price,
             'initial_stock'   => $request->initial_stock,
             'confirmed_sales' => 0,
-            'condition'       => $request->condition,
-            'status'          => 'active', // or 'pending' if moderation is required
+            'currency'        => 'TZS',
+            'status'          => 'pending',
         ]);
 
         if ($request->hasFile('images')) {
@@ -79,7 +91,29 @@ class ProductController extends Controller
         }
 
         return redirect()->route('seller.products.index')
-            ->with('success', 'Product created successfully.');
+            ->with('success', 'Product created successfully. It will be visible once approved.');
+    }
+
+    public function show(Request $request, Product $product)
+    {
+        $seller = $request->user()->seller;
+
+        if ($product->seller_id !== $seller->id) {
+            abort(403);
+        }
+
+        $product->load(['category', 'subcategory', 'images']);
+
+        return Inertia::render('Seller/Products/Show', [
+            'product' => $product,
+            'stats'   => [
+                'available_stock' => $product->available_stock,
+                'confirmed_sales' => $product->confirmed_sales,
+                'view_count'      => $product->view_count,
+                'average_rating'  => $product->average_rating,
+                'total_reviews'   => $product->total_reviews,
+            ],
+        ]);
     }
 
     public function edit(Request $request, Product $product)
@@ -90,11 +124,12 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $categories = Category::whereNull('parent_id')
-            ->with('children')
+        $categories = Category::active()
+            ->with(['subcategories' => fn ($q) => $q->active()->orderBy('sort_order')])
+            ->orderBy('sort_order')
             ->get();
-            
-        $product->load('images');
+
+        $product->load(['category', 'subcategory', 'images']);
 
         return Inertia::render('Seller/Products/Edit', [
             'product'    => $product,
@@ -110,30 +145,39 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $request->validate([
+        $rules = [
             'category_id'    => 'required|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:subcategories,id',
             'name'           => 'required|string|max:255',
             'description'    => 'required|string',
             'price'          => 'required|numeric|min:0',
             'sale_price'     => 'nullable|numeric|min:0|lt:price',
             'initial_stock'  => 'required|integer|min:0',
-            'condition'      => 'required|in:new,used,refurbished',
-            'status'         => 'required|in:active,inactive,out_of_stock',
-        ]);
+        ];
 
-        $product->update([
+        if (in_array($product->status, ['active', 'inactive'])) {
+            $rules['status'] = 'required|in:active,inactive';
+        }
+
+        $request->validate($rules);
+
+        $data = [
             'category_id'   => $request->category_id,
+            'subcategory_id'=> $request->subcategory_id,
             'name'          => $request->name,
-            // don't change slug normally, or you can update it
             'description'   => $request->description,
             'price'         => $request->price,
             'sale_price'    => $request->sale_price,
             'initial_stock' => $request->initial_stock,
-            'condition'     => $request->condition,
-            'status'        => $request->status,
-        ]);
+        ];
 
-        return redirect()->route('seller.products.index')
+        if (in_array($product->status, ['active', 'inactive'])) {
+            $data['status'] = $request->status;
+        }
+
+        $product->update($data);
+
+        return redirect()->route('seller.products.show', $product)
             ->with('success', 'Product updated successfully.');
     }
 
@@ -150,13 +194,13 @@ class ProductController extends Controller
         ]);
 
         $hasPrimary = ProductImage::where('product_id', $product->id)->where('is_primary', true)->exists();
-        
+
         $path = $request->file('image')->store('products', 'public');
-        
+
         ProductImage::create([
             'product_id' => $product->id,
             'image_path' => $path,
-            'is_primary' => !$hasPrimary, // make primary if it's the first one
+            'is_primary' => ! $hasPrimary,
         ]);
 
         return back()->with('success', 'Image uploaded successfully.');
@@ -165,19 +209,17 @@ class ProductController extends Controller
     public function deleteImage(Request $request, ProductImage $image)
     {
         $seller = $request->user()->seller;
-        
-        // Ensure image belongs to a product owned by this seller
+
         $product = Product::findOrFail($image->product_id);
         if ($product->seller_id !== $seller->id) {
             abort(403);
         }
 
         Storage::disk('public')->delete($image->image_path);
-        
+
         $wasPrimary = $image->is_primary;
         $image->delete();
 
-        // If we deleted the primary, make another image primary
         if ($wasPrimary) {
             $nextImage = ProductImage::where('product_id', $product->id)->first();
             if ($nextImage) {
@@ -192,7 +234,7 @@ class ProductController extends Controller
     {
         $seller = $request->user()->seller;
         $product = Product::findOrFail($image->product_id);
-        
+
         if ($product->seller_id !== $seller->id) {
             abort(403);
         }
@@ -211,7 +253,6 @@ class ProductController extends Controller
             abort(403);
         }
 
-        // Optional: you might want to soft delete instead if orders depend on it
         $product->delete();
 
         return redirect()->route('seller.products.index')

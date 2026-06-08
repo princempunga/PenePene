@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Message;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -28,13 +30,26 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user() ? [
-                    'id'    => $request->user()->id,
-                    'name'  => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'role'  => $request->user()->role,
-                    'email_verified_at' => $request->user()->email_verified_at,
-                ] : null,
+                'user' => $request->user() ? (function () use ($request) {
+                    $user = $request->user();
+                    $data = [
+                        'id'                => $user->id,
+                        'name'              => $user->name,
+                        'email'             => $user->email,
+                        'role'              => $user->role,
+                        'phone'             => $user->phone,
+                        'avatar'            => $user->avatar,
+                        'email_verified_at' => $user->email_verified_at,
+                    ];
+
+                    if ($user->isSeller() && $user->seller) {
+                        $data['seller'] = $user->seller->only([
+                            'id', 'business_name', 'status', 'average_rating', 'slug',
+                        ]);
+                    }
+
+                    return $data;
+                })() : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -43,9 +58,27 @@ class HandleInertiaRequests extends Middleware
                 'status'  => $request->session()->get('status'),
             ],
             'unread_notifications' => $request->user()
-                ? $request->user()->unreadNotifications()->count()
+                ? Notification::where('user_id', $request->user()->id)->where('is_read', false)->count()
                 : 0,
             'cart_count' => collect(session('cart', []))->sum('quantity'),
+            'unread_messages' => function () use ($request) {
+                $user = $request->user();
+                if (! $user || ! $user->isSeller() || ! $user->seller) {
+                    return 0;
+                }
+
+                return Message::whereHas('conversation', fn ($q) => $q->where('seller_id', $user->seller->id))
+                    ->whereNull('read_at')
+                    ->where('sender_id', '!=', $user->id)
+                    ->count();
+            },
+            'seller' => $request->user()?->seller ? [
+                'id'            => $request->user()->seller->id,
+                'business_name' => $request->user()->seller->business_name,
+                'slug'          => $request->user()->seller->slug,
+                'status'        => $request->user()->seller->status,
+                'logo'          => $request->user()->seller->logo,
+            ] : null,
         ]);
     }
 }

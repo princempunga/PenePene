@@ -1,47 +1,136 @@
 import React from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
-import { Check, Star, Shield, ArrowRight } from 'lucide-react';
+import { Check, Star, Shield, ArrowRight, ArrowUp, ArrowDown, AlertCircle, CreditCard } from 'lucide-react';
 
-export default function SubscriptionsIndex({ seller, plans, history }) {
+function FlashAlert({ flash }) {
+    if (!flash?.success && !flash?.error) return null;
+
+    const isError = !!flash?.error;
+    return (
+        <div className={`mb-6 p-4 rounded-xl text-sm font-medium border ${
+            isError
+                ? 'bg-red-50 border-red-200 text-red-800'
+                : 'bg-green-50 border-green-200 text-green-800'
+        }`}>
+            {flash.success || flash.error}
+        </div>
+    );
+}
+
+function parseFeatures(plan) {
+    if (Array.isArray(plan.features)) return plan.features;
+    if (typeof plan.features === 'string') {
+        try {
+            return JSON.parse(plan.features);
+        } catch {
+            return [];
+        }
+    }
+    return [];
+}
+
+function planActionLabel(plan, currentPlan, isCurrent) {
+    if (isCurrent) return 'Current Plan';
+    if (!currentPlan) return plan.price == 0 ? 'Get Started' : 'Subscribe Now';
+
+    if (plan.sort_order > currentPlan.sort_order || plan.price > currentPlan.price) {
+        return 'Upgrade';
+    }
+    if (plan.sort_order < currentPlan.sort_order || plan.price < currentPlan.price) {
+        return 'Downgrade';
+    }
+    return 'Switch Plan';
+}
+
+function planActionIcon(label) {
+    if (label === 'Upgrade') return <ArrowUp size={18} />;
+    if (label === 'Downgrade') return <ArrowDown size={18} />;
+    if (label === 'Current Plan') return null;
+    return <ArrowRight size={18} />;
+}
+
+const billingStatusStyles = {
+    active: 'bg-green-100 text-green-800 border-green-200',
+    warning: 'bg-amber-100 text-amber-800 border-amber-200',
+    expired: 'bg-red-100 text-red-800 border-red-200',
+    none: 'bg-gray-100 text-gray-700 border-gray-200',
+};
+
+export default function SubscriptionsIndex({ seller, plans, history, currentPlan, billingStatus }) {
     const { flash } = usePage().props;
     const { post, processing } = useForm();
 
-    const subscribe = (planId) => {
-        if (confirm('Are you sure you want to subscribe to this plan? This will replace your current active plan.')) {
-            post(`/seller/subscriptions/${planId}/subscribe`);
+    const activeSub = seller.active_subscription;
+
+    const subscribe = (plan) => {
+        const label = planActionLabel(plan, currentPlan, activeSub?.subscription_plan_id === plan.id);
+        const message = label === 'Downgrade'
+            ? `Switch to ${plan.name}? Your current plan will be replaced immediately.`
+            : `Subscribe to ${plan.name}? This will replace your current active plan.`;
+
+        if (confirm(message)) {
+            post(`/seller/subscriptions/${plan.slug}/subscribe`, { preserveScroll: true });
         }
     };
-
-    const activeSub = seller.active_subscription;
 
     return (
         <SellerLayout>
             <Head title="Subscription Plans" />
 
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Manage Subscription</h1>
-                <p className="text-gray-500 mt-1">Upgrade your plan to unlock more features and boost your sales.</p>
+            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Manage Subscription</h1>
+                    <p className="text-gray-500 mt-1">Upgrade your plan to unlock more features and boost your sales.</p>
+                </div>
+                <Link
+                    href="/seller/profile"
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                >
+                    ← Back to profile
+                </Link>
             </div>
 
-            {flash?.success && (
-                <div className="mb-6 bg-green-50 text-green-800 p-4 rounded-lg text-sm border border-green-200">
-                    {flash.success}
-                </div>
-            )}
+            <FlashAlert flash={flash} />
 
-            {/* Current Plan Alert */}
-            {activeSub && (
+            {/* Billing Status */}
+            <div className="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-wrap items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
+                    <CreditCard size={20} className="text-primary-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-500">Billing Status</p>
+                    <p className="font-semibold text-gray-900">{billingStatus.label}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{billingStatus.detail}</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${billingStatusStyles[billingStatus.status] || billingStatusStyles.none}`}>
+                    {billingStatus.status.toUpperCase()}
+                </span>
+            </div>
+
+            {/* Current Plan */}
+            {activeSub ? (
                 <div className="mb-8 bg-gradient-to-r from-primary-600 to-primary-800 rounded-xl p-6 text-white shadow-md flex items-center justify-between">
                     <div>
                         <p className="text-primary-100 text-sm font-medium mb-1">Current Active Plan</p>
                         <h2 className="text-2xl font-bold">{activeSub.plan.name}</h2>
                         <p className="text-sm mt-1 opacity-90">
-                            Expires on {new Date(activeSub.expires_at).toLocaleDateString()}
+                            {activeSub.amount_paid > 0
+                                ? `${activeSub.currency} ${parseFloat(activeSub.amount_paid).toLocaleString()} · `
+                                : ''}
+                            Expires {new Date(activeSub.expires_at).toLocaleDateString()}
                         </p>
                     </div>
-                    <div className="hidden md:block w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <div className="hidden md:flex w-16 h-16 bg-white/20 rounded-full items-center justify-center backdrop-blur-sm">
                         <Shield size={32} className="text-white" />
+                    </div>
+                </div>
+            ) : (
+                <div className="mb-8 bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-3">
+                    <AlertCircle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="font-semibold text-amber-900">No active subscription</p>
+                        <p className="text-sm text-amber-700 mt-1">Choose a plan below to get started with seller features.</p>
                     </div>
                 </div>
             )}
@@ -49,11 +138,21 @@ export default function SubscriptionsIndex({ seller, plans, history }) {
             {/* Plans Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 {plans.map(plan => {
-                    const features = JSON.parse(plan.features || '[]');
-                    const isCurrent = activeSub && activeSub.subscription_plan_id === plan.id;
+                    const features = parseFeatures(plan);
+                    const isCurrent = activeSub?.subscription_plan_id === plan.id;
+                    const actionLabel = planActionLabel(plan, currentPlan, isCurrent);
+                    const isUpgrade = actionLabel === 'Upgrade';
+                    const isDowngrade = actionLabel === 'Downgrade';
 
                     return (
-                        <div key={plan.id} className={`bg-white rounded-2xl border ${plan.is_featured ? 'border-primary-500 shadow-xl shadow-primary-500/10 relative' : 'border-gray-200 shadow-sm'} p-6 flex flex-col`}>
+                        <div
+                            key={plan.id}
+                            className={`bg-white rounded-2xl border ${
+                                plan.is_featured
+                                    ? 'border-primary-500 shadow-xl shadow-primary-500/10 relative'
+                                    : 'border-gray-200 shadow-sm'
+                            } p-6 flex flex-col`}
+                        >
                             {plan.is_featured && (
                                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
                                     <Star size={12} className="fill-white" /> Recommended
@@ -62,14 +161,18 @@ export default function SubscriptionsIndex({ seller, plans, history }) {
 
                             <div className="mb-6">
                                 <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                                <p className="text-sm text-gray-500 mt-2 h-10">{plan.description}</p>
+                                <p className="text-sm text-gray-500 mt-2 min-h-[40px]">{plan.description}</p>
                             </div>
 
                             <div className="mb-6">
                                 <span className="text-3xl font-extrabold text-gray-900">
                                     {plan.price == 0 ? 'Free' : `TZS ${parseFloat(plan.price).toLocaleString()}`}
                                 </span>
-                                {plan.price > 0 && <span className="text-gray-500 font-medium">/{plan.billing_cycle === 'monthly' ? 'mo' : 'yr'}</span>}
+                                {plan.price > 0 && (
+                                    <span className="text-gray-500 font-medium">
+                                        /{plan.billing_cycle === 'monthly' ? 'mo' : 'yr'}
+                                    </span>
+                                )}
                             </div>
 
                             <ul className="space-y-3 mb-8 flex-1">
@@ -84,18 +187,22 @@ export default function SubscriptionsIndex({ seller, plans, history }) {
                             </ul>
 
                             <button
-                                onClick={() => subscribe(plan.id)}
+                                onClick={() => subscribe(plan)}
                                 disabled={processing || isCurrent}
                                 className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition ${
                                     isCurrent
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : plan.is_featured
+                                        : isUpgrade
                                             ? 'bg-primary-600 text-white hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-600/20'
-                                            : 'bg-primary-50 text-primary-700 hover:bg-primary-100'
+                                            : isDowngrade
+                                                ? 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                                : plan.is_featured
+                                                    ? 'bg-primary-600 text-white hover:bg-primary-700'
+                                                    : 'bg-primary-50 text-primary-700 hover:bg-primary-100'
                                 }`}
                             >
-                                {isCurrent ? 'Current Plan' : (plan.price == 0 ? 'Get Started' : 'Subscribe Now')}
-                                {!isCurrent && <ArrowRight size={18} />}
+                                {actionLabel}
+                                {planActionIcon(actionLabel)}
                             </button>
                         </div>
                     );
@@ -108,36 +215,43 @@ export default function SubscriptionsIndex({ seller, plans, history }) {
                     <div className="p-5 border-b border-gray-100">
                         <h2 className="font-bold text-gray-900 text-lg">Billing History</h2>
                     </div>
-                    <table className="w-full text-left text-sm text-gray-500">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                            <tr>
-                                <th className="px-6 py-4">Plan</th>
-                                <th className="px-6 py-4">Amount</th>
-                                <th className="px-6 py-4">Period</th>
-                                <th className="px-6 py-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {history.map(sub => (
-                                <tr key={sub.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900">{sub.plan.name}</td>
-                                    <td className="px-6 py-4">{sub.currency} {parseFloat(sub.amount_paid).toLocaleString()}</td>
-                                    <td className="px-6 py-4">
-                                        {new Date(sub.starts_at).toLocaleDateString()} to {new Date(sub.expires_at).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                            sub.status === 'active' ? 'bg-green-100 text-green-800' :
-                                            sub.status === 'expired' ? 'bg-amber-100 text-amber-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {sub.status.toUpperCase()}
-                                        </span>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm text-gray-500">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th className="px-6 py-4">Plan</th>
+                                    <th className="px-6 py-4">Amount</th>
+                                    <th className="px-6 py-4">Period</th>
+                                    <th className="px-6 py-4">Status</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {history.map(sub => (
+                                    <tr key={sub.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 font-medium text-gray-900">{sub.plan.name}</td>
+                                        <td className="px-6 py-4">
+                                            {sub.amount_paid == 0
+                                                ? 'Free'
+                                                : `${sub.currency} ${parseFloat(sub.amount_paid).toLocaleString()}`}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {new Date(sub.starts_at).toLocaleDateString()} – {new Date(sub.expires_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                                sub.status === 'active' ? 'bg-green-100 text-green-800' :
+                                                sub.status === 'expired' ? 'bg-amber-100 text-amber-800' :
+                                                sub.status === 'cancelled' ? 'bg-gray-100 text-gray-600' :
+                                                'bg-blue-100 text-blue-800'
+                                            }`}>
+                                                {sub.status.toUpperCase()}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </SellerLayout>

@@ -1,26 +1,60 @@
 import React from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
-import { FileDown, FileText, Package, AlertCircle } from 'lucide-react';
+import {
+    FileDown, FileText, Package, AlertCircle, DollarSign,
+    ShoppingCart, TrendingUp, Calendar, Download,
+} from 'lucide-react';
 
-export default function ReportsIndex({ stats }) {
-    const { data, setData, post, processing, errors } = useForm({
-        type: 'sales',
-        format: 'pdf',
-        from: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
-        to: new Date().toISOString().split('T')[0],
+const statusColors = {
+    pending:   'bg-amber-100 text-amber-800',
+    confirmed: 'bg-blue-100 text-blue-800',
+    shipped:   'bg-purple-100 text-purple-800',
+    delivered: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800',
+};
+
+function StatCard({ icon: Icon, label, value, sub, color }) {
+    return (
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div className={`w-10 h-10 ${color} rounded-lg flex items-center justify-center mb-3`}>
+                <Icon size={20} />
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            <p className="text-sm text-gray-500 font-medium mt-1">{label}</p>
+            {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        </div>
+    );
+}
+
+export default function ReportsIndex({ stats, revenueTrend, topProducts, recentOrders, filters }) {
+    const filterForm = useForm({
+        from: filters.from,
+        to: filters.to,
     });
 
-    const submit = (e) => {
+    const exportForm = useForm({
+        type: 'sales',
+        format: 'pdf',
+        from: filters.from,
+        to: filters.to,
+    });
+
+    const applyFilter = (e) => {
         e.preventDefault();
-        // Inertia post doesn't handle direct file downloads well without custom handling.
-        // It's usually better to use a standard form submission for downloads.
-        // I will use standard window form submission so the browser handles the download stream.
+        router.get('/seller/reports', {
+            from: filterForm.data.from,
+            to: filterForm.data.to,
+        }, { preserveState: true });
+    };
+
+    const downloadReport = (e) => {
+        e.preventDefault();
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/seller/reports/generate';
 
-        // Add CSRF token
         const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content;
         if (csrfToken) {
             const csrfInput = document.createElement('input');
@@ -30,12 +64,17 @@ export default function ReportsIndex({ stats }) {
             form.appendChild(csrfInput);
         }
 
-        // Add data
-        Object.keys(data).forEach(key => {
+        const payload = {
+            ...exportForm.data,
+            from: filterForm.data.from,
+            to: filterForm.data.to,
+        };
+
+        Object.keys(payload).forEach(key => {
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = key;
-            input.value = data[key];
+            input.value = payload[key];
             form.appendChild(input);
         });
 
@@ -44,109 +83,283 @@ export default function ReportsIndex({ stats }) {
         document.body.removeChild(form);
     };
 
+    const maxRevenue = Math.max(...revenueTrend.map(d => d.amount), 1);
+    const formatCurrency = (n) => `TZS ${parseFloat(n || 0).toLocaleString()}`;
+
     return (
         <SellerLayout>
             <Head title="Reports & Analytics" />
 
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
-                <p className="text-gray-500 mt-1">Generate and download detailed reports for your store.</p>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
+                    <p className="text-gray-500 mt-1">Sales insights, trends, and downloadable reports for your store.</p>
+                </div>
+
+                <form onSubmit={applyFilter} className="flex flex-wrap items-end gap-2">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+                        <input
+                            type="date"
+                            value={filterForm.data.from}
+                            onChange={e => filterForm.setData('from', e.target.value)}
+                            className="border border-gray-300 rounded-lg text-sm px-3 py-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+                        <input
+                            type="date"
+                            value={filterForm.data.to}
+                            onChange={e => filterForm.setData('to', e.target.value)}
+                            className="border border-gray-300 rounded-lg text-sm px-3 py-2"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        className="flex items-center gap-1.5 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition"
+                    >
+                        <Calendar size={16} />
+                        Apply
+                    </button>
+                </form>
             </div>
 
-            {/* Quick Stats Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center shrink-0">
-                        <span className="font-bold text-lg">TZS</span>
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-500 font-medium">Total Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">{parseFloat(stats.total_revenue || 0).toLocaleString()}</p>
-                    </div>
+            {/* Summary Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+                <StatCard
+                    icon={DollarSign}
+                    label="Revenue"
+                    value={formatCurrency(stats.total_revenue)}
+                    color="bg-green-100 text-green-600"
+                />
+                <StatCard
+                    icon={ShoppingCart}
+                    label="Orders"
+                    value={stats.total_orders}
+                    sub={`${stats.delivered} delivered`}
+                    color="bg-blue-100 text-blue-600"
+                />
+                <StatCard
+                    icon={TrendingUp}
+                    label="Avg. Order"
+                    value={formatCurrency(stats.avg_order_value)}
+                    color="bg-indigo-100 text-indigo-600"
+                />
+                <StatCard
+                    icon={Package}
+                    label="Products"
+                    value={stats.total_products}
+                    color="bg-purple-100 text-purple-600"
+                />
+                <StatCard
+                    icon={FileText}
+                    label="Pending"
+                    value={stats.pending}
+                    sub="orders in period"
+                    color="bg-amber-100 text-amber-600"
+                />
+                <StatCard
+                    icon={FileDown}
+                    label="Delivered"
+                    value={stats.delivered}
+                    sub="completed orders"
+                    color="bg-emerald-100 text-emerald-600"
+                />
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+                {/* Revenue Trend Chart */}
+                <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <h2 className="font-bold text-gray-900 mb-1">Revenue Trend</h2>
+                    <p className="text-sm text-gray-500 mb-6">
+                        {filters.from} — {filters.to}
+                    </p>
+                    {revenueTrend.length > 0 ? (
+                        <div className="h-56 flex items-end justify-between gap-1 sm:gap-2">
+                            {revenueTrend.map((data, i) => {
+                                const heightPct = (data.amount / maxRevenue) * 100;
+                                return (
+                                    <div key={i} className="flex flex-col items-center flex-1 group relative min-w-0">
+                                        <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap transition-opacity z-10 pointer-events-none">
+                                            {formatCurrency(data.amount)}
+                                        </div>
+                                        <div className="w-full max-w-[36px] h-44 bg-primary-50 rounded-t-md relative flex items-end">
+                                            <div
+                                                className="w-full bg-primary-500 rounded-t-md transition-all duration-500"
+                                                style={{ height: `${Math.max(heightPct, data.amount > 0 ? 4 : 1)}%` }}
+                                            />
+                                        </div>
+                                        <div className="mt-2 text-[10px] sm:text-xs text-gray-500 truncate w-full text-center">
+                                            {data.date}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="h-56 flex items-center justify-center text-gray-400 text-sm">
+                            No revenue data for this period.
+                        </div>
+                    )}
                 </div>
-                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
-                        <Package size={24} />
+
+                {/* Top Products */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100">
+                        <h2 className="font-bold text-gray-900">Top Products</h2>
+                        <p className="text-sm text-gray-500 mt-0.5">By revenue in selected period</p>
                     </div>
-                    <div>
-                        <p className="text-sm text-gray-500 font-medium">Total Orders</p>
-                        <p className="text-2xl font-bold text-gray-900">{stats.total_orders}</p>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0">
-                        <FileText size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-500 font-medium">Total Products</p>
-                        <p className="text-2xl font-bold text-gray-900">{stats.total_products}</p>
-                    </div>
+                    {topProducts.length > 0 ? (
+                        <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                            {topProducts.map((product, i) => (
+                                <div key={i} className="px-5 py-3 flex items-center justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                                        <p className="text-xs text-gray-500">{product.units_sold} sold</p>
+                                    </div>
+                                    <p className="text-sm font-bold text-gray-900 shrink-0">
+                                        {formatCurrency(product.revenue)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="p-8 text-center text-gray-400 text-sm">No product sales in this period.</div>
+                    )}
                 </div>
             </div>
 
-            {/* Report Generator */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden max-w-4xl">
+            {/* Recent Orders Table */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <h2 className="font-bold text-gray-900">Orders in Period</h2>
+                    <span className="text-sm text-gray-500">{recentOrders.length} shown</span>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <th className="px-5 py-3">Order #</th>
+                                <th className="px-5 py-3">Date</th>
+                                <th className="px-5 py-3">Buyer</th>
+                                <th className="px-5 py-3">Items</th>
+                                <th className="px-5 py-3">Total</th>
+                                <th className="px-5 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {recentOrders.length > 0 ? recentOrders.map(order => (
+                                <tr key={order.id} className="hover:bg-gray-50">
+                                    <td className="px-5 py-3 font-semibold text-gray-900">{order.order_number}</td>
+                                    <td className="px-5 py-3 text-gray-600">
+                                        {new Date(order.created_at).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-5 py-3 text-gray-600">{order.buyer?.user?.name ?? 'N/A'}</td>
+                                    <td className="px-5 py-3 text-gray-600">{order.items?.length ?? 0}</td>
+                                    <td className="px-5 py-3 font-medium text-gray-900">
+                                        {formatCurrency(order.total_amount)}
+                                    </td>
+                                    <td className="px-5 py-3">
+                                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${statusColors[order.status] || 'bg-gray-100 text-gray-700'}`}>
+                                            {order.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={6} className="px-5 py-12 text-center text-gray-400">
+                                        No orders found for the selected date range.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Export Panel */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center shrink-0">
-                        <FileDown size={20} />
+                        <Download size={20} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900">Generate Custom Report</h2>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Export Report</h2>
+                        <p className="text-sm text-gray-500">Download PDF, Excel, or CSV using the date range above</p>
+                    </div>
                 </div>
                 <div className="p-6">
-                    <form onSubmit={submit} className="space-y-6">
+                    <form onSubmit={downloadReport} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
                                 <div className="space-y-2">
-                                    <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition ${data.type === 'sales' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                        <input type="radio" name="type" value="sales" checked={data.type === 'sales'} onChange={e => setData('type', e.target.value)} className="text-primary-600" />
-                                        <span className="font-medium">Sales & Revenue</span>
-                                    </label>
-                                    <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition ${data.type === 'products' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                        <input type="radio" name="type" value="products" checked={data.type === 'products'} onChange={e => setData('type', e.target.value)} className="text-primary-600" />
-                                        <span className="font-medium">Product Inventory</span>
-                                    </label>
-                                    <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition ${data.type === 'stock' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                        <input type="radio" name="type" value="stock" checked={data.type === 'stock'} onChange={e => setData('type', e.target.value)} className="text-primary-600" />
-                                        <span className="font-medium flex items-center gap-2">Low Stock Alerts <AlertCircle size={14} className="text-red-500"/></span>
-                                    </label>
+                                    {[
+                                        { value: 'sales', label: 'Sales & Revenue' },
+                                        { value: 'products', label: 'Product Inventory' },
+                                        { value: 'stock', label: 'Low Stock Alerts', alert: true },
+                                    ].map(opt => (
+                                        <label
+                                            key={opt.value}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition ${
+                                                exportForm.data.type === opt.value
+                                                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                                                    : 'border-gray-200 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="type"
+                                                value={opt.value}
+                                                checked={exportForm.data.type === opt.value}
+                                                onChange={e => exportForm.setData('type', e.target.value)}
+                                                className="text-primary-600"
+                                            />
+                                            <span className="font-medium flex items-center gap-2">
+                                                {opt.label}
+                                                {opt.alert && <AlertCircle size={14} className="text-red-500" />}
+                                            </span>
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <input type="date" value={data.from} onChange={e => setData('from', e.target.value)} className="w-full border-gray-300 rounded-lg text-sm" />
-                                        </div>
-                                        <div>
-                                            <input type="date" value={data.to} onChange={e => setData('to', e.target.value)} className="w-full border-gray-300 rounded-lg text-sm" />
-                                        </div>
-                                    </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+                                <div className="flex gap-3">
+                                    {[
+                                        { value: 'pdf', label: 'PDF', active: 'border-red-500 bg-red-50 text-red-700' },
+                                        { value: 'excel', label: 'Excel', active: 'border-green-500 bg-green-50 text-green-700' },
+                                        { value: 'csv', label: 'CSV', active: 'border-blue-500 bg-blue-50 text-blue-700' },
+                                    ].map(fmt => (
+                                        <label
+                                            key={fmt.value}
+                                            className={`flex-1 flex items-center justify-center p-3 rounded-lg border cursor-pointer transition ${
+                                                exportForm.data.format === fmt.value
+                                                    ? fmt.active
+                                                    : 'border-gray-200 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="format"
+                                                value={fmt.value}
+                                                checked={exportForm.data.format === fmt.value}
+                                                onChange={e => exportForm.setData('format', e.target.value)}
+                                                className="sr-only"
+                                            />
+                                            <span className="font-bold">{fmt.label}</span>
+                                        </label>
+                                    ))}
                                 </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
-                                    <div className="flex gap-3">
-                                        <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border cursor-pointer transition ${data.format === 'pdf' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                            <input type="radio" name="format" value="pdf" checked={data.format === 'pdf'} onChange={e => setData('format', e.target.value)} className="sr-only" />
-                                            <span className="font-bold">PDF</span>
-                                        </label>
-                                        <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border cursor-pointer transition ${data.format === 'excel' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                            <input type="radio" name="format" value="excel" checked={data.format === 'excel'} onChange={e => setData('format', e.target.value)} className="sr-only" />
-                                            <span className="font-bold">Excel</span>
-                                        </label>
-                                        <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border cursor-pointer transition ${data.format === 'csv' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                            <input type="radio" name="format" value="csv" checked={data.format === 'csv'} onChange={e => setData('format', e.target.value)} className="sr-only" />
-                                            <span className="font-bold">CSV</span>
-                                        </label>
-                                    </div>
-                                </div>
+                                <p className="text-xs text-gray-400 mt-3">
+                                    Period: {filterForm.data.from} to {filterForm.data.to}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-6 border-t border-gray-100">
+                        <div className="flex justify-end pt-4 border-t border-gray-100">
                             <button
                                 type="submit"
                                 className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-primary-700 transition shadow-md shadow-primary-600/20"

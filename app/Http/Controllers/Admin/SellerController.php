@@ -43,10 +43,11 @@ class SellerController extends Controller
         ]);
 
         Notification::create([
-            'user_id' => $seller->user_id,
-            'title'   => 'Account Verified',
-            'body'    => 'Congratulations! Your seller account has been verified. Your store is now live.',
-            'type'    => 'system',
+            'user_id'    => $seller->user_id,
+            'title'      => 'Account Verified',
+            'body'       => 'Congratulations! Your seller account has been verified. Your store is now live.',
+            'type'       => 'system',
+            'action_url' => '/seller/dashboard',
         ]);
 
         return back()->with('success', 'Seller has been verified successfully.');

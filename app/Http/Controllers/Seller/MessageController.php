@@ -14,19 +14,31 @@ class MessageController extends Controller
     {
         $user   = $request->user();
         $seller = $user->seller;
+        $search = $request->get('search');
 
-        $conversations = Conversation::with(['buyer.user', 'messages' => function ($q) {
+        $conversations = Conversation::with(['buyer', 'messages' => function ($q) {
                 $q->latest()->take(1);
             }])
             ->where('seller_id', $seller->id)
+            ->when($search, function ($q, $search) {
+                $q->where(function ($q) use ($search) {
+                    $q->whereHas('buyer', function ($b) use ($search) {
+                        $b->where('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                    })->orWhereHas('messages', function ($m) use ($search) {
+                        $m->where('body', 'like', "%{$search}%");
+                    });
+                });
+            })
             ->withCount(['messages as unread_count' => function ($q) use ($user) {
-                $q->where('is_read', false)->where('sender_id', '!=', $user->id);
+                $q->whereNull('read_at')->where('sender_id', '!=', $user->id);
             }])
             ->latest('updated_at')
             ->get();
 
         return Inertia::render('Seller/Messages/Index', [
             'conversations' => $conversations,
+            'filters'       => ['search' => $search ?? ''],
         ]);
     }
 
@@ -39,18 +51,17 @@ class MessageController extends Controller
             abort(403);
         }
 
-        // Mark messages from buyer as read
         Message::where('conversation_id', $conversation->id)
             ->where('sender_id', '!=', $user->id)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         $messages = Message::where('conversation_id', $conversation->id)
             ->with('sender')
             ->oldest()
             ->get();
 
-        $conversation->load('buyer.user');
+        $conversation->load(['buyer.buyer']);
 
         return Inertia::render('Seller/Messages/Show', [
             'conversation' => $conversation,

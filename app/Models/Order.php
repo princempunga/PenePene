@@ -18,6 +18,12 @@ class Order extends Model
         'confirmed_at', 'delivered_at',
     ];
 
+    protected $appends = [
+        'total_amount',
+        'shipping_address',
+        'shipping_cost',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -26,6 +32,21 @@ class Order extends Model
             'confirmed_at' => 'datetime',
             'delivered_at' => 'datetime',
         ];
+    }
+
+    public function getTotalAmountAttribute(): float
+    {
+        return (float) ($this->attributes['total_amount'] ?? $this->attributes['total'] ?? 0);
+    }
+
+    public function getShippingAddressAttribute(): ?string
+    {
+        return $this->delivery_address;
+    }
+
+    public function getShippingCostAttribute(): string
+    {
+        return '0';
     }
 
     protected static function booted(): void

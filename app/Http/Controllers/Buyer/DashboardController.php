@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $totalOrders   = Order::where('buyer_id', $buyer->id)->count();
         $totalSpent    = Order::where('buyer_id', $buyer->id)
                               ->whereIn('payment_status', ['paid', 'completed'])
-                              ->sum('total_amount');
+                              ->sum('total');
         $wishlistCount = Favorite::where('buyer_id', $buyer->id)->count();
         $unreadNotifs  = Notification::where('user_id', $user->id)
                               ->where('is_read', false)->count();

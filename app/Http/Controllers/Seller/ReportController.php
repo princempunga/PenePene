@@ -21,18 +21,86 @@ class ReportController extends Controller
         return Auth::user()->seller;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $seller = $this->seller();
 
-        // Quick stats for the report page
+        $from = $request->filled('from')
+            ? Carbon::parse($request->from)->startOfDay()
+            : Carbon::now()->subDays(29)->startOfDay();
+
+        $to = $request->filled('to')
+            ? Carbon::parse($request->to)->endOfDay()
+            : Carbon::now()->endOfDay();
+
+        if ($from->gt($to)) {
+            [$from, $to] = [$to->copy()->startOfDay(), $from->copy()->endOfDay()];
+        }
+
+        $deliveredStatuses = ['delivered'];
+
+        $ordersQuery = Order::where('seller_id', $seller->id)
+            ->whereBetween('created_at', [$from, $to]);
+
         $stats = [
-            'total_revenue'  => Order::where('seller_id', $seller->id)->whereIn('status', ['delivered'])->sum('total_amount'),
-            'total_orders'   => Order::where('seller_id', $seller->id)->count(),
+            'total_revenue'  => (clone $ordersQuery)->whereIn('status', $deliveredStatuses)->sum('total'),
+            'total_orders'   => (clone $ordersQuery)->count(),
+            'delivered'      => (clone $ordersQuery)->whereIn('status', $deliveredStatuses)->count(),
+            'pending'        => (clone $ordersQuery)->where('status', 'pending')->count(),
             'total_products' => Product::where('seller_id', $seller->id)->count(),
+            'avg_order_value'=> (clone $ordersQuery)->whereIn('status', $deliveredStatuses)->avg('total') ?? 0,
         ];
 
-        return Inertia::render('Seller/Reports/Index', ['stats' => $stats]);
+        $days = min($from->diffInDays($to) + 1, 31);
+        $revenueTrend = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = $to->copy()->subDays($i);
+            $dateStr = $date->format('Y-m-d');
+            $amount = Order::where('seller_id', $seller->id)
+                ->whereIn('status', $deliveredStatuses)
+                ->whereDate('created_at', $dateStr)
+                ->sum('total');
+
+            $revenueTrend[] = [
+                'date'   => $date->format('M d'),
+                'amount' => (float) $amount,
+            ];
+        }
+
+        $topProducts = OrderItem::query()
+            ->selectRaw('product_name, SUM(quantity) as units_sold, SUM(subtotal) as revenue')
+            ->whereHas('order', function ($q) use ($seller, $from, $to) {
+                $q->where('seller_id', $seller->id)
+                    ->whereBetween('created_at', [$from, $to])
+                    ->whereIn('status', ['delivered', 'confirmed', 'shipped']);
+            })
+            ->groupBy('product_name')
+            ->orderByDesc('revenue')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => [
+                'name'       => $row->product_name,
+                'units_sold' => (int) $row->units_sold,
+                'revenue'    => (float) $row->revenue,
+            ]);
+
+        $recentOrders = Order::with(['buyer.user', 'items'])
+            ->where('seller_id', $seller->id)
+            ->whereBetween('created_at', [$from, $to])
+            ->latest()
+            ->take(8)
+            ->get();
+
+        return Inertia::render('Seller/Reports/Index', [
+            'stats'        => $stats,
+            'revenueTrend' => $revenueTrend,
+            'topProducts'  => $topProducts,
+            'recentOrders' => $recentOrders,
+            'filters'      => [
+                'from' => $from->format('Y-m-d'),
+                'to'   => $to->format('Y-m-d'),
+            ],
+        ]);
     }
 
     public function generate(Request $request)
@@ -151,7 +219,6 @@ class ReportController extends Controller
         return collect();
     }
 
-    // Kept for future async report generation
     public function download(int $report)
     {
         abort(404);

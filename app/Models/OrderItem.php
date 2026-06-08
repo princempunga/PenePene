@@ -10,12 +10,24 @@ class OrderItem extends Model
         'order_id', 'product_id', 'product_name', 'price', 'quantity', 'subtotal',
     ];
 
+    protected $appends = ['unit_price', 'total_price'];
+
     protected function casts(): array
     {
         return [
             'price'    => 'decimal:2',
             'subtotal' => 'decimal:2',
         ];
+    }
+
+    public function getUnitPriceAttribute(): string
+    {
+        return $this->price;
+    }
+
+    public function getTotalPriceAttribute(): string
+    {
+        return $this->subtotal;
     }
 
     public function order()   { return $this->belongsTo(Order::class); }

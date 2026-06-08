@@ -156,13 +156,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Seller\DashboardController::class, 'index'])->name('dashboard');
 
         // Products
-        Route::get('/products',                    [\App\Http\Controllers\Seller\ProductController::class, 'index'])->name('products.index');
-        Route::get('/products/create',             [\App\Http\Controllers\Seller\ProductController::class, 'create'])->name('products.create');
-        Route::post('/products',                   [\App\Http\Controllers\Seller\ProductController::class, 'store'])->name('products.store');
-        Route::get('/products/{product}/edit',     [\App\Http\Controllers\Seller\ProductController::class, 'edit'])->name('products.edit');
-        Route::put('/products/{product}',          [\App\Http\Controllers\Seller\ProductController::class, 'update'])->name('products.update');
-        Route::delete('/products/{product}',       [\App\Http\Controllers\Seller\ProductController::class, 'destroy'])->name('products.destroy');
-        Route::post('/products/{product}/images',  [\App\Http\Controllers\Seller\ProductController::class, 'uploadImage'])->name('products.images.upload');
+        Route::get('/products',                      [\App\Http\Controllers\Seller\ProductController::class, 'index'])->name('products.index');
+        Route::get('/products/create',               [\App\Http\Controllers\Seller\ProductController::class, 'create'])->name('products.create');
+        Route::post('/products',                     [\App\Http\Controllers\Seller\ProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'show'])->name('products.show');
+        Route::get('/products/{product:id}/edit',    [\App\Http\Controllers\Seller\ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product:id}',      [\App\Http\Controllers\Seller\ProductController::class, 'destroy'])->name('products.destroy');
+        Route::post('/products/{product:id}/images', [\App\Http\Controllers\Seller\ProductController::class, 'uploadImage'])->name('products.images.upload');
         Route::delete('/images/{image}',           [\App\Http\Controllers\Seller\ProductController::class, 'deleteImage'])->name('products.images.destroy');
         Route::patch('/images/{image}/primary',    [\App\Http\Controllers\Seller\ProductController::class, 'setPrimaryImage'])->name('products.images.primary');
 
@@ -172,10 +173,19 @@ Route::middleware('auth')->group(function () {
         Route::patch('/orders/{order}/status', [\App\Http\Controllers\Seller\OrderController::class, 'updateStatus'])->name('orders.status');
 
 
+        // Notifications
+        Route::get('/notifications',                                 [\App\Http\Controllers\Seller\NotificationController::class, 'index'])->name('notifications.index');
+        Route::patch('/notifications/{notification}/read',           [\App\Http\Controllers\Seller\NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all',                       [\App\Http\Controllers\Seller\NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+
         // Profile
         Route::get('/profile',            [\App\Http\Controllers\Seller\ProfileController::class, 'edit'])->name('profile');
         Route::post('/profile',           [\App\Http\Controllers\Seller\ProfileController::class, 'update'])->name('profile.update');
         Route::patch('/profile/password', [\App\Http\Controllers\Seller\ProfileController::class, 'updatePassword'])->name('profile.password');
+
+        // Store Settings
+        Route::get('/store/settings',  [\App\Http\Controllers\Seller\StoreSettingsController::class, 'edit'])->name('store.settings');
+        Route::post('/store/settings', [\App\Http\Controllers\Seller\StoreSettingsController::class, 'update'])->name('store.settings.update');
 
         // Sponsored Products
         Route::get('/sponsored',         [\App\Http\Controllers\Seller\SponsoredProductController::class, 'index'])->name('sponsored.index');
@@ -186,6 +196,19 @@ Route::middleware('auth')->group(function () {
         // Subscriptions
         Route::get('/subscriptions',     [\App\Http\Controllers\Seller\SubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::post('/subscriptions/{plan}/subscribe', [\App\Http\Controllers\Seller\SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
+
+        // Reviews
+        Route::get('/reviews', [\App\Http\Controllers\Seller\ReviewController::class, 'index'])->name('reviews.index');
+
+        // Documents
+        Route::get('/documents',                    [\App\Http\Controllers\Seller\DocumentController::class, 'index'])->name('documents.index');
+        Route::post('/documents',                   [\App\Http\Controllers\Seller\DocumentController::class, 'store'])->name('documents.store');
+        Route::delete('/documents/{document}',      [\App\Http\Controllers\Seller\DocumentController::class, 'destroy'])->name('documents.destroy');
+
+        // Commissions & Payouts
+        Route::get('/commissions', [\App\Http\Controllers\Seller\CommissionController::class, 'index'])->name('commissions.index');
+        Route::get('/payouts',     [\App\Http\Controllers\Seller\PayoutController::class, 'index'])->name('payouts.index');
+        Route::post('/payouts',    [\App\Http\Controllers\Seller\PayoutController::class, 'store'])->name('payouts.store');
 
         // Reports
         Route::get('/reports',           [\App\Http\Controllers\Seller\ReportController::class, 'index'])->name('reports.index');

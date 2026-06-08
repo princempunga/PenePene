@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\Message;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Notification;
 use App\Models\Review;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -17,56 +17,83 @@ class DashboardController extends Controller
     {
         $user   = $request->user();
         $seller = $user->seller;
+        $sellerId = $seller->id;
 
-        // Statistics
-        $totalProducts = Product::where('seller_id', $seller->id)->count();
-        $totalOrders   = Order::where('seller_id', $seller->id)->count();
-        $totalRevenue  = Order::where('seller_id', $seller->id)
-                              ->whereIn('payment_status', ['paid', 'completed'])
-                              ->sum('total_amount');
-        
-        $pendingOrders = Order::where('seller_id', $seller->id)
-                              ->where('status', 'pending')
-                              ->count();
+        $totalProducts = Product::where('seller_id', $sellerId)->count();
+        $totalOrders   = Order::where('seller_id', $sellerId)->count();
+        $totalRevenue  = Order::where('seller_id', $sellerId)
+            ->where('status', 'delivered')
+            ->sum('total');
 
-        // Recent Orders
-        $recentOrders = Order::with('buyer.user')
-            ->where('seller_id', $seller->id)
+        $pendingOrders = Order::where('seller_id', $sellerId)
+            ->where('status', 'pending')
+            ->count();
+
+        $lowStockProducts = Product::where('seller_id', $sellerId)
+            ->whereRaw('(initial_stock - confirmed_sales) > 0')
+            ->whereRaw('(initial_stock - confirmed_sales) <= low_stock_threshold')
+            ->count();
+
+        $pendingProducts = Product::where('seller_id', $sellerId)
+            ->where('status', 'pending')
+            ->count();
+
+        $ordersThisWeek = Order::where('seller_id', $sellerId)
+            ->where('created_at', '>=', Carbon::now()->startOfWeek())
+            ->count();
+
+        $revenueThisWeek = Order::where('seller_id', $sellerId)
+            ->where('status', 'delivered')
+            ->where('created_at', '>=', Carbon::now()->startOfWeek())
+            ->sum('total');
+
+        $unreadMessages = Message::whereHas('conversation', fn ($q) => $q->where('seller_id', $sellerId))
+            ->where('sender_id', '!=', $user->id)
+            ->whereNull('read_at')
+            ->count();
+
+        $recentOrders = Order::with(['buyer.user', 'items'])
+            ->where('seller_id', $sellerId)
             ->latest()
             ->take(5)
             ->get();
 
-        // Recent Reviews
         $recentReviews = Review::with('buyer.user')
-            ->where('seller_id', $seller->id)
-            ->where('reviewable_type', 'seller')
+            ->where('seller_id', $sellerId)
+            ->where('is_approved', true)
             ->latest()
             ->take(3)
             ->get();
 
-        // Weekly Revenue Chart Data (Last 7 days)
         $revenueData = [];
         for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i)->format('Y-m-d');
-            $sum = Order::where('seller_id', $seller->id)
-                ->whereIn('payment_status', ['paid', 'completed'])
-                ->whereDate('created_at', $date)
-                ->sum('total_amount');
-            
+            $date = Carbon::now()->subDays($i);
+            $sum  = Order::where('seller_id', $sellerId)
+                ->where('status', 'delivered')
+                ->whereDate('created_at', $date->format('Y-m-d'))
+                ->sum('total');
+
             $revenueData[] = [
-                'date' => Carbon::parse($date)->format('M d'),
-                'amount' => $sum
+                'date'   => $date->format('M d'),
+                'amount' => (float) $sum,
             ];
         }
 
         return Inertia::render('Seller/Dashboard', [
-            'seller' => $seller,
-            'stats'  => [
-                'totalProducts' => $totalProducts,
-                'totalOrders'   => $totalOrders,
-                'totalRevenue'  => $totalRevenue,
-                'pendingOrders' => $pendingOrders,
-                'averageRating' => $seller->average_rating,
+            'seller' => $seller->only([
+                'id', 'business_name', 'status', 'average_rating', 'total_reviews', 'slug',
+            ]),
+            'stats' => [
+                'totalProducts'    => $totalProducts,
+                'totalOrders'      => $totalOrders,
+                'totalRevenue'     => (float) $totalRevenue,
+                'pendingOrders'    => $pendingOrders,
+                'lowStockProducts' => $lowStockProducts,
+                'pendingProducts'  => $pendingProducts,
+                'averageRating'    => (float) ($seller->average_rating ?? 0),
+                'ordersThisWeek'   => $ordersThisWeek,
+                'revenueThisWeek'  => (float) $revenueThisWeek,
+                'unreadMessages'   => $unreadMessages,
             ],
             'recentOrders'  => $recentOrders,
             'recentReviews' => $recentReviews,

@@ -63,25 +63,22 @@ class OrderController extends Controller
         $subtotal  = $unitPrice * $request->quantity;
 
         $order = Order::create([
-            'buyer_id'          => $buyer->id,
-            'seller_id'         => $product->seller_id,
-            'order_number'      => 'ORD-' . strtoupper(uniqid()),
-            'subtotal'          => $subtotal,
-            'shipping_cost'     => 0,
-            'total_amount'      => $subtotal,
-            'status'            => 'pending',
-            'payment_status'    => 'pending',
-            'shipping_address'  => $request->shipping_address,
-            'notes'             => $request->notes,
+            'buyer_id'         => $buyer->id,
+            'seller_id'        => $product->seller_id,
+            'subtotal'         => $subtotal,
+            'total'            => $subtotal,
+            'status'           => 'pending',
+            'delivery_address' => $request->shipping_address,
+            'buyer_notes'      => $request->notes,
         ]);
 
         OrderItem::create([
-            'order_id'    => $order->id,
-            'product_id'  => $product->id,
-            'seller_id'   => $product->seller_id,
-            'quantity'    => $request->quantity,
-            'unit_price'  => $unitPrice,
-            'total_price' => $subtotal,
+            'order_id'     => $order->id,
+            'product_id'   => $product->id,
+            'product_name' => $product->name,
+            'price'        => $unitPrice,
+            'quantity'     => $request->quantity,
+            'subtotal'     => $subtotal,
         ]);
 
         return redirect()->route('buyer.orders.show', $order)
