@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
+import { formatCurrency } from '@/lib/formatCurrency';
 import {
     FileDown, FileText, Package, AlertCircle, DollarSign,
     ShoppingCart, TrendingUp, Calendar, Download,
@@ -12,6 +13,14 @@ const statusColors = {
     shipped:   'bg-purple-100 text-purple-800',
     delivered: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
+};
+
+const statusLabels = {
+    pending:   'En attente',
+    confirmed: 'Confirmée',
+    shipped:   'Expédiée',
+    delivered: 'Livrée',
+    cancelled: 'Annulée',
 };
 
 function StatCard({ icon: Icon, label, value, sub, color }) {
@@ -84,21 +93,20 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
     };
 
     const maxRevenue = Math.max(...revenueTrend.map(d => d.amount), 1);
-    const formatCurrency = (n) => `TZS ${parseFloat(n || 0).toLocaleString()}`;
 
     return (
         <SellerLayout>
-            <Head title="Reports & Analytics" />
+            <Head title="Rapports et analyses" />
 
             <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
-                    <p className="text-gray-500 mt-1">Sales insights, trends, and downloadable reports for your store.</p>
+                    <h1 className="text-2xl font-bold text-gray-900">Rapports et analyses</h1>
+                    <p className="text-gray-500 mt-1">Aperçu des ventes, tendances et rapports téléchargeables pour votre boutique.</p>
                 </div>
 
                 <form onSubmit={applyFilter} className="flex flex-wrap items-end gap-2">
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Du</label>
                         <input
                             type="date"
                             value={filterForm.data.from}
@@ -107,7 +115,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Au</label>
                         <input
                             type="date"
                             value={filterForm.data.to}
@@ -120,7 +128,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                         className="flex items-center gap-1.5 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition"
                     >
                         <Calendar size={16} />
-                        Apply
+                        Appliquer
                     </button>
                 </form>
             </div>
@@ -129,41 +137,41 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
                 <StatCard
                     icon={DollarSign}
-                    label="Revenue"
+                    label="Revenus"
                     value={formatCurrency(stats.total_revenue)}
                     color="bg-green-100 text-green-600"
                 />
                 <StatCard
                     icon={ShoppingCart}
-                    label="Orders"
+                    label="Commandes"
                     value={stats.total_orders}
-                    sub={`${stats.delivered} delivered`}
+                    sub={`${stats.delivered} livrée${stats.delivered !== 1 ? 's' : ''}`}
                     color="bg-blue-100 text-blue-600"
                 />
                 <StatCard
                     icon={TrendingUp}
-                    label="Avg. Order"
+                    label="Panier moyen"
                     value={formatCurrency(stats.avg_order_value)}
                     color="bg-indigo-100 text-indigo-600"
                 />
                 <StatCard
                     icon={Package}
-                    label="Products"
+                    label="Produits"
                     value={stats.total_products}
                     color="bg-purple-100 text-purple-600"
                 />
                 <StatCard
                     icon={FileText}
-                    label="Pending"
+                    label="En attente"
                     value={stats.pending}
-                    sub="orders in period"
+                    sub="commandes sur la période"
                     color="bg-amber-100 text-amber-600"
                 />
                 <StatCard
                     icon={FileDown}
-                    label="Delivered"
+                    label="Livrées"
                     value={stats.delivered}
-                    sub="completed orders"
+                    sub="commandes terminées"
                     color="bg-emerald-100 text-emerald-600"
                 />
             </div>
@@ -171,7 +179,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
                 {/* Revenue Trend Chart */}
                 <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                    <h2 className="font-bold text-gray-900 mb-1">Revenue Trend</h2>
+                    <h2 className="font-bold text-gray-900 mb-1">Tendance des revenus</h2>
                     <p className="text-sm text-gray-500 mb-6">
                         {filters.from} — {filters.to}
                     </p>
@@ -199,7 +207,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                         </div>
                     ) : (
                         <div className="h-56 flex items-center justify-center text-gray-400 text-sm">
-                            No revenue data for this period.
+                            Aucune donnée de revenus pour cette période.
                         </div>
                     )}
                 </div>
@@ -207,8 +215,8 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                 {/* Top Products */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-gray-100">
-                        <h2 className="font-bold text-gray-900">Top Products</h2>
-                        <p className="text-sm text-gray-500 mt-0.5">By revenue in selected period</p>
+                        <h2 className="font-bold text-gray-900">Meilleurs produits</h2>
+                        <p className="text-sm text-gray-500 mt-0.5">Par revenus sur la période sélectionnée</p>
                     </div>
                     {topProducts.length > 0 ? (
                         <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
@@ -216,7 +224,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                 <div key={i} className="px-5 py-3 flex items-center justify-between gap-3">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                                        <p className="text-xs text-gray-500">{product.units_sold} sold</p>
+                                        <p className="text-xs text-gray-500">{product.units_sold} vendu{product.units_sold !== 1 ? 's' : ''}</p>
                                     </div>
                                     <p className="text-sm font-bold text-gray-900 shrink-0">
                                         {formatCurrency(product.revenue)}
@@ -225,7 +233,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                             ))}
                         </div>
                     ) : (
-                        <div className="p-8 text-center text-gray-400 text-sm">No product sales in this period.</div>
+                        <div className="p-8 text-center text-gray-400 text-sm">Aucune vente de produit sur cette période.</div>
                     )}
                 </div>
             </div>
@@ -233,19 +241,19 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
             {/* Recent Orders Table */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
                 <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-                    <h2 className="font-bold text-gray-900">Orders in Period</h2>
-                    <span className="text-sm text-gray-500">{recentOrders.length} shown</span>
+                    <h2 className="font-bold text-gray-900">Commandes sur la période</h2>
+                    <span className="text-sm text-gray-500">{recentOrders.length} affichée{recentOrders.length !== 1 ? 's' : ''}</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <th className="px-5 py-3">Order #</th>
+                                <th className="px-5 py-3">N° commande</th>
                                 <th className="px-5 py-3">Date</th>
-                                <th className="px-5 py-3">Buyer</th>
-                                <th className="px-5 py-3">Items</th>
+                                <th className="px-5 py-3">Acheteur</th>
+                                <th className="px-5 py-3">Articles</th>
                                 <th className="px-5 py-3">Total</th>
-                                <th className="px-5 py-3">Status</th>
+                                <th className="px-5 py-3">Statut</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -253,23 +261,23 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                 <tr key={order.id} className="hover:bg-gray-50">
                                     <td className="px-5 py-3 font-semibold text-gray-900">{order.order_number}</td>
                                     <td className="px-5 py-3 text-gray-600">
-                                        {new Date(order.created_at).toLocaleDateString()}
+                                        {new Date(order.created_at).toLocaleDateString('fr-FR')}
                                     </td>
-                                    <td className="px-5 py-3 text-gray-600">{order.buyer?.user?.name ?? 'N/A'}</td>
+                                    <td className="px-5 py-3 text-gray-600">{order.buyer?.user?.name ?? 'N/D'}</td>
                                     <td className="px-5 py-3 text-gray-600">{order.items?.length ?? 0}</td>
                                     <td className="px-5 py-3 font-medium text-gray-900">
                                         {formatCurrency(order.total_amount)}
                                     </td>
                                     <td className="px-5 py-3">
                                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${statusColors[order.status] || 'bg-gray-100 text-gray-700'}`}>
-                                            {order.status}
+                                            {statusLabels[order.status] ?? order.status}
                                         </span>
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-12 text-center text-gray-400">
-                                        No orders found for the selected date range.
+                                        Aucune commande trouvée pour la période sélectionnée.
                                     </td>
                                 </tr>
                             )}
@@ -285,20 +293,20 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                         <Download size={20} />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900">Export Report</h2>
-                        <p className="text-sm text-gray-500">Download PDF, Excel, or CSV using the date range above</p>
+                        <h2 className="text-lg font-bold text-gray-900">Exporter le rapport</h2>
+                        <p className="text-sm text-gray-500">Téléchargez en PDF, Excel ou CSV selon la période ci-dessus</p>
                     </div>
                 </div>
                 <div className="p-6">
                     <form onSubmit={downloadReport} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Type de rapport</label>
                                 <div className="space-y-2">
                                     {[
-                                        { value: 'sales', label: 'Sales & Revenue' },
-                                        { value: 'products', label: 'Product Inventory' },
-                                        { value: 'stock', label: 'Low Stock Alerts', alert: true },
+                                        { value: 'sales', label: 'Ventes et revenus' },
+                                        { value: 'products', label: 'Inventaire des produits' },
+                                        { value: 'stock', label: 'Alertes stock faible', alert: true },
                                     ].map(opt => (
                                         <label
                                             key={opt.value}
@@ -326,7 +334,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Format d&apos;export</label>
                                 <div className="flex gap-3">
                                     {[
                                         { value: 'pdf', label: 'PDF', active: 'border-red-500 bg-red-50 text-red-700' },
@@ -354,7 +362,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                     ))}
                                 </div>
                                 <p className="text-xs text-gray-400 mt-3">
-                                    Period: {filterForm.data.from} to {filterForm.data.to}
+                                    Période : du {filterForm.data.from} au {filterForm.data.to}
                                 </p>
                             </div>
                         </div>
@@ -365,7 +373,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                 className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-primary-700 transition shadow-md shadow-primary-600/20"
                             >
                                 <FileDown size={18} />
-                                Download Report
+                                Télécharger le rapport
                             </button>
                         </div>
                     </form>

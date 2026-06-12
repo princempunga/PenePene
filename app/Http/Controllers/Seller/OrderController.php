@@ -10,6 +10,16 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    private const STATUS_LABELS_FR = [
+        'pending'    => 'en attente',
+        'confirmed'  => 'confirmée',
+        'processing' => 'en traitement',
+        'shipped'    => 'expédiée',
+        'delivered'  => 'livrée',
+        'cancelled'  => 'annulée',
+        'rejected'   => 'refusée',
+    ];
+
     private const ALLOWED_TRANSITIONS = [
         'pending'   => ['confirmed', 'cancelled'],
         'confirmed' => ['shipped', 'cancelled'],
@@ -80,8 +90,11 @@ class OrderController extends Controller
         $allowed   = self::ALLOWED_TRANSITIONS[$order->status] ?? [];
 
         if (! in_array($newStatus, $allowed, true)) {
+            $from = self::STATUS_LABELS_FR[$order->status] ?? $order->status;
+            $to   = self::STATUS_LABELS_FR[$newStatus] ?? $newStatus;
+
             return back()->withErrors([
-                'status' => "Cannot change order status from {$order->status} to {$newStatus}.",
+                'status' => "Impossible de passer la commande de « {$from} » à « {$to} ».",
             ]);
         }
 
@@ -103,6 +116,6 @@ class OrderController extends Controller
             $order->buyer->user->notify(new OrderStatusUpdated($order));
         }
 
-        return back()->with('success', 'Order status updated successfully.');
+        return back()->with('success', 'Le statut de la commande a été mis à jour avec succès.');
     }
 }

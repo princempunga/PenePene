@@ -61,15 +61,15 @@ export default function Profile({ user }) {
 
     return (
         <>
-            <Head title="My Profile" />
-            <SellerLayout title="Account Profile">
+            <Head title="Mon profil" />
+            <SellerLayout title="Profil du compte">
                 <FlashAlert flash={flash} />
 
                 <div className="mb-6 flex items-center gap-3 text-sm text-gray-500">
                     <User size={16} />
-                    <span>Manage your personal account details and security.</span>
+                    <span>Gérez vos informations personnelles et la sécurité de votre compte.</span>
                     <Link href="/seller/store/settings" className="ml-auto text-primary-600 hover:underline font-medium">
-                        Store settings →
+                        Paramètres de la boutique →
                     </Link>
                 </div>
 
@@ -77,8 +77,8 @@ export default function Profile({ user }) {
                     {/* Personal Information */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100">
-                            <h2 className="font-bold text-gray-900">Personal Information</h2>
-                            <p className="text-sm text-gray-500 mt-1">Update your name, contact number, and profile photo.</p>
+                            <h2 className="font-bold text-gray-900">Informations personnelles</h2>
+                            <p className="text-sm text-gray-500 mt-1">Mettez à jour votre nom, numéro de téléphone et photo de profil.</p>
                         </div>
                         <form onSubmit={updateProfile} className="p-6 space-y-5">
                             {/* Avatar */}
@@ -88,7 +88,7 @@ export default function Profile({ user }) {
                                     className="relative w-20 h-20 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-2xl cursor-pointer overflow-hidden border-2 border-dashed border-amber-200 hover:border-primary-500 transition-colors shrink-0"
                                 >
                                     {avatarPreview ? (
-                                        <img src={avatarPreview} alt="Avatar preview" className="w-full h-full object-cover" />
+                                        <img src={avatarPreview} alt="Aperçu de l'avatar" className="w-full h-full object-cover" />
                                     ) : user.avatar ? (
                                         <img src={`/storage/${user.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
@@ -102,9 +102,9 @@ export default function Profile({ user }) {
                                         className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1.5"
                                     >
                                         <Upload size={14} />
-                                        {profileForm.data.avatar ? profileForm.data.avatar.name : 'Upload photo'}
+                                        {profileForm.data.avatar ? profileForm.data.avatar.name : 'Téléverser une photo'}
                                     </button>
-                                    <p className="text-xs text-gray-500 mt-1">JPG, PNG up to 2MB</p>
+                                    <p className="text-xs text-gray-500 mt-1">JPG, PNG jusqu&apos;à 2 Mo</p>
                                     <input
                                         type="file"
                                         ref={avatarRef}
@@ -117,7 +117,7 @@ export default function Profile({ user }) {
                             <FieldError message={profileForm.errors.avatar} />
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
                                 <input
                                     type="text"
                                     value={profileForm.data.name}
@@ -128,23 +128,23 @@ export default function Profile({ user }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Adresse e-mail</label>
                                 <input
                                     type="email"
                                     value={user.email}
                                     disabled
                                     className="w-full border border-gray-200 bg-gray-50 text-gray-500 rounded-lg px-4 py-2 text-sm cursor-not-allowed"
                                 />
-                                <p className="text-xs text-gray-400 mt-1">Contact support to change your email.</p>
+                                <p className="text-xs text-gray-400 mt-1">Contactez le support pour modifier votre e-mail.</p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Numéro de téléphone</label>
                                 <input
                                     type="tel"
                                     value={profileForm.data.phone}
                                     onChange={e => profileForm.setData('phone', e.target.value)}
-                                    placeholder="+255..."
+                                    placeholder="+243..."
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                 />
                                 <FieldError message={profileForm.errors.phone} />
@@ -156,7 +156,7 @@ export default function Profile({ user }) {
                                     disabled={profileForm.processing}
                                     className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors disabled:opacity-60"
                                 >
-                                    {profileForm.processing ? 'Saving...' : 'Save Changes'}
+                                    {profileForm.processing ? 'Enregistrement...' : 'Enregistrer les modifications'}
                                 </button>
                             </div>
                         </form>
@@ -168,13 +168,13 @@ export default function Profile({ user }) {
                             <div className="p-6 border-b border-gray-100">
                                 <h2 className="font-bold text-gray-900 flex items-center gap-2">
                                     <Shield size={18} className="text-gray-600" />
-                                    Change Password
+                                    Changer le mot de passe
                                 </h2>
-                                <p className="text-sm text-gray-500 mt-1">Keep your account secure with a strong password.</p>
+                                <p className="text-sm text-gray-500 mt-1">Protégez votre compte avec un mot de passe fort.</p>
                             </div>
                             <form onSubmit={updatePassword} className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</label>
                                     <input
                                         type="password"
                                         value={passwordForm.data.current_password}
@@ -185,7 +185,7 @@ export default function Profile({ user }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
                                     <input
                                         type="password"
                                         value={passwordForm.data.password}
@@ -196,7 +196,7 @@ export default function Profile({ user }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirmer le nouveau mot de passe</label>
                                     <input
                                         type="password"
                                         value={passwordForm.data.password_confirmation}
@@ -211,7 +211,7 @@ export default function Profile({ user }) {
                                         disabled={passwordForm.processing}
                                         className="bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors disabled:opacity-60"
                                     >
-                                        {passwordForm.processing ? 'Updating...' : 'Update Password'}
+                                        {passwordForm.processing ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
                                     </button>
                                 </div>
                             </form>
@@ -221,16 +221,16 @@ export default function Profile({ user }) {
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                             <h2 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                 <CreditCard size={18} className="text-primary-600" />
-                                Subscription & Billing
+                                Abonnement et facturation
                             </h2>
                             <p className="text-sm text-gray-500 mb-4">
-                                View your current plan, compare options, and manage billing history.
+                                Consultez votre plan actuel, comparez les options et gérez l&apos;historique de facturation.
                             </p>
                             <Link
                                 href="/seller/subscriptions"
                                 className="inline-flex items-center gap-2 text-sm font-medium bg-primary-50 text-primary-700 px-4 py-2 rounded-lg hover:bg-primary-100 transition-colors"
                             >
-                                Manage subscription
+                                Gérer l&apos;abonnement
                             </Link>
                         </div>
                     </div>

@@ -18,71 +18,71 @@ export default function SellerSupportCreate() {
 
     return (
         <SellerLayout>
-            <Head title="Create Support Ticket" />
+            <Head title="Créer un ticket d'assistance" />
 
             <div className="max-w-3xl mx-auto">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center">
                         <Ticket size={20} />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Contact Seller Support</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Contacter l&apos;assistance vendeur</h1>
                 </div>
 
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                     <form onSubmit={submit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Objet</label>
                             <input
                                 type="text"
                                 value={data.subject}
                                 onChange={e => setData('subject', e.target.value)}
                                 className="w-full border-gray-300 rounded-lg shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                placeholder="Brief description of the issue"
+                                placeholder="Brève description du problème"
                             />
                             {errors.subject && <p className="text-red-600 text-sm mt-1">{errors.subject}</p>}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
                                 <select
                                     value={data.category}
                                     onChange={e => setData('category', e.target.value)}
                                     className="w-full border-gray-300 rounded-lg shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 >
-                                    <option value="account">Account Issue</option>
-                                    <option value="order">Order Issue</option>
-                                    <option value="payment">Payment/Payout</option>
-                                    <option value="product">Product Issue</option>
-                                    <option value="technical">Technical Bug</option>
-                                    <option value="other">Other</option>
+                                    <option value="account">Problème de compte</option>
+                                    <option value="order">Problème de commande</option>
+                                    <option value="payment">Paiement / Retrait</option>
+                                    <option value="product">Problème de produit</option>
+                                    <option value="technical">Bug technique</option>
+                                    <option value="other">Autre</option>
                                 </select>
                                 {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Priorité</label>
                                 <select
                                     value={data.priority}
                                     onChange={e => setData('priority', e.target.value)}
                                     className="w-full border-gray-300 rounded-lg shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 >
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
+                                    <option value="low">Faible</option>
+                                    <option value="medium">Moyenne</option>
+                                    <option value="high">Élevée</option>
+                                    <option value="urgent">Urgente</option>
                                 </select>
                                 {errors.priority && <p className="text-red-600 text-sm mt-1">{errors.priority}</p>}
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Describe the Issue</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Décrivez le problème</label>
                             <textarea
                                 value={data.body}
                                 onChange={e => setData('body', e.target.value)}
                                 rows="6"
                                 className="w-full border-gray-300 rounded-lg shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                placeholder="Please provide as much detail as possible..."
+                                placeholder="Veuillez fournir autant de détails que possible…"
                             ></textarea>
                             {errors.body && <p className="text-red-600 text-sm mt-1">{errors.body}</p>}
                         </div>
@@ -93,7 +93,7 @@ export default function SellerSupportCreate() {
                                 disabled={processing}
                                 className="bg-primary-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 transition disabled:opacity-50"
                             >
-                                Submit Ticket
+                                {processing ? 'Envoi en cours…' : 'Soumettre le ticket'}
                             </button>
                         </div>
                     </form>

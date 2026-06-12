@@ -13,6 +13,21 @@ class SellerSalesExport implements FromCollection, WithHeadings, WithStyles
     protected Collection $data;
     protected string $type;
 
+    private const ORDER_STATUS_LABELS = [
+        'pending'   => 'En attente',
+        'confirmed' => 'Confirmée',
+        'shipped'   => 'Expédiée',
+        'delivered' => 'Livrée',
+        'cancelled' => 'Annulée',
+    ];
+
+    private const PRODUCT_STATUS_LABELS = [
+        'pending'  => 'En attente',
+        'active'   => 'Actif',
+        'inactive' => 'Inactif',
+        'rejected' => 'Rejeté',
+    ];
+
     public function __construct(Collection $data, string $type)
     {
         $this->data = $data;
@@ -22,25 +37,25 @@ class SellerSalesExport implements FromCollection, WithHeadings, WithStyles
     public function collection(): Collection
     {
         if ($this->type === 'sales') {
-            return $this->data->map(fn($order) => [
+            return $this->data->map(fn ($order) => [
                 $order->order_number,
                 $order->created_at->format('Y-m-d'),
-                optional(optional($order->buyer)->user)->name ?? 'N/A',
+                optional(optional($order->buyer)->user)->name ?? 'N/D',
                 $order->items->count(),
-                number_format($order->subtotal, 2),
-                number_format($order->shipping_cost, 2),
-                number_format($order->total_amount, 2),
-                ucfirst($order->status),
+                number_format($order->subtotal, 0, ',', ' '),
+                number_format($order->shipping_cost, 0, ',', ' '),
+                number_format($order->total_amount, 0, ',', ' '),
+                self::ORDER_STATUS_LABELS[$order->status] ?? $order->status,
             ]);
         }
 
         if ($this->type === 'products') {
-            return $this->data->map(fn($p) => [
+            return $this->data->map(fn ($p) => [
                 $p->name,
-                optional($p->category)->name ?? 'N/A',
-                number_format($p->price, 2),
+                optional($p->category)->name ?? 'N/D',
+                number_format($p->price, 0, ',', ' '),
                 $p->available_stock,
-                ucfirst($p->status),
+                self::PRODUCT_STATUS_LABELS[$p->status] ?? $p->status,
                 $p->view_count,
             ]);
         }
@@ -51,11 +66,11 @@ class SellerSalesExport implements FromCollection, WithHeadings, WithStyles
     public function headings(): array
     {
         if ($this->type === 'sales') {
-            return ['Order #', 'Date', 'Buyer', 'Items', 'Subtotal (TZS)', 'Shipping (TZS)', 'Total (TZS)', 'Status'];
+            return ['N° commande', 'Date', 'Acheteur', 'Articles', 'Sous-total (FC)', 'Livraison (FC)', 'Total (FC)', 'Statut'];
         }
 
         if ($this->type === 'products') {
-            return ['Product', 'Category', 'Price (TZS)', 'Available Stock', 'Status', 'Views'];
+            return ['Produit', 'Catégorie', 'Prix (FC)', 'Stock disponible', 'Statut', 'Vues'];
         }
 
         return [];

@@ -10,6 +10,13 @@ const statusColors = {
     rejected: 'bg-red-100 text-red-800',
 };
 
+const statusLabels = {
+    pending:  'En attente',
+    active:   'Actif',
+    inactive: 'Inactif',
+    rejected: 'Rejeté',
+};
+
 export default function ProductEdit({ product, categories }) {
     const { flash } = usePage().props;
     const fileInputRef = useRef(null);
@@ -49,7 +56,7 @@ export default function ProductEdit({ product, categories }) {
     };
 
     const handleDeleteImage = (imageId) => {
-        if (confirm('Delete this image?')) {
+        if (confirm('Supprimer cette image ?')) {
             router.delete(`/seller/images/${imageId}`, { preserveScroll: true });
         }
     };
@@ -60,13 +67,13 @@ export default function ProductEdit({ product, categories }) {
 
     return (
         <>
-            <Head title={`Edit ${product.name}`} />
-            <SellerLayout title="Edit Product">
+            <Head title={`Modifier ${product.name}`} />
+            <SellerLayout title="Modifier le produit">
                 <div className="mb-6 flex flex-wrap justify-between items-center gap-3">
-                    <Link href={`/seller/products/${product.id}`} className="text-sm text-gray-500 hover:text-primary-600">← Back to Product</Link>
+                    <Link href={`/seller/products/${product.id}`} className="text-sm text-gray-500 hover:text-primary-600">← Retour au produit</Link>
                     {product.status === 'active' && (
                         <a href={`/products/${product.slug}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-primary-600 hover:underline">
-                            View Public Page ↗
+                            Voir la page publique ↗
                         </a>
                     )}
                 </div>
@@ -80,10 +87,10 @@ export default function ProductEdit({ product, categories }) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         <form id="edit-form" onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Basic Information</h2>
+                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Informations de base</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit</label>
                                 <input
                                     type="text"
                                     value={data.name}
@@ -113,7 +120,7 @@ export default function ProductEdit({ product, categories }) {
                                     onClick={() => fileInputRef.current?.click()}
                                     className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1.5 px-3 rounded-lg flex items-center gap-1.5 font-medium transition-colors"
                                 >
-                                    <Upload size={14} /> Add Image
+                                    <Upload size={14} /> Ajouter une image
                                 </button>
                                 <input
                                     type="file"
@@ -132,7 +139,7 @@ export default function ProductEdit({ product, categories }) {
 
                                             {img.is_primary && (
                                                 <div className="absolute top-2 left-2 bg-primary-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                                                    Primary
+                                                    Principale
                                                 </div>
                                             )}
 
@@ -142,7 +149,7 @@ export default function ProductEdit({ product, categories }) {
                                                         type="button"
                                                         onClick={() => handleSetPrimary(img.id)}
                                                         className="w-8 h-8 rounded-full bg-white text-gray-800 flex items-center justify-center hover:bg-gray-200"
-                                                        title="Set as Primary"
+                                                        title="Définir comme principale"
                                                     >
                                                         <Star size={14} />
                                                     </button>
@@ -151,7 +158,7 @@ export default function ProductEdit({ product, categories }) {
                                                     type="button"
                                                     onClick={() => handleDeleteImage(img.id)}
                                                     className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
-                                                    title="Delete Image"
+                                                    title="Supprimer l'image"
                                                 >
                                                     <X size={14} />
                                                 </button>
@@ -160,17 +167,17 @@ export default function ProductEdit({ product, categories }) {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-500 text-sm text-center py-4">No images uploaded.</p>
+                                <p className="text-gray-500 text-sm text-center py-4">Aucune image téléchargée.</p>
                             )}
                         </div>
                     </div>
 
                     <div className="space-y-6">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Organization</h2>
+                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Organisation</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Listing Status</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Statut de l'annonce</label>
                                 {canEditStatus ? (
                                     <select
                                         value={data.status}
@@ -178,17 +185,17 @@ export default function ProductEdit({ product, categories }) {
                                         form="edit-form"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none bg-white font-medium"
                                     >
-                                        <option value="active">Active (Visible)</option>
-                                        <option value="inactive">Inactive (Hidden)</option>
+                                        <option value="active">Actif (visible)</option>
+                                        <option value="inactive">Inactif (masqué)</option>
                                     </select>
                                 ) : (
                                     <div>
-                                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold capitalize ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
-                                            {product.status}
+                                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
+                                            {statusLabels[product.status] || product.status}
                                         </span>
                                         <p className="text-xs text-gray-500 mt-2">
-                                            {product.status === 'pending' && 'Your product is awaiting admin approval.'}
-                                            {product.status === 'rejected' && 'This product was rejected. Contact support for details.'}
+                                            {product.status === 'pending' && 'Votre produit est en attente d\'approbation par l\'administrateur.'}
+                                            {product.status === 'rejected' && 'Ce produit a été rejeté. Contactez le support pour plus de détails.'}
                                         </p>
                                     </div>
                                 )}
@@ -196,7 +203,7 @@ export default function ProductEdit({ product, categories }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
                                 <select
                                     value={data.category_id}
                                     onChange={(e) => {
@@ -209,7 +216,7 @@ export default function ProductEdit({ product, categories }) {
                                     form="edit-form"
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
                                 >
-                                    <option value="">Select Category</option>
+                                    <option value="">Choisir une catégorie</option>
                                     {categories.map((cat) => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
@@ -219,14 +226,14 @@ export default function ProductEdit({ product, categories }) {
 
                             {subcategories.length > 0 && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sous-catégorie</label>
                                     <select
                                         value={data.subcategory_id}
                                         onChange={(e) => setData('subcategory_id', e.target.value)}
                                         form="edit-form"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
                                     >
-                                        <option value="">Select Subcategory (Optional)</option>
+                                        <option value="">Choisir une sous-catégorie (facultatif)</option>
                                         {subcategories.map((sub) => (
                                             <option key={sub.id} value={sub.id}>{sub.name}</option>
                                         ))}
@@ -237,10 +244,10 @@ export default function ProductEdit({ product, categories }) {
                         </div>
 
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Pricing & Stock</h2>
+                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Prix et stock</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (TZS)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Prix (CDF)</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -254,7 +261,7 @@ export default function ProductEdit({ product, categories }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Sale Price (Optional)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Prix promotionnel (facultatif)</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -268,7 +275,7 @@ export default function ProductEdit({ product, categories }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Total Initial Stock</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Stock initial total</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -278,7 +285,7 @@ export default function ProductEdit({ product, categories }) {
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Available: {Math.max(0, data.initial_stock - product.confirmed_sales)}
+                                    Disponible : {Math.max(0, data.initial_stock - product.confirmed_sales)}
                                 </p>
                                 {errors.initial_stock && <p className="mt-1 text-xs text-red-600">{errors.initial_stock}</p>}
                             </div>
@@ -290,7 +297,7 @@ export default function ProductEdit({ product, categories }) {
                             disabled={processing}
                             className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition-colors"
                         >
-                            {processing ? 'Saving Changes...' : 'Save Changes'}
+                            {processing ? 'Enregistrement...' : 'Enregistrer les modifications'}
                         </button>
                     </div>
                 </div>

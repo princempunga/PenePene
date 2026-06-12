@@ -3,6 +3,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import Pagination from '@/Components/UI/Pagination';
 import { Wallet, Clock, CheckCircle2, Banknote, AlertCircle } from 'lucide-react';
+import { formatCurrencyDecimal } from '@/lib/formatCurrency';
 
 const statusColors = {
     pending:    'bg-amber-100 text-amber-800',
@@ -12,19 +13,24 @@ const statusColors = {
     cancelled:  'bg-gray-100 text-gray-800',
 };
 
-const paymentMethodLabels = {
-    mobile_money:  'Mobile Money',
-    bank_transfer: 'Bank Transfer',
+const statusLabels = {
+    pending:    'En attente',
+    processing: 'En cours',
+    completed:  'Payé',
+    failed:     'Échoué',
+    cancelled:  'Annulé',
 };
 
-function formatMoney(amount, currency = 'TZS') {
-    const value = parseFloat(amount || 0);
-    return `${currency} ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
+const paymentMethodLabels = {
+    mobile_money:  'Mobile Money',
+    bank_transfer: 'Virement bancaire',
+};
+
+const MIN_WITHDRAWAL = 1000;
 
 function formatDate(date) {
     if (!date) return '—';
-    return new Date(date).toLocaleDateString(undefined, {
+    return new Date(date).toLocaleDateString('fr-FR', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -42,7 +48,7 @@ export default function PayoutsIndex({ payouts, summary }) {
         notes: '',
     });
 
-    const canRequest = summary.available_balance >= 1000 && !summary.has_pending_request;
+    const canRequest = summary.available_balance >= MIN_WITHDRAWAL && !summary.has_pending_request;
 
     const submit = (e) => {
         e.preventDefault();
@@ -58,12 +64,12 @@ export default function PayoutsIndex({ payouts, summary }) {
 
     return (
         <>
-            <Head title="Payouts" />
+            <Head title="Retraits" />
             <SellerLayout>
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Payouts</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Retraits</h1>
                     <p className="text-gray-500 mt-1">
-                        Request withdrawals and review your payout history.
+                        Demandez des retraits et consultez l'historique de vos paiements.
                     </p>
                 </div>
 
@@ -80,12 +86,12 @@ export default function PayoutsIndex({ payouts, summary }) {
                             <div className="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
                                 <Wallet size={24} />
                             </div>
-                            <p className="text-sm font-medium text-gray-600">Available Balance</p>
+                            <p className="text-sm font-medium text-gray-600">Solde disponible</p>
                         </div>
                         <p className="text-3xl font-bold text-gray-900 tabular-nums">
-                            {formatMoney(summary.available_balance, summary.currency)}
+                            {formatCurrencyDecimal(summary.available_balance)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-2">Ready to withdraw</p>
+                        <p className="text-xs text-gray-500 mt-2">Prêt à retirer</p>
                     </div>
 
                     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -93,13 +99,13 @@ export default function PayoutsIndex({ payouts, summary }) {
                             <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
                                 <Clock size={24} />
                             </div>
-                            <p className="text-sm font-medium text-gray-600">Pending Requests</p>
+                            <p className="text-sm font-medium text-gray-600">Demandes en attente</p>
                         </div>
                         <p className="text-3xl font-bold text-gray-900 tabular-nums">
-                            {formatMoney(summary.pending_requests, summary.currency)}
+                            {formatCurrencyDecimal(summary.pending_requests)}
                         </p>
                         {summary.has_pending_request && (
-                            <p className="text-xs text-amber-600 mt-2 font-medium">Processing in progress</p>
+                            <p className="text-xs text-amber-600 mt-2 font-medium">Traitement en cours</p>
                         )}
                     </div>
 
@@ -108,12 +114,12 @@ export default function PayoutsIndex({ payouts, summary }) {
                             <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
                                 <Banknote size={24} />
                             </div>
-                            <p className="text-sm font-medium text-gray-600">Total Paid Out</p>
+                            <p className="text-sm font-medium text-gray-600">Total versé</p>
                         </div>
                         <p className="text-3xl font-bold text-gray-900 tabular-nums">
-                            {formatMoney(summary.total_paid_out, summary.currency)}
+                            {formatCurrencyDecimal(summary.total_paid_out)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-2">All completed payouts</p>
+                        <p className="text-xs text-gray-500 mt-2">Tous les paiements effectués</p>
                     </div>
                 </div>
 
@@ -122,8 +128,8 @@ export default function PayoutsIndex({ payouts, summary }) {
                     <div className="lg:col-span-1">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden sticky top-24">
                             <div className="p-5 border-b border-gray-100 bg-gray-50">
-                                <h2 className="font-bold text-gray-900">Request Payout</h2>
-                                <p className="text-sm text-gray-500 mt-1">Minimum withdrawal: TZS 1,000.00</p>
+                                <h2 className="font-bold text-gray-900">Demander un retrait</h2>
+                                <p className="text-sm text-gray-500 mt-1">Retrait minimum : {formatCurrencyDecimal(MIN_WITHDRAWAL)}</p>
                             </div>
 
                             {!canRequest ? (
@@ -132,11 +138,11 @@ export default function PayoutsIndex({ payouts, summary }) {
                                         <AlertCircle size={20} className="shrink-0 mt-0.5" />
                                         <div>
                                             {summary.has_pending_request ? (
-                                                <p>You already have a payout request being processed. Please wait until it is completed before submitting another.</p>
-                                            ) : summary.available_balance < 1000 ? (
-                                                <p>Your available balance is below the minimum withdrawal amount of TZS 1,000.00.</p>
+                                                <p>Vous avez déjà une demande de retrait en cours de traitement. Veuillez patienter jusqu'à ce qu'elle soit terminée avant d'en soumettre une autre.</p>
+                                            ) : summary.available_balance < MIN_WITHDRAWAL ? (
+                                                <p>Votre solde disponible est inférieur au montant minimum de retrait de {formatCurrencyDecimal(MIN_WITHDRAWAL)}.</p>
                                             ) : (
-                                                <p>Payout requests are currently unavailable.</p>
+                                                <p>Les demandes de retrait ne sont pas disponibles pour le moment.</p>
                                             )}
                                         </div>
                                     </div>
@@ -145,25 +151,25 @@ export default function PayoutsIndex({ payouts, summary }) {
                                 <form onSubmit={submit} className="p-6 space-y-4">
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <label className="block text-sm font-medium text-gray-700">Amount</label>
+                                            <label className="block text-sm font-medium text-gray-700">Montant</label>
                                             <button
                                                 type="button"
                                                 onClick={requestFullBalance}
                                                 className="text-xs font-semibold text-primary-600 hover:text-primary-700"
                                             >
-                                                Withdraw all
+                                                Tout retirer
                                             </button>
                                         </div>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-medium">TZS</span>
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-medium">FC</span>
                                             <input
                                                 type="number"
                                                 step="0.01"
-                                                min="1000"
+                                                min={MIN_WITHDRAWAL}
                                                 max={summary.available_balance}
                                                 value={data.amount}
                                                 onChange={(e) => setData('amount', e.target.value)}
-                                                placeholder="0.00"
+                                                placeholder="0,00"
                                                 className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm tabular-nums focus:ring-primary-500 focus:border-primary-500"
                                             />
                                         </div>
@@ -173,14 +179,14 @@ export default function PayoutsIndex({ payouts, summary }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Mode de paiement</label>
                                         <select
                                             value={data.payment_method}
                                             onChange={(e) => setData('payment_method', e.target.value)}
                                             className="w-full border-gray-300 rounded-lg text-sm"
                                         >
-                                            <option value="mobile_money">Mobile Money (M-Pesa, Tigo, Airtel)</option>
-                                            <option value="bank_transfer">Bank Transfer</option>
+                                            <option value="mobile_money">Mobile Money (Orange, M-Pesa, Airtel)</option>
+                                            <option value="bank_transfer">Virement bancaire</option>
                                         </select>
                                         {errors.payment_method && (
                                             <p className="text-red-600 text-xs mt-1">{errors.payment_method}</p>
@@ -188,12 +194,12 @@ export default function PayoutsIndex({ payouts, summary }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Numéro de compte</label>
                                         <input
                                             type="text"
                                             value={data.account_number}
                                             onChange={(e) => setData('account_number', e.target.value)}
-                                            placeholder="Phone number or account no."
+                                            placeholder="Numéro de téléphone ou de compte"
                                             className="w-full border-gray-300 rounded-lg text-sm"
                                         />
                                         {errors.account_number && (
@@ -202,12 +208,12 @@ export default function PayoutsIndex({ payouts, summary }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Account Name</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Nom du compte</label>
                                         <input
                                             type="text"
                                             value={data.account_name}
                                             onChange={(e) => setData('account_name', e.target.value)}
-                                            placeholder="Name on account"
+                                            placeholder="Nom du titulaire"
                                             className="w-full border-gray-300 rounded-lg text-sm"
                                         />
                                         {errors.account_name && (
@@ -217,14 +223,14 @@ export default function PayoutsIndex({ payouts, summary }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Notes <span className="text-gray-400 font-normal">(optional)</span>
+                                            Notes <span className="text-gray-400 font-normal">(facultatif)</span>
                                         </label>
                                         <textarea
                                             value={data.notes}
                                             onChange={(e) => setData('notes', e.target.value)}
                                             rows={2}
                                             className="w-full border-gray-300 rounded-lg text-sm"
-                                            placeholder="Any special instructions..."
+                                            placeholder="Instructions particulières…"
                                         />
                                     </div>
 
@@ -233,7 +239,7 @@ export default function PayoutsIndex({ payouts, summary }) {
                                         disabled={processing}
                                         className="w-full py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition shadow-md shadow-primary-600/20 disabled:opacity-60"
                                     >
-                                        {processing ? 'Submitting…' : 'Submit Payout Request'}
+                                        {processing ? 'Envoi en cours…' : 'Soumettre la demande de retrait'}
                                     </button>
                                 </form>
                             )}
@@ -244,7 +250,7 @@ export default function PayoutsIndex({ payouts, summary }) {
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-5 border-b border-gray-100">
-                                <h2 className="font-bold text-gray-900 text-lg">Payout History</h2>
+                                <h2 className="font-bold text-gray-900 text-lg">Historique des retraits</h2>
                             </div>
 
                             {payouts.data.length > 0 ? (
@@ -253,12 +259,12 @@ export default function PayoutsIndex({ payouts, summary }) {
                                         <table className="w-full text-left text-sm text-gray-600">
                                             <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
                                                 <tr>
-                                                    <th className="px-6 py-4">Reference</th>
-                                                    <th className="px-6 py-4 text-right">Amount</th>
-                                                    <th className="px-6 py-4">Method</th>
-                                                    <th className="px-6 py-4">Requested</th>
-                                                    <th className="px-6 py-4">Processed</th>
-                                                    <th className="px-6 py-4">Status</th>
+                                                    <th className="px-6 py-4">Référence</th>
+                                                    <th className="px-6 py-4 text-right">Montant</th>
+                                                    <th className="px-6 py-4">Mode</th>
+                                                    <th className="px-6 py-4">Demandé le</th>
+                                                    <th className="px-6 py-4">Traité le</th>
+                                                    <th className="px-6 py-4">Statut</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
@@ -268,9 +274,9 @@ export default function PayoutsIndex({ payouts, summary }) {
                                                             {payout.reference || `#${payout.id}`}
                                                         </td>
                                                         <td className="px-6 py-4 text-right tabular-nums font-semibold text-gray-900">
-                                                            {formatMoney(payout.amount, payout.currency)}
+                                                            {formatCurrencyDecimal(payout.amount)}
                                                         </td>
-                                                        <td className="px-6 py-4 capitalize">
+                                                        <td className="px-6 py-4">
                                                             {paymentMethodLabels[payout.payment_method] || payout.payment_method || '—'}
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -280,8 +286,8 @@ export default function PayoutsIndex({ payouts, summary }) {
                                                             {formatDate(payout.processed_at)}
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold capitalize ${statusColors[payout.status] || 'bg-gray-100 text-gray-800'}`}>
-                                                                {payout.status}
+                                                            <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${statusColors[payout.status] || 'bg-gray-100 text-gray-800'}`}>
+                                                                {statusLabels[payout.status] || payout.status}
                                                             </span>
                                                         </td>
                                                     </tr>
@@ -296,9 +302,9 @@ export default function PayoutsIndex({ payouts, summary }) {
                             ) : (
                                 <div className="p-16 text-center">
                                     <CheckCircle2 size={48} className="text-gray-200 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">No payouts yet</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun retrait pour le moment</h3>
                                     <p className="text-gray-500 max-w-sm mx-auto">
-                                        When you request a withdrawal, your payout history will appear here.
+                                        Lorsque vous demanderez un retrait, votre historique apparaîtra ici.
                                     </p>
                                 </div>
                             )}

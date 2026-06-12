@@ -9,8 +9,13 @@ export default function Pagination({ links }) {
         <div className="flex flex-wrap items-center justify-center gap-1 mt-8">
             {links.map((link, index) => {
                 let label = link.label;
-                if (label.includes('Previous')) label = <ChevronLeft size={18} />;
-                if (label.includes('Next')) label = <ChevronRight size={18} />;
+                const rawLabel = String(label).replace(/&[^;]+;/g, '').trim().toLowerCase();
+                if (rawLabel.includes('previous') || rawLabel.includes('précédent') || rawLabel.includes('precedent')) {
+                    label = <ChevronLeft size={18} aria-label="Page précédente" />;
+                }
+                if (rawLabel.includes('next') || rawLabel.includes('suivant')) {
+                    label = <ChevronRight size={18} aria-label="Page suivante" />;
+                }
 
                 const isActive = link.active;
                 const isUrl = !!link.url;

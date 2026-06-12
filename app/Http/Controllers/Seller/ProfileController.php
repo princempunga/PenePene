@@ -28,6 +28,12 @@ class ProfileController extends Controller
             'name'   => 'required|string|max:255',
             'phone'  => 'nullable|string|max:30',
             'avatar' => 'nullable|image|max:2048',
+        ], [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.max'      => 'Le nom ne peut pas dépasser 255 caractères.',
+            'phone.max'     => 'Le numéro de téléphone ne peut pas dépasser 30 caractères.',
+            'avatar.image'  => 'La photo de profil doit être une image.',
+            'avatar.max'    => 'La photo de profil ne peut pas dépasser 2 Mo.',
         ]);
 
         $data = [
@@ -44,7 +50,7 @@ class ProfileController extends Controller
 
         $user->update($data);
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', 'Profil mis à jour avec succès.');
     }
 
     public function updatePassword(Request $request)
@@ -52,12 +58,18 @@ class ProfileController extends Controller
         $request->validate([
             'current_password' => 'required|current_password',
             'password'         => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'current_password.required'        => 'Le mot de passe actuel est obligatoire.',
+            'current_password.current_password' => 'Le mot de passe actuel est incorrect.',
+            'password.required'                => 'Le nouveau mot de passe est obligatoire.',
+            'password.confirmed'               => 'La confirmation du mot de passe ne correspond pas.',
+            'password.min'                     => 'Le mot de passe doit contenir au moins 8 caractères.',
         ]);
 
         $request->user()->update([
             'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'Password changed successfully.');
+        return back()->with('success', 'Mot de passe modifié avec succès.');
     }
 }

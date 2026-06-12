@@ -2,20 +2,18 @@ import React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import { formatCurrency } from '@/lib/formatCurrency';
+import { ORDER_STATUS_LABELS_FR } from '@/lib/orderStatusLabels';
 import { User, MapPin, Package, Check, X, Truck, MessageCircle } from 'lucide-react';
 
 const STATUS_STEPS = ['pending', 'confirmed', 'shipped', 'delivered'];
 
 function formatDate(date) {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('fr-FR', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
     });
-}
-
-function formatCurrency(amount) {
-    return `TZS ${parseFloat(amount || 0).toLocaleString()}`;
 }
 
 function formatAddress(order) {
@@ -26,7 +24,7 @@ function formatAddress(order) {
         order.delivery_country,
     ].filter(Boolean);
 
-    return parts.length > 0 ? parts.join(', ') : 'No address provided';
+    return parts.length > 0 ? parts.join(', ') : 'Aucune adresse fournie';
 }
 
 export default function OrderShow({ order }) {
@@ -34,7 +32,8 @@ export default function OrderShow({ order }) {
     const [processing, setProcessing] = React.useState(false);
 
     const updateStatus = (newStatus) => {
-        if (!confirm(`Change order status to ${newStatus}?`)) return;
+        const label = ORDER_STATUS_LABELS_FR[newStatus] ?? newStatus;
+        if (!confirm(`Changer le statut de la commande en « ${label} » ?`)) return;
 
         setProcessing(true);
         router.patch(
@@ -52,24 +51,24 @@ export default function OrderShow({ order }) {
 
     return (
         <>
-            <Head title={`Manage Order ${order.order_number}`} />
-            <SellerLayout title="Order Details">
+            <Head title={`Gérer la commande ${order.order_number}`} />
+            <SellerLayout title="Détails de la commande">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <Link
                             href="/seller/orders"
                             className="text-sm text-gray-500 hover:text-primary-600"
                         >
-                            ← Back to Orders
+                            ← Retour aux commandes
                         </Link>
                         <span className="text-gray-300 hidden sm:inline">/</span>
                         <h1 className="text-lg sm:text-xl font-bold text-gray-900">
                             {order.order_number}
                         </h1>
-                        <StatusBadge status={order.status} />
+                        <StatusBadge status={order.status} labels={ORDER_STATUS_LABELS_FR} />
                     </div>
                     <p className="text-sm text-gray-500">
-                        Placed {formatDate(order.created_at)}
+                        Passée le {formatDate(order.created_at)}
                     </p>
                 </div>
 
@@ -85,10 +84,10 @@ export default function OrderShow({ order }) {
                     </div>
                 )}
 
-                {/* Status timeline */}
+                {/* Chronologie du statut */}
                 {!isTerminal && (
                     <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 mb-6 shadow-sm">
-                        <h2 className="font-bold text-gray-900 mb-5">Fulfillment Progress</h2>
+                        <h2 className="font-bold text-gray-900 mb-5">Suivi de la livraison</h2>
                         <div className="flex items-center overflow-x-auto pb-2">
                             {STATUS_STEPS.map((step, index) => (
                                 <React.Fragment key={step}>
@@ -103,11 +102,11 @@ export default function OrderShow({ order }) {
                                             {index < currentStep ? '✓' : index + 1}
                                         </div>
                                         <p
-                                            className={`text-xs mt-1.5 font-medium capitalize text-center ${
+                                            className={`text-xs mt-1.5 font-medium text-center ${
                                                 index <= currentStep ? 'text-primary-600' : 'text-gray-400'
                                             }`}
                                         >
-                                            {step}
+                                            {ORDER_STATUS_LABELS_FR[step]}
                                         </p>
                                     </div>
                                     {index < STATUS_STEPS.length - 1 && (
@@ -122,8 +121,8 @@ export default function OrderShow({ order }) {
                         </div>
                         {order.confirmed_at && (
                             <p className="text-xs text-gray-500 mt-4">
-                                Confirmed {formatDate(order.confirmed_at)}
-                                {order.delivered_at && ` · Delivered ${formatDate(order.delivered_at)}`}
+                                Confirmée le {formatDate(order.confirmed_at)}
+                                {order.delivered_at && ` · Livrée le ${formatDate(order.delivered_at)}`}
                             </p>
                         )}
                     </div>
@@ -131,16 +130,16 @@ export default function OrderShow({ order }) {
 
                 {order.status === 'cancelled' && (
                     <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm text-red-800">
-                        This order has been cancelled.
+                        Cette commande a été annulée.
                     </div>
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Line items */}
+                        {/* Articles */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-5 border-b border-gray-100">
-                                <h2 className="font-bold text-gray-900">Items Ordered</h2>
+                                <h2 className="font-bold text-gray-900">Articles commandés</h2>
                             </div>
 
                             {order.items?.length > 0 ? (
@@ -179,7 +178,7 @@ export default function OrderShow({ order }) {
                                                         </p>
                                                     )}
                                                     <p className="text-sm text-gray-500 mt-1">
-                                                        Qty: {item.quantity}
+                                                        Qté : {item.quantity}
                                                     </p>
                                                 </div>
                                                 <div className="text-right shrink-0">
@@ -187,7 +186,7 @@ export default function OrderShow({ order }) {
                                                         {formatCurrency(item.total_price)}
                                                     </p>
                                                     <p className="text-xs text-gray-500">
-                                                        @ {formatCurrency(item.unit_price)} each
+                                                        {formatCurrency(item.unit_price)} l&apos;unité
                                                     </p>
                                                 </div>
                                             </div>
@@ -196,22 +195,22 @@ export default function OrderShow({ order }) {
                                 </div>
                             ) : (
                                 <div className="p-8 text-center text-gray-500 text-sm">
-                                    No line items found for this order.
+                                    Aucun article trouvé pour cette commande.
                                 </div>
                             )}
 
                             <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end">
                                 <div className="w-full sm:w-64 space-y-2 text-sm">
                                     <div className="flex justify-between text-gray-600">
-                                        <span>Subtotal</span>
+                                        <span>Sous-total</span>
                                         <span>{formatCurrency(order.subtotal)}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-600">
-                                        <span>Shipping</span>
+                                        <span>Livraison</span>
                                         <span>
                                             {parseFloat(order.shipping_cost) > 0
                                                 ? formatCurrency(order.shipping_cost)
-                                                : 'Free'}
+                                                : 'Gratuit'}
                                         </span>
                                     </div>
                                     <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-gray-900 text-base">
@@ -224,17 +223,17 @@ export default function OrderShow({ order }) {
 
                         {order.buyer_notes && (
                             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                                <h2 className="font-bold text-gray-900 mb-2">Customer Notes</h2>
+                                <h2 className="font-bold text-gray-900 mb-2">Notes du client</h2>
                                 <p className="text-sm text-gray-600">{order.buyer_notes}</p>
                             </div>
                         )}
                     </div>
 
                     <div className="space-y-6">
-                        {/* Status actions */}
+                        {/* Actions de statut */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6 space-y-4">
                             <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">
-                                Update Status
+                                Mettre à jour le statut
                             </h2>
 
                             <div className="grid grid-cols-1 gap-2">
@@ -247,7 +246,7 @@ export default function OrderShow({ order }) {
                                             className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
                                         >
                                             <Check size={16} />
-                                            {processing ? 'Updating...' : 'Confirm Order'}
+                                            {processing ? 'Mise à jour…' : 'Confirmer la commande'}
                                         </button>
                                         <button
                                             type="button"
@@ -256,7 +255,7 @@ export default function OrderShow({ order }) {
                                             className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 py-2.5 rounded-lg text-sm font-medium hover:bg-red-100 disabled:opacity-50 transition-colors"
                                         >
                                             <X size={16} />
-                                            Cancel Order
+                                            Annuler la commande
                                         </button>
                                     </>
                                 )}
@@ -270,7 +269,7 @@ export default function OrderShow({ order }) {
                                             className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
                                         >
                                             <Truck size={16} />
-                                            {processing ? 'Updating...' : 'Mark as Shipped'}
+                                            {processing ? 'Mise à jour…' : 'Marquer comme expédiée'}
                                         </button>
                                         <button
                                             type="button"
@@ -279,7 +278,7 @@ export default function OrderShow({ order }) {
                                             className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 py-2.5 rounded-lg text-sm font-medium hover:bg-red-100 disabled:opacity-50 transition-colors"
                                         >
                                             <X size={16} />
-                                            Cancel Order
+                                            Annuler la commande
                                         </button>
                                     </>
                                 )}
@@ -292,27 +291,27 @@ export default function OrderShow({ order }) {
                                         className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
                                     >
                                         <Check size={16} />
-                                        {processing ? 'Updating...' : 'Mark as Delivered'}
+                                        {processing ? 'Mise à jour…' : 'Marquer comme livrée'}
                                     </button>
                                 )}
 
                                 {['delivered', 'cancelled', 'rejected'].includes(order.status) && (
                                     <div className="text-center p-3 bg-gray-50 rounded-lg text-sm text-gray-500 font-medium">
-                                        Order fulfillment is complete.
+                                        Le traitement de la commande est terminé.
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* Buyer info */}
+                        {/* Informations client */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6 space-y-4">
                             <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
                                 <User size={18} className="text-primary-500" />
-                                Customer Details
+                                Informations client
                             </h2>
                             <div>
                                 <p className="font-semibold text-gray-900">
-                                    {order.buyer?.user?.name || 'Unknown customer'}
+                                    {order.buyer?.user?.name || 'Client inconnu'}
                                 </p>
                                 {order.buyer?.user?.email && (
                                     <p className="text-sm text-gray-500 mt-1">
@@ -327,7 +326,7 @@ export default function OrderShow({ order }) {
                             <div className="pt-3 border-t border-gray-100">
                                 <h3 className="font-semibold text-gray-900 text-sm flex items-center gap-2 mb-2">
                                     <MapPin size={16} className="text-gray-400" />
-                                    Shipping Address
+                                    Adresse de livraison
                                 </h3>
                                 <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     {formatAddress(order)}
@@ -340,7 +339,7 @@ export default function OrderShow({ order }) {
                                     className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-800 py-2.5 rounded-lg transition-colors"
                                 >
                                     <MessageCircle size={16} />
-                                    Message Customer
+                                    Contacter le client
                                 </Link>
                             )}
                         </div>

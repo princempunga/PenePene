@@ -11,20 +11,20 @@ function formatMessageTime(dateStr) {
     yesterday.setDate(yesterday.getDate() - 1);
     const isYesterday = d.toDateString() === yesterday.toDateString();
 
-    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     if (isToday) return time;
-    if (isYesterday) return `Yesterday ${time}`;
-    return d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    if (isYesterday) return `Hier ${time}`;
+    return d.toLocaleString('fr-FR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 function dateLabel(dateStr) {
     const d = new Date(dateStr);
     const now = new Date();
-    if (d.toDateString() === now.toDateString()) return 'Today';
+    if (d.toDateString() === now.toDateString()) return 'Aujourd\'hui';
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-    return d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+    if (d.toDateString() === yesterday.toDateString()) return 'Hier';
+    return d.toLocaleDateString('fr-FR', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
 function groupMessagesByDate(messages) {
@@ -66,7 +66,7 @@ export default function MessageShow({ conversation, messages }) {
 
     return (
         <>
-            <Head title={`Chat with ${buyer?.name}`} />
+            <Head title={`Discussion avec ${buyer?.name}`} />
             <SellerLayout>
                 <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-12rem)] min-h-[500px]">
                     {/* Chat panel */}
@@ -80,7 +80,7 @@ export default function MessageShow({ conversation, messages }) {
                             </div>
                             <div className="min-w-0">
                                 <p className="font-semibold text-gray-900 truncate">{buyer?.name}</p>
-                                <p className="text-xs text-gray-500">Customer</p>
+                                <p className="text-xs text-gray-500">Client</p>
                             </div>
                         </div>
 
@@ -90,7 +90,7 @@ export default function MessageShow({ conversation, messages }) {
                                     <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-3">
                                         <Send size={22} className="text-amber-400" />
                                     </div>
-                                    <p className="text-sm text-gray-500">No messages yet. Say hello to your customer!</p>
+                                    <p className="text-sm text-gray-500">Aucun message pour le moment. Saluez votre client !</p>
                                 </div>
                             )}
                             {grouped.map((item, idx) => {
@@ -129,13 +129,14 @@ export default function MessageShow({ conversation, messages }) {
                                 value={data.body}
                                 onChange={e => setData('body', e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(e); } }}
-                                placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+                                placeholder="Écrire un message... (Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne)"
                                 rows={2}
                                 className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
                             />
                             <button
                                 type="submit"
                                 disabled={processing || !data.body.trim()}
+                                aria-label="Envoyer"
                                 className="p-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors shadow-sm"
                             >
                                 <Send size={18} />
@@ -151,7 +152,7 @@ export default function MessageShow({ conversation, messages }) {
                                     {buyer?.name?.charAt(0)?.toUpperCase()}
                                 </div>
                                 <h3 className="font-bold text-gray-900 text-lg">{buyer?.name}</h3>
-                                <p className="text-sm text-gray-500">Customer</p>
+                                <p className="text-sm text-gray-500">Client</p>
                             </div>
 
                             <div className="space-y-4 text-sm">
@@ -159,7 +160,7 @@ export default function MessageShow({ conversation, messages }) {
                                     <div className="flex items-start gap-3">
                                         <Mail size={16} className="text-amber-500 shrink-0 mt-0.5" />
                                         <div className="min-w-0">
-                                            <p className="text-xs text-gray-400 mb-0.5">Email</p>
+                                            <p className="text-xs text-gray-400 mb-0.5">E-mail</p>
                                             <p className="text-gray-700 break-all">{buyer.email}</p>
                                         </div>
                                     </div>
@@ -168,7 +169,7 @@ export default function MessageShow({ conversation, messages }) {
                                     <div className="flex items-start gap-3">
                                         <User size={16} className="text-amber-500 shrink-0 mt-0.5" />
                                         <div>
-                                            <p className="text-xs text-gray-400 mb-0.5">Phone</p>
+                                            <p className="text-xs text-gray-400 mb-0.5">Téléphone</p>
                                             <p className="text-gray-700">{buyer.phone}</p>
                                         </div>
                                     </div>
@@ -177,7 +178,7 @@ export default function MessageShow({ conversation, messages }) {
                                     <div className="flex items-start gap-3">
                                         <MapPin size={16} className="text-amber-500 shrink-0 mt-0.5" />
                                         <div>
-                                            <p className="text-xs text-gray-400 mb-0.5">Location</p>
+                                            <p className="text-xs text-gray-400 mb-0.5">Localisation</p>
                                             <p className="text-gray-700">
                                                 {[buyerProfile.city, buyerProfile.province].filter(Boolean).join(', ')}
                                             </p>
@@ -188,8 +189,8 @@ export default function MessageShow({ conversation, messages }) {
 
                             <div className="mt-6 pt-6 border-t border-gray-100">
                                 <p className="text-xs text-gray-400">
-                                    Conversation started{' '}
-                                    {new Date(conversation.created_at).toLocaleDateString([], {
+                                    Conversation démarrée le{' '}
+                                    {new Date(conversation.created_at).toLocaleDateString('fr-FR', {
                                         month: 'long', day: 'numeric', year: 'numeric',
                                     })}
                                 </p>

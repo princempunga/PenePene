@@ -13,6 +13,33 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    private function productValidationMessages(): array
+    {
+        return [
+            'category_id.required'    => 'La catégorie est obligatoire.',
+            'category_id.exists'      => 'La catégorie sélectionnée est invalide.',
+            'subcategory_id.exists'   => 'La sous-catégorie sélectionnée est invalide.',
+            'name.required'           => 'Le nom du produit est obligatoire.',
+            'name.max'                => 'Le nom du produit ne peut pas dépasser 255 caractères.',
+            'description.required'    => 'La description est obligatoire.',
+            'price.required'          => 'Le prix est obligatoire.',
+            'price.numeric'           => 'Le prix doit être un nombre.',
+            'price.min'               => 'Le prix doit être supérieur ou égal à 0.',
+            'sale_price.numeric'      => 'Le prix promotionnel doit être un nombre.',
+            'sale_price.min'          => 'Le prix promotionnel doit être supérieur ou égal à 0.',
+            'sale_price.lt'           => 'Le prix promotionnel doit être inférieur au prix normal.',
+            'initial_stock.required'  => 'Le stock initial est obligatoire.',
+            'initial_stock.integer'   => 'Le stock initial doit être un nombre entier.',
+            'status.required'         => 'Le statut est obligatoire.',
+            'status.in'               => 'Le statut sélectionné est invalide.',
+            'images.*.image'          => 'Chaque fichier doit être une image.',
+            'images.*.max'            => 'Chaque image ne peut pas dépasser 2 Mo.',
+            'image.required'          => 'L\'image est obligatoire.',
+            'image.image'             => 'Le fichier doit être une image.',
+            'image.max'               => 'L\'image ne peut pas dépasser 2 Mo.',
+        ];
+    }
+
     public function index(Request $request)
     {
         $seller = $request->user()->seller;
@@ -62,7 +89,9 @@ class ProductController extends Controller
             'sale_price'     => 'nullable|numeric|min:0|lt:price',
             'initial_stock'  => 'required|integer|min:1',
             'images.*'       => 'nullable|image|max:2048',
-        ]);
+        ], array_merge($this->productValidationMessages(), [
+            'initial_stock.min' => 'Le stock initial doit être d\'au moins 1.',
+        ]));
 
         $product = Product::create([
             'seller_id'       => $seller->id,
@@ -75,7 +104,7 @@ class ProductController extends Controller
             'sale_price'      => $request->sale_price,
             'initial_stock'   => $request->initial_stock,
             'confirmed_sales' => 0,
-            'currency'        => 'TZS',
+            'currency'        => 'CDF',
             'status'          => 'pending',
         ]);
 
@@ -91,7 +120,7 @@ class ProductController extends Controller
         }
 
         return redirect()->route('seller.products.index')
-            ->with('success', 'Product created successfully. It will be visible once approved.');
+            ->with('success', 'Produit créé avec succès. Il sera visible une fois approuvé.');
     }
 
     public function show(Request $request, Product $product)
@@ -159,7 +188,9 @@ class ProductController extends Controller
             $rules['status'] = 'required|in:active,inactive';
         }
 
-        $request->validate($rules);
+        $request->validate($rules, array_merge($this->productValidationMessages(), [
+            'initial_stock.min' => 'Le stock initial doit être supérieur ou égal à 0.',
+        ]));
 
         $data = [
             'category_id'   => $request->category_id,
@@ -178,7 +209,7 @@ class ProductController extends Controller
         $product->update($data);
 
         return redirect()->route('seller.products.show', $product)
-            ->with('success', 'Product updated successfully.');
+            ->with('success', 'Produit mis à jour avec succès.');
     }
 
     public function uploadImage(Request $request, Product $product)
@@ -191,7 +222,7 @@ class ProductController extends Controller
 
         $request->validate([
             'image' => 'required|image|max:2048',
-        ]);
+        ], $this->productValidationMessages());
 
         $hasPrimary = ProductImage::where('product_id', $product->id)->where('is_primary', true)->exists();
 
@@ -203,7 +234,7 @@ class ProductController extends Controller
             'is_primary' => ! $hasPrimary,
         ]);
 
-        return back()->with('success', 'Image uploaded successfully.');
+        return back()->with('success', 'Image téléchargée avec succès.');
     }
 
     public function deleteImage(Request $request, ProductImage $image)
@@ -227,7 +258,7 @@ class ProductController extends Controller
             }
         }
 
-        return back()->with('success', 'Image deleted successfully.');
+        return back()->with('success', 'Image supprimée avec succès.');
     }
 
     public function setPrimaryImage(Request $request, ProductImage $image)
@@ -242,7 +273,7 @@ class ProductController extends Controller
         ProductImage::where('product_id', $product->id)->update(['is_primary' => false]);
         $image->update(['is_primary' => true]);
 
-        return back()->with('success', 'Primary image updated.');
+        return back()->with('success', 'Image principale mise à jour.');
     }
 
     public function destroy(Request $request, Product $product)
@@ -256,6 +287,6 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('seller.products.index')
-            ->with('success', 'Product deleted successfully.');
+            ->with('success', 'Produit supprimé avec succès.');
     }
 }

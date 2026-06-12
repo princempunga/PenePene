@@ -41,7 +41,7 @@ class SubscriptionController extends Controller
     public function subscribe(Request $request, SubscriptionPlan $plan)
     {
         if (! $plan->is_active) {
-            return back()->with('error', 'This plan is no longer available.');
+            return back()->with('error', 'Ce plan n\'est plus disponible.');
         }
 
         $seller = $this->seller()->load('activeSubscription.plan');
@@ -62,13 +62,13 @@ class SubscriptionController extends Controller
             'starts_at'            => $startsAt,
             'expires_at'           => $expiresAt,
             'amount_paid'          => $plan->price,
-            'currency'             => $plan->currency,
+            'currency'             => 'CDF',
         ]);
 
         return back()->with('success', match ($action) {
-            'upgrade'   => "Upgraded to {$plan->name} successfully!",
-            'downgrade' => "Switched to {$plan->name} successfully.",
-            default     => "You are now subscribed to the {$plan->name} plan!",
+            'upgrade'   => "Passage au plan {$plan->name} effectué avec succès !",
+            'downgrade' => "Passage au plan {$plan->name} effectué.",
+            default     => "Vous êtes maintenant abonné au plan {$plan->name} !",
         });
     }
 
@@ -76,17 +76,17 @@ class SubscriptionController extends Controller
     {
         if (! $subscription) {
             return [
-                'label'  => 'No active plan',
+                'label'  => 'Aucun plan actif',
                 'status' => 'none',
-                'detail' => 'Subscribe to a plan to unlock seller features.',
+                'detail' => 'Abonnez-vous à un plan pour débloquer les fonctionnalités vendeur.',
             ];
         }
 
         if ($subscription->isExpired()) {
             return [
-                'label'  => 'Expired',
+                'label'  => 'Expiré',
                 'status' => 'expired',
-                'detail' => 'Your subscription expired on ' . $subscription->expires_at->format('M j, Y') . '.',
+                'detail' => 'Votre abonnement a expiré le ' . $subscription->expires_at->locale('fr')->isoFormat('D MMMM YYYY') . '.',
             ];
         }
 
@@ -94,16 +94,16 @@ class SubscriptionController extends Controller
 
         if ($daysLeft <= 7) {
             return [
-                'label'  => 'Expiring soon',
+                'label'  => 'Expire bientôt',
                 'status' => 'warning',
-                'detail' => "Renews in {$daysLeft} day" . ($daysLeft === 1 ? '' : 's') . '.',
+                'detail' => "Renouvellement dans {$daysLeft} jour" . ($daysLeft === 1 ? '' : 's') . '.',
             ];
         }
 
         return [
-            'label'  => 'Active',
+            'label'  => 'Actif',
             'status' => 'active',
-            'detail' => 'Next billing date: ' . $subscription->expires_at->format('M j, Y') . '.',
+            'detail' => 'Prochaine date de facturation : ' . $subscription->expires_at->locale('fr')->isoFormat('D MMMM YYYY') . '.',
         ];
     }
 

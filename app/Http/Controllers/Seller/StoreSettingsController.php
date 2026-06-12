@@ -40,6 +40,24 @@ class StoreSettingsController extends Controller
             'business_hours.*.open'   => 'nullable|string|max:5',
             'business_hours.*.close'  => 'nullable|string|max:5',
             'business_hours.*.closed' => 'nullable|boolean',
+        ], [
+            'business_name.required' => 'Le nom de la boutique est obligatoire.',
+            'business_name.max'      => 'Le nom de la boutique ne peut pas dépasser 255 caractères.',
+            'description.max'        => 'La description ne peut pas dépasser 5000 caractères.',
+            'phone.max'              => 'Le numéro de téléphone ne peut pas dépasser 30 caractères.',
+            'whatsapp.max'           => 'Le numéro WhatsApp ne peut pas dépasser 30 caractères.',
+            'email.email'            => 'L\'adresse e-mail n\'est pas valide.',
+            'email.max'              => 'L\'adresse e-mail ne peut pas dépasser 255 caractères.',
+            'website.url'            => 'L\'URL du site web n\'est pas valide.',
+            'website.max'            => 'L\'URL du site web ne peut pas dépasser 255 caractères.',
+            'address.max'            => 'L\'adresse ne peut pas dépasser 500 caractères.',
+            'city.max'               => 'La ville ne peut pas dépasser 100 caractères.',
+            'country.max'            => 'Le pays ne peut pas dépasser 100 caractères.',
+            'logo.image'             => 'Le logo doit être une image.',
+            'logo.max'               => 'Le logo ne peut pas dépasser 2 Mo.',
+            'banner.image'           => 'La bannière doit être une image.',
+            'banner.max'             => 'La bannière ne peut pas dépasser 4 Mo.',
+            'business_hours.array'   => 'Les heures d\'ouverture doivent être un tableau valide.',
         ]);
 
         $data = collect($validated)->except(['logo', 'banner'])->toArray();
@@ -63,13 +81,13 @@ class StoreSettingsController extends Controller
             $request->validate([
                 'business_name' => [Rule::unique('sellers', 'slug')->ignore($seller->id)],
             ], [
-                'business_name.unique' => 'A store with a similar name already exists.',
+                'business_name.unique' => 'Une boutique avec un nom similaire existe déjà.',
             ]);
             $data['slug'] = $slug;
         }
 
         $seller->update($data);
 
-        return back()->with('success', 'Store settings saved successfully.');
+        return back()->with('success', 'Paramètres de la boutique enregistrés avec succès.');
     }
 }

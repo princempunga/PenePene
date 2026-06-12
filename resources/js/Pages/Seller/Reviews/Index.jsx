@@ -10,6 +10,10 @@ function getProductNames(review) {
     return products.length > 0 ? products.join(', ') : null;
 }
 
+function starLabel(rating) {
+    return rating === 1 ? '1 étoile' : `${rating} étoiles`;
+}
+
 export default function ReviewsIndex({ reviews, summary, filters }) {
     const handleFilter = (rating) => {
         router.get('/seller/reviews', { rating: rating || undefined }, { preserveState: true });
@@ -19,11 +23,13 @@ export default function ReviewsIndex({ reviews, summary, filters }) {
 
     return (
         <>
-            <Head title="Customer Reviews" />
+            <Head title="Avis clients" />
             <SellerLayout>
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Customer Reviews</h1>
-                    <p className="text-gray-500 mt-1">See what buyers are saying about your store and products.</p>
+                    <h1 className="text-2xl font-bold text-gray-900">Avis clients</h1>
+                    <p className="text-gray-500 mt-1">
+                        Découvrez ce que les acheteurs disent de votre boutique et de vos produits.
+                    </p>
                 </div>
 
                 {/* Summary */}
@@ -33,17 +39,19 @@ export default function ReviewsIndex({ reviews, summary, filters }) {
                             <Star size={28} fill="currentColor" strokeWidth={0} />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500 font-medium">Average Rating</p>
+                            <p className="text-sm text-gray-500 font-medium">Note moyenne</p>
                             <div className="flex items-center gap-3 mt-1">
                                 <p className="text-3xl font-bold text-gray-900">{summary.average_rating}</p>
                                 <RatingStars rating={summary.average_rating} size={18} />
                             </div>
-                            <p className="text-xs text-gray-400 mt-1">{summary.total_reviews} total review{summary.total_reviews !== 1 ? 's' : ''}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                                {summary.total_reviews} avis au total
+                            </p>
                         </div>
                     </div>
 
                     <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <p className="text-sm font-medium text-gray-700 mb-4">Rating Breakdown</p>
+                        <p className="text-sm font-medium text-gray-700 mb-4">Répartition des notes</p>
                         <div className="space-y-2">
                             {[5, 4, 3, 2, 1].map((rating) => {
                                 const count = summary.breakdown[rating] || 0;
@@ -57,7 +65,9 @@ export default function ReviewsIndex({ reviews, summary, filters }) {
                                             activeRating === rating ? 'bg-amber-50' : 'hover:bg-gray-50'
                                         }`}
                                     >
-                                        <span className="text-sm font-medium text-gray-600 w-12 text-left">{rating} star</span>
+                                        <span className="text-sm font-medium text-gray-600 w-16 text-left">
+                                            {starLabel(rating)}
+                                        </span>
                                         <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-amber-400 rounded-full transition-all"
@@ -81,7 +91,7 @@ export default function ReviewsIndex({ reviews, summary, filters }) {
                             !activeRating ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'
                         }`}
                     >
-                        All ratings
+                        Toutes les notes
                     </button>
                     {[5, 4, 3, 2, 1].map((rating) => (
                         <button
@@ -107,18 +117,18 @@ export default function ReviewsIndex({ reviews, summary, filters }) {
                                         <div key={review.id} className="p-6 hover:bg-gray-50 transition">
                                             <div className="flex items-start gap-4">
                                                 <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0 font-bold">
-                                                    {review.buyer?.user?.name?.charAt(0) || 'B'}
+                                                    {review.buyer?.user?.name?.charAt(0) || 'A'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                                         <div>
                                                             <h3 className="font-semibold text-gray-900">
-                                                                {review.buyer?.user?.name || 'Anonymous Buyer'}
+                                                                {review.buyer?.user?.name || 'Acheteur anonyme'}
                                                             </h3>
                                                             <RatingStars rating={review.rating} size={14} />
                                                         </div>
                                                         <span className="text-xs text-gray-400 shrink-0">
-                                                            {new Date(review.created_at).toLocaleDateString(undefined, {
+                                                            {new Date(review.created_at).toLocaleDateString('fr-FR', {
                                                                 year: 'numeric',
                                                                 month: 'short',
                                                                 day: 'numeric',
@@ -139,13 +149,13 @@ export default function ReviewsIndex({ reviews, summary, filters }) {
 
                                                     <p className="mt-2 text-sm text-gray-600 whitespace-pre-wrap">
                                                         {review.comment || (
-                                                            <span className="italic text-gray-400">No written comment</span>
+                                                            <span className="italic text-gray-400">Aucun commentaire</span>
                                                         )}
                                                     </p>
 
                                                     {review.order?.order_number && (
                                                         <p className="mt-2 text-xs text-gray-400">
-                                                            Order #{review.order.order_number}
+                                                            Commande n° {review.order.order_number}
                                                         </p>
                                                     )}
                                                 </div>
@@ -160,11 +170,11 @@ export default function ReviewsIndex({ reviews, summary, filters }) {
                 ) : (
                     <div className="bg-white rounded-xl border border-gray-200 p-16 text-center shadow-sm">
                         <MessageSquare size={48} className="text-gray-200 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">No reviews yet</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun avis pour le moment</h3>
                         <p className="text-gray-500 max-w-md mx-auto">
                             {activeRating
-                                ? `You don't have any ${activeRating}-star reviews. Try clearing the filter to see all feedback.`
-                                : 'Reviews appear here after buyers rate their delivered orders. Great service leads to great ratings!'}
+                                ? `Vous n'avez aucun avis de ${starLabel(activeRating)}. Effacez le filtre pour voir tous les avis.`
+                                : 'Les avis apparaissent ici après que les acheteurs ont noté leurs commandes livrées. Un excellent service mène à d\'excellentes notes !'}
                         </p>
                     </div>
                 )}

@@ -3,14 +3,13 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import RatingStars from '@/Components/UI/RatingStars';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import { formatCurrency } from '@/lib/formatCurrency';
+import { ORDER_STATUS_LABELS_FR } from '@/lib/orderStatusLabels';
 import {
     Package, ShoppingCart, DollarSign, Clock, Star,
     Plus, MessageCircle, FileText, User, AlertTriangle,
     TrendingUp, ArrowRight, Inbox,
 } from 'lucide-react';
-
-const formatCurrency = (amount) =>
-    `TZS ${parseFloat(amount || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
 function StatCard({ icon: Icon, iconBg, iconColor, label, value, subtext }) {
     return (
@@ -78,24 +77,24 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
 
     return (
         <>
-            <Head title="Seller Dashboard" />
-            <SellerLayout title="Dashboard">
+            <Head title="Tableau de bord vendeur" />
+            <SellerLayout title="Tableau de bord">
 
-                {/* Welcome Banner */}
+                {/* Bannière de bienvenue */}
                 <div className="mb-8 bg-gradient-to-r from-amber-500 to-amber-700 rounded-2xl p-6 text-white shadow-lg">
-                    <p className="text-amber-100 text-sm font-medium mb-1">Welcome back,</p>
+                    <p className="text-amber-100 text-sm font-medium mb-1">Bon retour,</p>
                     <h2 className="text-2xl font-bold">{store?.business_name || auth.user?.name} 👋</h2>
                     <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-amber-100">
                         {stats.averageRating > 0 && (
                             <span className="flex items-center gap-1.5">
                                 <Star size={14} className="text-amber-200 fill-amber-200" />
-                                {stats.averageRating.toFixed(1)} avg. rating
+                                {stats.averageRating.toFixed(1)} note moyenne
                             </span>
                         )}
                         {stats.unreadMessages > 0 && (
                             <Link href="/seller/messages" className="flex items-center gap-1.5 hover:text-white transition-colors">
                                 <MessageCircle size={14} />
-                                {stats.unreadMessages} unread message{stats.unreadMessages !== 1 ? 's' : ''}
+                                {stats.unreadMessages} message{stats.unreadMessages !== 1 ? 's' : ''} non lu{stats.unreadMessages !== 1 ? 's' : ''}
                             </Link>
                         )}
                     </div>
@@ -111,96 +110,96 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                     <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
                         <Clock className="text-amber-500 shrink-0 mt-0.5" size={20} />
                         <div>
-                            <h3 className="font-bold text-amber-800">Account Pending Verification</h3>
+                            <h3 className="font-bold text-amber-800">Compte en attente de vérification</h3>
                             <p className="text-sm text-amber-700 mt-1">
-                                Your seller account is under review. You can set up your store and add products,
-                                but they won&apos;t be visible to buyers until you are verified.
+                                Votre compte vendeur est en cours d&apos;examen. Vous pouvez configurer votre boutique et ajouter des produits,
+                                mais ils ne seront pas visibles par les acheteurs tant que vous n&apos;êtes pas vérifié.
                             </p>
                         </div>
                     </div>
                 )}
 
-                {/* KPI Stats */}
+                {/* Indicateurs clés */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <StatCard
                         icon={ShoppingCart}
                         iconBg="bg-blue-50"
                         iconColor="text-blue-600"
-                        label="Total Orders"
-                        value={stats.totalOrders.toLocaleString()}
-                        subtext={stats.ordersThisWeek > 0 ? `${stats.ordersThisWeek} this week` : null}
+                        label="Commandes totales"
+                        value={stats.totalOrders.toLocaleString('fr-FR')}
+                        subtext={stats.ordersThisWeek > 0 ? `${stats.ordersThisWeek} cette semaine` : null}
                     />
                     <StatCard
                         icon={DollarSign}
                         iconBg="bg-green-50"
                         iconColor="text-green-600"
-                        label="Total Revenue"
+                        label="Chiffre d'affaires total"
                         value={formatCurrency(stats.totalRevenue)}
-                        subtext={stats.revenueThisWeek > 0 ? `${formatCurrency(stats.revenueThisWeek)} this week` : null}
+                        subtext={stats.revenueThisWeek > 0 ? `${formatCurrency(stats.revenueThisWeek)} cette semaine` : null}
                     />
                     <StatCard
                         icon={Package}
                         iconBg="bg-purple-50"
                         iconColor="text-purple-600"
-                        label="Total Products"
-                        value={stats.totalProducts.toLocaleString()}
+                        label="Produits totaux"
+                        value={stats.totalProducts.toLocaleString('fr-FR')}
                     />
                     <StatCard
                         icon={AlertTriangle}
                         iconBg="bg-amber-50"
                         iconColor="text-amber-600"
-                        label="Pending Items"
-                        value={pendingItems.toLocaleString()}
+                        label="Éléments en attente"
+                        value={pendingItems.toLocaleString('fr-FR')}
                         subtext={
                             stats.pendingOrders > 0
-                                ? `${stats.pendingOrders} order${stats.pendingOrders !== 1 ? 's' : ''} awaiting action`
+                                ? `${stats.pendingOrders} commande${stats.pendingOrders !== 1 ? 's' : ''} à traiter`
                                 : null
                         }
                     />
                 </div>
 
-                {/* Quick Actions */}
+                {/* Actions rapides */}
                 <div className="mb-8">
-                    <h2 className="font-bold text-gray-900 mb-4">Quick Actions</h2>
+                    <h2 className="font-bold text-gray-900 mb-4">Actions rapides</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <QuickAction
                             href="/seller/products/create"
                             icon={Plus}
-                            label="Add Product"
-                            description="List a new item"
+                            label="Ajouter un produit"
+                            description="Mettre un nouvel article en ligne"
                             color="bg-amber-50 text-amber-600"
                         />
                         <QuickAction
                             href="/seller/orders"
                             icon={ShoppingCart}
-                            label="Manage Orders"
-                            description="Fulfill & track orders"
+                            label="Gérer les commandes"
+                            description="Traiter et suivre les commandes"
                             color="bg-blue-50 text-blue-600"
                         />
                         <QuickAction
                             href="/seller/messages"
                             icon={MessageCircle}
                             label="Messages"
-                            description={stats.unreadMessages > 0 ? `${stats.unreadMessages} unread` : 'Chat with buyers'}
+                            description={stats.unreadMessages > 0 ? `${stats.unreadMessages} non lu${stats.unreadMessages !== 1 ? 's' : ''}` : 'Discuter avec les acheteurs'}
                             color="bg-purple-50 text-purple-600"
                         />
                         <QuickAction
                             href="/seller/reports"
                             icon={FileText}
-                            label="Reports"
-                            description="Sales & analytics"
+                            label="Rapports"
+                            description="Ventes et statistiques"
                             color="bg-green-50 text-green-600"
                         />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-                    {/* Revenue Chart */}
+                    {/* Graphique du chiffre d'affaires */}
                     <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-bold text-gray-900">Revenue (Last 7 Days)</h2>
+                            <h2 className="font-bold text-gray-900">Chiffre d&apos;affaires (7 derniers jours)</h2>
                             <Link href="/seller/reports" className="text-sm text-amber-600 font-medium hover:text-amber-700">
-                                Full Report →
+                                Rapport complet →
                             </Link>
                         </div>
 
@@ -227,54 +226,54 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                         ) : (
                             <EmptyState
                                 icon={TrendingUp}
-                                title="No revenue yet"
-                                description="Delivered orders will appear here as a daily revenue chart."
-                                actionLabel="View Orders"
+                                title="Aucun chiffre d'affaires pour le moment"
+                                description="Les commandes livrées apparaîtront ici sous forme de graphique quotidien."
+                                actionLabel="Voir les commandes"
                                 actionHref="/seller/orders"
                             />
                         )}
                     </div>
 
-                    {/* Pending Actions */}
+                    {/* Actions en attente */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col">
-                        <h2 className="font-bold text-gray-900 mb-4">Pending Actions</h2>
+                        <h2 className="font-bold text-gray-900 mb-4">Actions en attente</h2>
                         <div className="flex-1 flex flex-col gap-3">
                             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between gap-3">
                                 <div>
                                     <p className="font-semibold text-gray-900 text-lg">{stats.pendingOrders}</p>
-                                    <p className="text-sm text-gray-500">Orders awaiting fulfillment</p>
+                                    <p className="text-sm text-gray-500">Commandes en attente de traitement</p>
                                 </div>
                                 <Link
                                     href="/seller/orders?status=pending"
                                     className="text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 shrink-0"
                                 >
-                                    View
+                                    Voir
                                 </Link>
                             </div>
 
                             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between gap-3">
                                 <div>
                                     <p className="font-semibold text-gray-900 text-lg">{stats.lowStockProducts}</p>
-                                    <p className="text-sm text-gray-500">Products low on stock</p>
+                                    <p className="text-sm text-gray-500">Produits en rupture de stock</p>
                                 </div>
                                 <Link
                                     href="/seller/products"
                                     className="text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 shrink-0"
                                 >
-                                    Manage
+                                    Gérer
                                 </Link>
                             </div>
 
                             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between gap-3">
                                 <div>
                                     <p className="font-semibold text-gray-900 text-lg">{stats.pendingProducts}</p>
-                                    <p className="text-sm text-gray-500">Products pending approval</p>
+                                    <p className="text-sm text-gray-500">Produits en attente d&apos;approbation</p>
                                 </div>
                                 <Link
                                     href="/seller/products"
                                     className="text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 shrink-0"
                                 >
-                                    Review
+                                    Examiner
                                 </Link>
                             </div>
                         </div>
@@ -282,12 +281,12 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {/* Recent Orders */}
+                    {/* Commandes récentes */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-                            <h2 className="font-bold text-gray-900">Recent Orders</h2>
+                            <h2 className="font-bold text-gray-900">Commandes récentes</h2>
                             <Link href="/seller/orders" className="text-sm text-amber-600 font-medium hover:text-amber-700">
-                                View All →
+                                Tout voir →
                             </Link>
                         </div>
 
@@ -302,14 +301,14 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                             <div className="min-w-0">
                                                 <p className="font-semibold text-gray-900 truncate">{order.order_number}</p>
                                                 <p className="text-sm text-gray-500 truncate">
-                                                    {order.buyer?.user?.name ?? 'Customer'} ·{' '}
-                                                    {new Date(order.created_at).toLocaleDateString()} ·{' '}
-                                                    {order.items?.length ?? 0} item{(order.items?.length ?? 0) !== 1 ? 's' : ''}
+                                                    {order.buyer?.user?.name ?? 'Client'} ·{' '}
+                                                    {new Date(order.created_at).toLocaleDateString('fr-FR')} ·{' '}
+                                                    {order.items?.length ?? 0} article{(order.items?.length ?? 0) !== 1 ? 's' : ''}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 shrink-0">
-                                            <StatusBadge status={order.status} className="hidden sm:inline-block" />
+                                            <StatusBadge status={order.status} labels={ORDER_STATUS_LABELS_FR} className="hidden sm:inline-block" />
                                             <span className="text-sm font-bold text-gray-900">
                                                 {formatCurrency(order.total_amount)}
                                             </span>
@@ -317,7 +316,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                                 href={`/seller/orders/${order.id}`}
                                                 className="text-sm text-amber-600 hover:text-amber-700 font-medium"
                                             >
-                                                View
+                                                Voir
                                             </Link>
                                         </div>
                                     </div>
@@ -326,18 +325,18 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                         ) : (
                             <EmptyState
                                 icon={ShoppingCart}
-                                title="No orders yet"
-                                description="When buyers place orders, they'll show up here."
-                                actionLabel="View Products"
+                                title="Aucune commande pour le moment"
+                                description="Les commandes de vos acheteurs apparaîtront ici."
+                                actionLabel="Voir les produits"
                                 actionHref="/seller/products"
                             />
                         )}
                     </div>
 
-                    {/* Recent Reviews */}
+                    {/* Avis récents */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-                            <h2 className="font-bold text-gray-900">Recent Reviews</h2>
+                            <h2 className="font-bold text-gray-900">Avis récents</h2>
                             {stats.averageRating > 0 && (
                                 <div className="flex items-center gap-1.5 text-sm text-gray-600">
                                     <RatingStars rating={stats.averageRating} size={14} />
@@ -352,7 +351,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                     <div key={review.id} className="p-4 hover:bg-gray-50 transition-colors">
                                         <div className="flex justify-between items-start mb-1 gap-2">
                                             <span className="font-semibold text-gray-900 truncate">
-                                                {review.buyer?.user?.name ?? 'Buyer'}
+                                                {review.buyer?.user?.name ?? 'Acheteur'}
                                             </span>
                                             <RatingStars rating={review.rating} size={14} />
                                         </div>
@@ -360,10 +359,10 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                             <p className="text-sm font-medium text-gray-800 mb-0.5">{review.title}</p>
                                         )}
                                         <p className="text-sm text-gray-600 line-clamp-2">
-                                            {review.comment || 'No comment provided.'}
+                                            {review.comment || 'Aucun commentaire.'}
                                         </p>
                                         <p className="text-xs text-gray-400 mt-1.5">
-                                            {new Date(review.created_at).toLocaleDateString()}
+                                            {new Date(review.created_at).toLocaleDateString('fr-FR')}
                                         </p>
                                     </div>
                                 ))}
@@ -371,21 +370,21 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                         ) : (
                             <EmptyState
                                 icon={Star}
-                                title="No reviews yet"
-                                description="Great service earns great reviews from your buyers."
+                                title="Aucun avis pour le moment"
+                                description="Un excellent service attire de bons avis de la part de vos acheteurs."
                             />
                         )}
                     </div>
                 </div>
 
-                {/* Store Profile shortcut */}
+                {/* Raccourci profil boutique */}
                 <div className="mt-6">
                     <Link
                         href="/seller/profile"
                         className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-amber-600 transition-colors"
                     >
                         <User size={14} />
-                        Manage store profile & settings
+                        Gérer le profil et les paramètres de la boutique
                         <ArrowRight size={14} />
                     </Link>
                 </div>

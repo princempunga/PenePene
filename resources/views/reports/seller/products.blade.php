@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>PenePene Products Report</title>
+    <title>PenePene — Rapport des produits</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1a202c; }
@@ -19,40 +19,49 @@
     </style>
 </head>
 <body>
+    @php
+        $statusLabels = [
+            'pending'  => 'En attente',
+            'active'   => 'Actif',
+            'inactive' => 'Inactif',
+            'rejected' => 'Rejeté',
+        ];
+    @endphp
+
     <div class="header">
         <div>
             <h1>PenePene</h1>
-            <p>Products Report — {{ $seller->business_name }} — Generated {{ now()->format('d M Y') }}</p>
+            <p>Rapport des produits — {{ $seller->business_name }} — Généré le {{ now()->locale('fr')->translatedFormat('d M Y') }}</p>
         </div>
     </div>
     <div class="content">
         <table>
             <thead>
                 <tr>
-                    <th>Product</th>
-                    <th>Category</th>
-                    <th>Price (TZS)</th>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Prix (FC)</th>
                     <th>Stock</th>
-                    <th>Views</th>
-                    <th>Status</th>
+                    <th>Vues</th>
+                    <th>Statut</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($data as $product)
                 <tr>
                     <td><strong>{{ $product->name }}</strong></td>
-                    <td>{{ optional($product->category)->name ?? 'N/A' }}</td>
-                    <td>{{ number_format($product->price, 2) }}</td>
+                    <td>{{ optional($product->category)->name ?? 'N/D' }}</td>
+                    <td>{{ number_format($product->price, 0, ',', ' ') }}</td>
                     <td>{{ $product->available_stock }}</td>
                     <td>{{ $product->view_count }}</td>
-                    <td>{{ ucfirst($product->status) }}</td>
+                    <td>{{ $statusLabels[$product->status] ?? ucfirst($product->status) }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="6" style="text-align: center; padding: 24px; color: #94a3b8;">No products found.</td></tr>
+                <tr><td colspan="6" style="text-align: center; padding: 24px; color: #94a3b8;">Aucun produit trouvé.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    <div class="footer">PenePene Marketplace — Confidential Seller Report — {{ now()->format('d M Y') }}</div>
+    <div class="footer">PenePene Marketplace — Rapport vendeur confidentiel — {{ now()->locale('fr')->translatedFormat('d M Y') }}</div>
 </body>
 </html>

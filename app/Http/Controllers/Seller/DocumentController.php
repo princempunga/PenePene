@@ -11,11 +11,11 @@ use Inertia\Inertia;
 class DocumentController extends Controller
 {
     private const DOCUMENT_TYPES = [
-        'national_id'           => 'National ID',
-        'passport'              => 'Passport',
-        'business_registration' => 'Business Registration',
-        'tax_certificate'       => 'Tax Certificate',
-        'other'                 => 'Other Document',
+        'national_id'           => 'Carte d\'identité nationale',
+        'passport'              => 'Passeport',
+        'business_registration' => 'Immatriculation d\'entreprise',
+        'tax_certificate'       => 'Certificat fiscal',
+        'other'                 => 'Autre document',
     ];
 
     public function index(Request $request)
@@ -36,6 +36,14 @@ class DocumentController extends Controller
             'document_type'   => 'required|in:' . implode(',', array_keys(self::DOCUMENT_TYPES)),
             'document_number' => 'nullable|string|max:100',
             'document_file'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ], [
+            'document_type.required' => 'Le type de document est obligatoire.',
+            'document_type.in'       => 'Le type de document sélectionné est invalide.',
+            'document_number.max'    => 'Le numéro du document ne peut pas dépasser :max caractères.',
+            'document_file.required' => 'Le fichier est obligatoire.',
+            'document_file.file'     => 'Le fichier téléversé est invalide.',
+            'document_file.mimes'    => 'Le fichier doit être au format PDF, JPG ou PNG.',
+            'document_file.max'      => 'Le fichier ne doit pas dépasser 5 Mo.',
         ]);
 
         $path = $request->file('document_file')->store('seller_documents', 'public');
@@ -47,7 +55,7 @@ class DocumentController extends Controller
             'status'          => 'pending',
         ]);
 
-        return back()->with('success', 'Document uploaded successfully. It will be reviewed shortly.');
+        return back()->with('success', 'Document téléversé avec succès. Il sera examiné sous peu.');
     }
 
     public function destroy(Request $request, SellerDocument $document)
@@ -57,12 +65,12 @@ class DocumentController extends Controller
         }
 
         if ($document->status === 'verified') {
-            return back()->with('error', 'Verified documents cannot be removed.');
+            return back()->with('error', 'Les documents approuvés ne peuvent pas être supprimés.');
         }
 
         Storage::disk('public')->delete($document->document_file);
         $document->delete();
 
-        return back()->with('success', 'Document removed.');
+        return back()->with('success', 'Document supprimé.');
     }
 }

@@ -4,13 +4,13 @@ import SellerLayout from '@/Layouts/SellerLayout';
 import { Upload, Clock, Store, ImageIcon } from 'lucide-react';
 
 const DAYS = [
-    { key: 'monday', label: 'Monday' },
-    { key: 'tuesday', label: 'Tuesday' },
-    { key: 'wednesday', label: 'Wednesday' },
-    { key: 'thursday', label: 'Thursday' },
-    { key: 'friday', label: 'Friday' },
-    { key: 'saturday', label: 'Saturday' },
-    { key: 'sunday', label: 'Sunday' },
+    { key: 'monday', label: 'Lundi' },
+    { key: 'tuesday', label: 'Mardi' },
+    { key: 'wednesday', label: 'Mercredi' },
+    { key: 'thursday', label: 'Jeudi' },
+    { key: 'friday', label: 'Vendredi' },
+    { key: 'saturday', label: 'Samedi' },
+    { key: 'sunday', label: 'Dimanche' },
 ];
 
 const defaultHours = () =>
@@ -52,12 +52,12 @@ function ImageUpload({ label, hint, currentPath, preview, onChange, error }) {
                 {preview ? (
                     <div className="text-center w-full">
                         <img src={preview} alt={label} className="h-20 object-contain rounded-md mb-2 mx-auto" />
-                        <span className="text-sm text-primary-600">Click to change</span>
+                        <span className="text-sm text-primary-600">Cliquer pour modifier</span>
                     </div>
                 ) : currentPath ? (
                     <div className="text-center w-full">
                         <img src={`/storage/${currentPath}`} alt={label} className="h-20 object-cover rounded-md mb-2 mx-auto" />
-                        <span className="text-sm text-primary-600">Click to change</span>
+                        <span className="text-sm text-primary-600">Cliquer pour modifier</span>
                     </div>
                 ) : (
                     <>
@@ -91,7 +91,7 @@ export default function StoreSettings({ seller }) {
         website: seller.website || '',
         address: seller.address || '',
         city: seller.city || '',
-        country: seller.country || 'Tanzania',
+        country: seller.country || 'République démocratique du Congo',
         logo: null,
         banner: null,
         business_hours: mergedHours,
@@ -117,15 +117,15 @@ export default function StoreSettings({ seller }) {
 
     return (
         <>
-            <Head title="Store Settings" />
-            <SellerLayout title="Store Settings">
+            <Head title="Paramètres de la boutique" />
+            <SellerLayout title="Paramètres de la boutique">
                 <FlashAlert flash={flash} />
 
                 <div className="mb-6 flex items-center gap-3 text-sm text-gray-500">
                     <Store size={16} />
-                    <span>Manage how your store appears to buyers.</span>
+                    <span>Gérez l&apos;apparence de votre boutique pour les acheteurs.</span>
                     <Link href="/seller/profile" className="ml-auto text-primary-600 hover:underline font-medium">
-                        Account profile →
+                        Profil du compte →
                     </Link>
                 </div>
 
@@ -135,13 +135,13 @@ export default function StoreSettings({ seller }) {
                         <div className="p-6 border-b border-gray-100">
                             <h2 className="font-bold text-gray-900 flex items-center gap-2">
                                 <ImageIcon size={18} className="text-primary-600" />
-                                Store Branding
+                                Image de marque
                             </h2>
-                            <p className="text-sm text-gray-500 mt-1">Your store name, description, and visual identity.</p>
+                            <p className="text-sm text-gray-500 mt-1">Nom, description et identité visuelle de votre boutique.</p>
                         </div>
                         <div className="p-6 space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la boutique</label>
                                 <input
                                     type="text"
                                     value={form.data.business_name}
@@ -152,12 +152,12 @@ export default function StoreSettings({ seller }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Store Description</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Description de la boutique</label>
                                 <textarea
                                     value={form.data.description}
                                     onChange={e => form.setData('description', e.target.value)}
                                     rows={4}
-                                    placeholder="Tell buyers what makes your store special..."
+                                    placeholder="Dites aux acheteurs ce qui rend votre boutique unique..."
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none"
                                 />
                                 <FieldError message={form.errors.description} />
@@ -165,16 +165,16 @@ export default function StoreSettings({ seller }) {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <ImageUpload
-                                    label="Store Logo"
-                                    hint="Click to upload logo (Max 2MB)"
+                                    label="Logo de la boutique"
+                                    hint="Cliquer pour téléverser le logo (max. 2 Mo)"
                                     currentPath={seller.logo}
                                     preview={logoPreview}
                                     onChange={e => form.setData('logo', e.target.files[0])}
                                     error={form.errors.logo}
                                 />
                                 <ImageUpload
-                                    label="Store Banner"
-                                    hint="Click to upload banner (Max 4MB)"
+                                    label="Bannière de la boutique"
+                                    hint="Cliquer pour téléverser la bannière (max. 4 Mo)"
                                     currentPath={seller.banner}
                                     preview={bannerPreview}
                                     onChange={e => form.setData('banner', e.target.files[0])}
@@ -187,12 +187,12 @@ export default function StoreSettings({ seller }) {
                     {/* Contact */}
                     <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100">
-                            <h2 className="font-bold text-gray-900">Contact Information</h2>
-                            <p className="text-sm text-gray-500 mt-1">How buyers can reach your store.</p>
+                            <h2 className="font-bold text-gray-900">Coordonnées</h2>
+                            <p className="text-sm text-gray-500 mt-1">Comment les acheteurs peuvent contacter votre boutique.</p>
                         </div>
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Store Phone</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone de la boutique</label>
                                 <input
                                     type="text"
                                     value={form.data.phone}
@@ -207,13 +207,13 @@ export default function StoreSettings({ seller }) {
                                     type="text"
                                     value={form.data.whatsapp}
                                     onChange={e => form.setData('whatsapp', e.target.value)}
-                                    placeholder="+255..."
+                                    placeholder="+243..."
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                 />
                                 <FieldError message={form.errors.whatsapp} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Store Email</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">E-mail de la boutique</label>
                                 <input
                                     type="email"
                                     value={form.data.email}
@@ -223,7 +223,7 @@ export default function StoreSettings({ seller }) {
                                 <FieldError message={form.errors.email} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Site web</label>
                                 <input
                                     type="url"
                                     value={form.data.website}
@@ -234,7 +234,7 @@ export default function StoreSettings({ seller }) {
                                 <FieldError message={form.errors.website} />
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
                                 <input
                                     type="text"
                                     value={form.data.address}
@@ -244,7 +244,7 @@ export default function StoreSettings({ seller }) {
                                 <FieldError message={form.errors.address} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Ville</label>
                                 <input
                                     type="text"
                                     value={form.data.city}
@@ -254,7 +254,7 @@ export default function StoreSettings({ seller }) {
                                 <FieldError message={form.errors.city} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Pays</label>
                                 <input
                                     type="text"
                                     value={form.data.country}
@@ -271,9 +271,9 @@ export default function StoreSettings({ seller }) {
                         <div className="p-6 border-b border-gray-100">
                             <h2 className="font-bold text-gray-900 flex items-center gap-2">
                                 <Clock size={18} className="text-primary-600" />
-                                Business Hours
+                                Heures d&apos;ouverture
                             </h2>
-                            <p className="text-sm text-gray-500 mt-1">Let buyers know when your store is open.</p>
+                            <p className="text-sm text-gray-500 mt-1">Indiquez aux acheteurs quand votre boutique est ouverte.</p>
                         </div>
                         <div className="p-6 space-y-3">
                             {DAYS.map(({ key, label }) => {
@@ -288,7 +288,7 @@ export default function StoreSettings({ seller }) {
                                                 onChange={e => updateHours(key, 'closed', e.target.checked)}
                                                 className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                             />
-                                            Closed
+                                            Fermé
                                         </label>
                                         {!day.closed && (
                                             <>
@@ -298,7 +298,7 @@ export default function StoreSettings({ seller }) {
                                                     onChange={e => updateHours(key, 'open', e.target.value)}
                                                     className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                                 />
-                                                <span className="text-gray-400 text-sm">to</span>
+                                                <span className="text-gray-400 text-sm">à</span>
                                                 <input
                                                     type="time"
                                                     value={day.close || '18:00'}
@@ -319,7 +319,7 @@ export default function StoreSettings({ seller }) {
                             disabled={form.processing}
                             className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 px-8 rounded-lg text-sm transition-colors disabled:opacity-60"
                         >
-                            {form.processing ? 'Saving...' : 'Save Store Settings'}
+                            {form.processing ? 'Enregistrement...' : 'Enregistrer les paramètres'}
                         </button>
                     </div>
                 </form>

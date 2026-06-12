@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
-import StatusBadge from '@/Components/UI/StatusBadge';
 import {
     Upload, FileText, Image as ImageIcon, Trash2,
     ShieldCheck, AlertCircle, ExternalLink, FileCheck,
@@ -14,6 +13,32 @@ const documentTypeIcons = {
     tax_certificate: FileCheck,
     other: FileText,
 };
+
+const documentStatusStyles = {
+    pending: 'bg-amber-100 text-amber-800',
+    verified: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800',
+};
+
+const documentStatusLabels = {
+    pending: 'En attente',
+    verified: 'Approuvé',
+    rejected: 'Rejeté',
+};
+
+function DocumentStatusBadge({ status }) {
+    if (!status) return null;
+
+    return (
+        <span
+            className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${
+                documentStatusStyles[status] || 'bg-gray-100 text-gray-800'
+            }`}
+        >
+            {documentStatusLabels[status] || status}
+        </span>
+    );
+}
 
 function getFileIcon(filename) {
     const ext = filename?.split('.').pop()?.toLowerCase();
@@ -51,7 +76,7 @@ export default function DocumentsIndex({ documents, documentTypes }) {
     };
 
     const handleDelete = (id) => {
-        if (confirm('Remove this document? You can upload a new one afterwards.')) {
+        if (confirm('Supprimer ce document ? Vous pourrez en téléverser un nouveau ensuite.')) {
             destroy(`/seller/documents/${id}`);
         }
     };
@@ -61,12 +86,12 @@ export default function DocumentsIndex({ documents, documentTypes }) {
 
     return (
         <>
-            <Head title="Verification Documents" />
+            <Head title="Documents de vérification" />
             <SellerLayout>
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Verification Documents</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Documents de vérification</h1>
                     <p className="text-gray-500 mt-1">
-                        Upload and manage documents required to verify your seller account.
+                        Téléversez et gérez les documents requis pour vérifier votre compte vendeur.
                     </p>
                 </div>
 
@@ -87,15 +112,15 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                 {/* Status overview */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                     <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                        <p className="text-sm text-gray-500 font-medium">Total Uploaded</p>
+                        <p className="text-sm text-gray-500 font-medium">Total téléversé</p>
                         <p className="text-2xl font-bold text-gray-900 mt-1">{documents.length}</p>
                     </div>
                     <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                        <p className="text-sm text-gray-500 font-medium">Pending Review</p>
+                        <p className="text-sm text-gray-500 font-medium">En attente de validation</p>
                         <p className="text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
                     </div>
                     <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                        <p className="text-sm text-gray-500 font-medium">Approved</p>
+                        <p className="text-sm text-gray-500 font-medium">Approuvés</p>
                         <p className="text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
                     </div>
                 </div>
@@ -109,13 +134,13 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                     <Upload size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="font-bold text-gray-900">Upload Document</h2>
-                                    <p className="text-xs text-gray-500">PDF, JPG, or PNG — max 5 MB</p>
+                                    <h2 className="font-bold text-gray-900">Téléverser un document</h2>
+                                    <p className="text-xs text-gray-500">PDF, JPG ou PNG — max. 5 Mo</p>
                                 </div>
                             </div>
                             <form onSubmit={submit} className="p-5 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Type de document</label>
                                     <select
                                         value={data.document_type}
                                         onChange={(e) => setData('document_type', e.target.value)}
@@ -132,13 +157,13 @@ export default function DocumentsIndex({ documents, documentTypes }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Document Number <span className="text-gray-400 font-normal">(optional)</span>
+                                        Numéro du document <span className="text-gray-400 font-normal">(facultatif)</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={data.document_number}
                                         onChange={(e) => setData('document_number', e.target.value)}
-                                        placeholder="e.g. ID or license number"
+                                        placeholder="ex. numéro de carte d'identité ou de licence"
                                         className="w-full border-gray-300 rounded-lg text-sm"
                                     />
                                     {errors.document_number && (
@@ -147,7 +172,7 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">File</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Fichier</label>
                                     <div
                                         onClick={() => fileInputRef.current?.click()}
                                         className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
@@ -170,7 +195,7 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                         {data.document_file ? (
                                             <p className="font-medium text-green-700 text-sm">{data.document_file.name}</p>
                                         ) : (
-                                            <p className="text-sm text-gray-600">Click to browse your file</p>
+                                            <p className="text-sm text-gray-600">Cliquez pour parcourir vos fichiers</p>
                                         )}
                                     </div>
                                     {errors.document_file && (
@@ -184,7 +209,7 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                     className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-primary-700 transition disabled:opacity-50"
                                 >
                                     <Upload size={18} />
-                                    {processing ? 'Uploading...' : 'Upload Document'}
+                                    {processing ? 'Téléversement...' : 'Téléverser le document'}
                                 </button>
                             </form>
                         </div>
@@ -194,9 +219,9 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                     <div className="lg:col-span-3">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-5 border-b border-gray-100 bg-gray-50">
-                                <h2 className="font-bold text-gray-900">Your Documents</h2>
+                                <h2 className="font-bold text-gray-900">Vos documents</h2>
                                 <p className="text-xs text-gray-500 mt-0.5">
-                                    Approved documents help build trust with buyers.
+                                    Les documents approuvés renforcent la confiance des acheteurs.
                                 </p>
                             </div>
 
@@ -207,8 +232,8 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                             <tr>
                                                 <th className="px-5 py-3">Document</th>
                                                 <th className="px-5 py-3">Type</th>
-                                                <th className="px-5 py-3">Status</th>
-                                                <th className="px-5 py-3">Uploaded</th>
+                                                <th className="px-5 py-3">Statut</th>
+                                                <th className="px-5 py-3">Téléversé le</th>
                                                 <th className="px-5 py-3 text-right">Actions</th>
                                             </tr>
                                         </thead>
@@ -240,13 +265,13 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                                             </div>
                                                         </td>
                                                         <td className="px-5 py-4">
-                                                            <StatusBadge status={doc.status} />
+                                                            <DocumentStatusBadge status={doc.status} />
                                                             {doc.status === 'rejected' && doc.rejection_reason && (
                                                                 <p className="text-xs text-red-500 mt-1 max-w-[200px]">{doc.rejection_reason}</p>
                                                             )}
                                                         </td>
                                                         <td className="px-5 py-4 text-gray-500">
-                                                            {new Date(doc.created_at).toLocaleDateString()}
+                                                            {new Date(doc.created_at).toLocaleDateString('fr-FR')}
                                                         </td>
                                                         <td className="px-5 py-4 text-right">
                                                             <div className="flex items-center justify-end gap-2">
@@ -255,7 +280,7 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition"
-                                                                    title="View document"
+                                                                    title="Voir le document"
                                                                 >
                                                                     <ExternalLink size={16} />
                                                                 </a>
@@ -264,7 +289,7 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                                                         type="button"
                                                                         onClick={() => handleDelete(doc.id)}
                                                                         className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
-                                                                        title="Remove document"
+                                                                        title="Supprimer le document"
                                                                     >
                                                                         <Trash2 size={16} />
                                                                     </button>
@@ -280,9 +305,9 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                             ) : (
                                 <div className="p-12 text-center">
                                     <ShieldCheck size={40} className="text-gray-200 mx-auto mb-3" />
-                                    <h3 className="font-bold text-gray-900 mb-1">No documents uploaded</h3>
+                                    <h3 className="font-bold text-gray-900 mb-1">Aucun document téléversé</h3>
                                     <p className="text-sm text-gray-500 max-w-sm mx-auto">
-                                        Upload your national ID, business registration, or tax certificate to complete seller verification.
+                                        Téléversez votre carte d'identité, votre immatriculation d'entreprise ou votre certificat fiscal pour compléter la vérification vendeur.
                                     </p>
                                 </div>
                             )}

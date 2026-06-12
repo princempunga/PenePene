@@ -145,6 +145,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders/{order}',        [\App\Http\Controllers\Seller\OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/status', [\App\Http\Controllers\Seller\OrderController::class, 'updateStatus'])->name('orders.status');
 
+        // Messages
+        Route::get('/messages', [\App\Http\Controllers\Seller\MessageController::class, 'index'])->name('messages.index');
+        Route::get('/messages/{conversation}', [\App\Http\Controllers\Seller\MessageController::class, 'show'])->name('messages.show');
+        Route::post('/messages/{conversation}/send', [\App\Http\Controllers\Seller\MessageController::class, 'send'])->name('messages.send');
 
         // Notifications
         Route::get('/notifications',                                 [\App\Http\Controllers\Seller\NotificationController::class, 'index'])->name('notifications.index');
@@ -178,8 +182,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/documents',                   [\App\Http\Controllers\Seller\DocumentController::class, 'store'])->name('documents.store');
         Route::delete('/documents/{document}',      [\App\Http\Controllers\Seller\DocumentController::class, 'destroy'])->name('documents.destroy');
 
-        // Commissions & Payouts
-        Route::get('/commissions', [\App\Http\Controllers\Seller\CommissionController::class, 'index'])->name('commissions.index');
+        // Payouts
         Route::get('/payouts',     [\App\Http\Controllers\Seller\PayoutController::class, 'index'])->name('payouts.index');
         Route::post('/payouts',    [\App\Http\Controllers\Seller\PayoutController::class, 'store'])->name('payouts.store');
 

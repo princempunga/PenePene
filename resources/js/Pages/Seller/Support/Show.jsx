@@ -3,8 +3,31 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import { Send, User as UserIcon } from 'lucide-react';
 
+const statusLabels = {
+    open: 'Ouvert',
+    in_progress: 'En cours',
+    resolved: 'Résolu',
+    closed: 'Fermé',
+};
+
+const categoryLabels = {
+    account: 'Compte',
+    order: 'Commande',
+    payment: 'Paiement / Retrait',
+    product: 'Produit',
+    technical: 'Problème technique',
+    other: 'Autre',
+};
+
+const priorityLabels = {
+    low: 'Faible',
+    medium: 'Moyenne',
+    high: 'Élevée',
+    urgent: 'Urgente',
+};
+
 export default function SellerSupportShow({ ticket }) {
-    const { auth, flash } = usePage().props;
+    const { flash } = usePage().props;
     const { data, setData, post, processing, reset, errors } = useForm({ body: '' });
 
     const submit = (e) => {
@@ -16,7 +39,7 @@ export default function SellerSupportShow({ ticket }) {
 
     return (
         <SellerLayout>
-            <Head title={`Ticket #${ticket.ticket_number}`} />
+            <Head title={`Ticket n° ${ticket.ticket_number}`} />
 
             <div className="max-w-4xl mx-auto">
                 {flash?.success && (
@@ -36,11 +59,11 @@ export default function SellerSupportShow({ ticket }) {
                             <div>
                                 <h1 className="text-xl font-bold text-gray-900 mb-1">{ticket.subject}</h1>
                                 <p className="text-sm text-gray-500">
-                                    Ticket #{ticket.ticket_number} · Category: {ticket.category} · Priority: {ticket.priority}
+                                    Ticket n° {ticket.ticket_number} · Catégorie : {categoryLabels[ticket.category] || ticket.category} · Priorité : {priorityLabels[ticket.priority] || ticket.priority}
                                 </p>
                             </div>
-                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                                {ticket.status.replace('_', ' ')}
+                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                                {statusLabels[ticket.status] || ticket.status}
                             </span>
                         </div>
                     </div>
@@ -51,7 +74,12 @@ export default function SellerSupportShow({ ticket }) {
                                 <UserIcon size={20} />
                             </div>
                             <div>
-                                <p className="font-semibold text-gray-900 text-sm mb-1">{ticket.user.name} <span className="text-gray-400 font-normal ml-2">{new Date(ticket.created_at).toLocaleString()}</span></p>
+                                <p className="font-semibold text-gray-900 text-sm mb-1">
+                                    {ticket.user.name}{' '}
+                                    <span className="text-gray-400 font-normal ml-2">
+                                        {new Date(ticket.created_at).toLocaleString('fr-FR')}
+                                    </span>
+                                </p>
                                 <div className="text-gray-700 whitespace-pre-wrap">{ticket.body}</div>
                             </div>
                         </div>
@@ -65,8 +93,10 @@ export default function SellerSupportShow({ ticket }) {
                                 </div>
                                 <div>
                                     <p className="font-semibold text-gray-900 text-sm mb-1">
-                                        {reply.is_staff_reply ? 'PenePene Support' : reply.user.name}
-                                        <span className="text-gray-400 font-normal ml-2">{new Date(reply.created_at).toLocaleString()}</span>
+                                        {reply.is_staff_reply ? 'Assistance PenePene' : reply.user.name}
+                                        <span className="text-gray-400 font-normal ml-2">
+                                            {new Date(reply.created_at).toLocaleString('fr-FR')}
+                                        </span>
                                     </p>
                                     <div className="text-gray-700 whitespace-pre-wrap">{reply.body}</div>
                                 </div>
@@ -77,14 +107,14 @@ export default function SellerSupportShow({ ticket }) {
 
                 {ticket.status !== 'closed' ? (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                        <h3 className="font-semibold text-gray-900 mb-4">Reply to Ticket</h3>
+                        <h3 className="font-semibold text-gray-900 mb-4">Répondre au ticket</h3>
                         <form onSubmit={submit}>
                             <textarea
                                 value={data.body}
                                 onChange={e => setData('body', e.target.value)}
                                 rows="4"
                                 className="w-full border-gray-300 rounded-lg shadow-sm focus:border-primary-500 focus:ring-primary-500 mb-3"
-                                placeholder="Write your reply here..."
+                                placeholder="Écrivez votre réponse ici…"
                             ></textarea>
                             {errors.body && <p className="text-red-600 text-sm mb-3">{errors.body}</p>}
                             <div className="flex justify-end">
@@ -93,14 +123,14 @@ export default function SellerSupportShow({ ticket }) {
                                     disabled={processing}
                                     className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 transition disabled:opacity-50"
                                 >
-                                    <Send size={16} /> Send Reply
+                                    <Send size={16} /> {processing ? 'Envoi…' : 'Envoyer la réponse'}
                                 </button>
                             </div>
                         </form>
                     </div>
                 ) : (
                     <div className="bg-gray-50 rounded-xl border border-gray-200 text-center p-6 text-gray-500">
-                        This ticket is closed and cannot receive new replies.
+                        Ce ticket est fermé et ne peut plus recevoir de nouvelles réponses.
                     </div>
                 )}
             </div>

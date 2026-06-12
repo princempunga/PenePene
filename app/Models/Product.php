@@ -41,6 +41,9 @@ class Product extends Model
             if (empty($product->slug)) {
                 $product->slug = Str::slug($product->name) . '-' . Str::random(6);
             }
+            if (empty($product->currency)) {
+                $product->currency = 'CDF';
+            }
         });
     }
 

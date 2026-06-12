@@ -78,6 +78,8 @@ class HandleInertiaRequests extends Middleware
                 'status'        => $request->user()->seller->status,
                 'logo'          => $request->user()->seller->logo,
             ] : null,
+            'locale'   => 'fr',
+            'currency' => 'CDF',
         ]);
     }
 }

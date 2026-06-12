@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>PenePene Low Stock Report</title>
+    <title>PenePene — Alerte stock faible</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1a202c; }
@@ -18,28 +18,45 @@
     </style>
 </head>
 <body>
+    @php
+        $statusLabels = [
+            'pending'  => 'En attente',
+            'active'   => 'Actif',
+            'inactive' => 'Inactif',
+            'rejected' => 'Rejeté',
+        ];
+    @endphp
+
     <div class="header">
-        <h1>PenePene — Low Stock Alert</h1>
-        <p style="margin-top: 4px; font-size: 11px; opacity: 0.9">{{ $seller->business_name }} — {{ now()->format('d M Y') }}</p>
+        <h1>PenePene — Alerte stock faible</h1>
+        <p style="margin-top: 4px; font-size: 11px; opacity: 0.9">{{ $seller->business_name }} — {{ now()->locale('fr')->translatedFormat('d M Y') }}</p>
     </div>
     <div class="content">
         <table>
-            <thead><tr><th>Product</th><th>Category</th><th>Available Stock</th><th>Low Stock Threshold</th><th>Status</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Stock disponible</th>
+                    <th>Seuil stock faible</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
             <tbody>
                 @forelse($data as $product)
                 <tr>
                     <td><strong>{{ $product->name }}</strong></td>
-                    <td>{{ optional($product->category)->name ?? 'N/A' }}</td>
+                    <td>{{ optional($product->category)->name ?? 'N/D' }}</td>
                     <td style="color: #b91c1c; font-weight: bold;">{{ $product->available_stock }}</td>
                     <td>{{ $product->low_stock_threshold }}</td>
-                    <td>{{ ucfirst($product->status) }}</td>
+                    <td>{{ $statusLabels[$product->status] ?? ucfirst($product->status) }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="5" style="text-align: center; padding: 24px; color: #94a3b8;">No low-stock products. Great!</td></tr>
+                <tr><td colspan="5" style="text-align: center; padding: 24px; color: #94a3b8;">Aucun produit en stock faible. Parfait !</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    <div class="footer">PenePene Marketplace — Low Stock Report — {{ now()->format('d M Y') }}</div>
+    <div class="footer">PenePene Marketplace — Rapport stock faible — {{ now()->locale('fr')->translatedFormat('d M Y') }}</div>
 </body>
 </html>

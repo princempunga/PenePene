@@ -43,7 +43,7 @@ function NotificationItem({ notif, basePath }) {
                 </div>
                 <p className="text-sm text-gray-500 line-clamp-2">{notif.body}</p>
                 <p className="text-xs text-gray-400 mt-1.5">
-                    {new Date(notif.created_at).toLocaleString([], {
+                    {new Date(notif.created_at).toLocaleString('fr-FR', {
                         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
                     })}
                 </p>
@@ -100,7 +100,7 @@ export default function Notifications({ unread, read }) {
                             className="flex items-center gap-1.5 text-sm text-amber-600 hover:text-amber-700 font-medium"
                         >
                             <CheckCheck size={16} />
-                            Mark all read
+                            Tout marquer comme lu
                         </button>
                     )}
                 </div>
@@ -108,9 +108,9 @@ export default function Notifications({ unread, read }) {
                 {totalCount > 0 ? (
                     <>
                         <NotificationSection
-                            title="Unread"
+                            title="Non lues"
                             count={unread.length}
-                            emptyMessage="No unread notifications."
+                            emptyMessage="Aucune notification non lue."
                         >
                             {unread.map(notif => (
                                 <NotificationItem key={notif.id} notif={notif} basePath={basePath} />
@@ -118,7 +118,7 @@ export default function Notifications({ unread, read }) {
                         </NotificationSection>
 
                         <NotificationSection
-                            title="Earlier"
+                            title="Précédentes"
                             count={read.total ?? 0}
                         >
                             {read.data?.map(notif => (
@@ -133,8 +133,8 @@ export default function Notifications({ unread, read }) {
                         <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Bell size={32} className="text-amber-300" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">All caught up!</h3>
-                        <p className="text-gray-500">You have no notifications at the moment.</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Vous êtes à jour !</h3>
+                        <p className="text-gray-500">Vous n'avez aucune notification pour le moment.</p>
                     </div>
                 )}
             </SellerLayout>

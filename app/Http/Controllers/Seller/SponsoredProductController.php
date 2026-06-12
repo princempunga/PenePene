@@ -42,6 +42,17 @@ class SponsoredProductController extends Controller
             'placement'   => 'required|in:homepage_banner,product_of_day,product_of_week,featured_listing,category_top',
             'starts_at'   => 'required|date|after:today',
             'expires_at'  => 'required|date|after:starts_at',
+        ], [
+            'product_id.required' => 'Veuillez sélectionner un produit.',
+            'product_id.exists'   => 'Le produit sélectionné est invalide.',
+            'placement.required'  => 'L\'emplacement est obligatoire.',
+            'placement.in'        => 'L\'emplacement sélectionné est invalide.',
+            'starts_at.required'  => 'La date de début est obligatoire.',
+            'starts_at.date'      => 'La date de début doit être une date valide.',
+            'starts_at.after'     => 'La date de début doit être postérieure à aujourd\'hui.',
+            'expires_at.required' => 'La date de fin est obligatoire.',
+            'expires_at.date'     => 'La date de fin doit être une date valide.',
+            'expires_at.after'    => 'La date de fin doit être postérieure à la date de début.',
         ]);
 
         // Verify product belongs to this seller
@@ -60,7 +71,7 @@ class SponsoredProductController extends Controller
         ]);
 
         return redirect()->route('seller.sponsored.index')
-            ->with('success', 'Your sponsored product request has been submitted for admin review.');
+            ->with('success', 'Votre demande de produit sponsorisé a été soumise pour examen par l\'administrateur.');
     }
 
     public function destroy(SponsoredProduct $sponsored)
@@ -70,11 +81,11 @@ class SponsoredProductController extends Controller
         }
 
         if ($sponsored->status === 'active') {
-            return back()->withErrors(['error' => 'Cannot cancel an active sponsored campaign.']);
+            return back()->withErrors(['error' => 'Impossible d\'annuler une campagne sponsorisée active.']);
         }
 
         $sponsored->delete();
 
-        return back()->with('success', 'Sponsored product request removed.');
+        return back()->with('success', 'Demande de produit sponsorisé supprimée.');
     }
 }

@@ -74,7 +74,7 @@ class DashboardController extends Controller
                 ->sum('total');
 
             $revenueData[] = [
-                'date'   => $date->format('M d'),
+                'date'   => $date->locale('fr')->translatedFormat('j M'),
                 'amount' => (float) $sum,
             ];
         }
@@ -94,6 +94,7 @@ class DashboardController extends Controller
                 'ordersThisWeek'   => $ordersThisWeek,
                 'revenueThisWeek'  => (float) $revenueThisWeek,
                 'unreadMessages'   => $unreadMessages,
+                'currency'         => 'CDF',
             ],
             'recentOrders'  => $recentOrders,
             'recentReviews' => $recentReviews,

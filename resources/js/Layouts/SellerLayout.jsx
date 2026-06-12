@@ -3,24 +3,30 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Package, ShoppingCart, MessageCircle, Bell,
     Star, User, LogOut, ChevronRight, Store, CreditCard, FileDown,
-    Percent, Wallet, FileText, Settings, Menu, X,
+    Wallet, FileText, Settings, Menu, X,
 } from 'lucide-react';
 
 const navItems = [
-    { label: 'Dashboard',      href: '/seller/dashboard',        icon: LayoutDashboard, badge: null },
-    { label: 'Products',       href: '/seller/products',         icon: Package,         badge: null },
-    { label: 'Orders',         href: '/seller/orders',           icon: ShoppingCart,    badge: null },
-    { label: 'Messages',       href: '/seller/messages',         icon: MessageCircle,   badge: 'messages' },
-    { label: 'Notifications',  href: '/seller/notifications',    icon: Bell,            badge: 'notifications' },
-    { label: 'Reviews',        href: '/seller/reviews',          icon: Star,            badge: null },
-    { label: 'Commissions',    href: '/seller/commissions',      icon: Percent,         badge: null },
-    { label: 'Payouts',        href: '/seller/payouts',          icon: Wallet,          badge: null },
-    { label: 'Documents',      href: '/seller/documents',        icon: FileText,        badge: null },
-    { label: 'Reports',        href: '/seller/reports',          icon: FileDown,        badge: null },
-    { label: 'Store Settings', href: '/seller/store/settings',   icon: Settings,        badge: null },
-    { label: 'Profile',        href: '/seller/profile',          icon: User,            badge: null },
-    { label: 'Subscriptions',  href: '/seller/subscriptions',    icon: CreditCard,      badge: null },
+    { label: 'Tableau de bord',       href: '/seller/dashboard',        icon: LayoutDashboard, badge: null },
+    { label: 'Produits',              href: '/seller/products',         icon: Package,         badge: null },
+    { label: 'Commandes',             href: '/seller/orders',           icon: ShoppingCart,    badge: null },
+    { label: 'Messages',              href: '/seller/messages',         icon: MessageCircle,   badge: 'messages' },
+    { label: 'Notifications',         href: '/seller/notifications',    icon: Bell,            badge: 'notifications' },
+    { label: 'Avis',                  href: '/seller/reviews',          icon: Star,            badge: null },
+    { label: 'Paiements',             href: '/seller/payouts',          icon: Wallet,          badge: null },
+    { label: 'Documents',             href: '/seller/documents',        icon: FileText,        badge: null },
+    { label: 'Rapports',              href: '/seller/reports',          icon: FileDown,        badge: null },
+    { label: 'Paramètres de la boutique', href: '/seller/store/settings', icon: Settings,    badge: null },
+    { label: 'Profil',                href: '/seller/profile',          icon: User,            badge: null },
+    { label: 'Abonnements',           href: '/seller/subscriptions',    icon: CreditCard,      badge: null },
 ];
+
+const sellerStatusLabels = {
+    verified:  'Vérifié',
+    pending:   'En attente',
+    rejected:  'Rejeté',
+    suspended: 'Suspendu',
+};
 
 function isNavActive(currentPath, href) {
     if (href === '/seller/dashboard') {
@@ -91,7 +97,7 @@ export default function SellerLayout({ children, title }) {
                         </div>
                     )}
                     <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{seller?.business_name || 'Seller Portal'}</p>
+                        <p className="font-semibold text-gray-900 truncate">{seller?.business_name || 'Portail vendeur'}</p>
                         <p className="text-xs text-gray-500 truncate">{auth.user?.email}</p>
                     </div>
                 </div>
@@ -102,7 +108,7 @@ export default function SellerLayout({ children, title }) {
                         'bg-gray-100 text-gray-600'
                     }`}>
                         <Store size={12} />
-                        {seller.status.charAt(0).toUpperCase() + seller.status.slice(1)}
+                        {sellerStatusLabels[seller.status] || seller.status}
                     </span>
                 )}
             </div>
@@ -126,7 +132,7 @@ export default function SellerLayout({ children, title }) {
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 border-l-2 border-transparent transition-colors"
                 >
                     <LogOut size={18} className="shrink-0" />
-                    Sign Out
+                    Déconnexion
                 </Link>
             </nav>
         </>
@@ -139,25 +145,26 @@ export default function SellerLayout({ children, title }) {
                     type="button"
                     onClick={() => setSidebarOpen(!sidebarOpen)}
                     className="lg:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                    aria-label="Toggle menu"
+                    aria-label={sidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
                 >
                     {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
                 </button>
 
                 <Link href="/seller/dashboard" className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
                     PenePene
-                    <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-0.5 rounded-md">Seller</span>
+                    <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-0.5 rounded-md">Vendeur</span>
                 </Link>
 
                 <div className="flex-1" />
 
                 <div className="flex items-center gap-2 sm:gap-3">
                     <Link href="/" className="hidden sm:block text-sm text-gray-500 hover:text-primary-600 transition-colors">
-                        View Site
+                        Voir le site
                     </Link>
                     <Link
                         href="/seller/notifications"
                         className="relative p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                        aria-label="Notifications"
                     >
                         <Bell size={20} />
                         {badges.notifications > 0 && (

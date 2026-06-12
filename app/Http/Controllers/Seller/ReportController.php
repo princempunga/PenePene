@@ -49,6 +49,7 @@ class ReportController extends Controller
             'pending'        => (clone $ordersQuery)->where('status', 'pending')->count(),
             'total_products' => Product::where('seller_id', $seller->id)->count(),
             'avg_order_value'=> (clone $ordersQuery)->whereIn('status', $deliveredStatuses)->avg('total') ?? 0,
+            'currency'       => 'CDF',
         ];
 
         $days = min($from->diffInDays($to) + 1, 31);
@@ -62,7 +63,7 @@ class ReportController extends Controller
                 ->sum('total');
 
             $revenueTrend[] = [
-                'date'   => $date->format('M d'),
+                'date'   => $date->locale('fr')->translatedFormat('j M'),
                 'amount' => (float) $amount,
             ];
         }
@@ -161,26 +162,34 @@ class ReportController extends Controller
         $callback = function () use ($data, $type) {
             $handle = fopen('php://output', 'w');
 
+            $orderStatusLabels = [
+                'pending'   => 'En attente',
+                'confirmed' => 'Confirmée',
+                'shipped'   => 'Expédiée',
+                'delivered' => 'Livrée',
+                'cancelled' => 'Annulée',
+            ];
+
             if ($type === 'sales') {
-                fputcsv($handle, ['Order #', 'Date', 'Buyer', 'Items', 'Subtotal', 'Shipping', 'Total', 'Status']);
+                fputcsv($handle, ['N° commande', 'Date', 'Acheteur', 'Articles', 'Sous-total (FC)', 'Livraison (FC)', 'Total (FC)', 'Statut']);
                 foreach ($data as $order) {
                     fputcsv($handle, [
                         $order->order_number,
                         $order->created_at->format('Y-m-d'),
-                        $order->buyer->user->name ?? 'N/A',
+                        $order->buyer->user->name ?? 'N/D',
                         $order->items->count(),
                         $order->subtotal,
                         $order->shipping_cost,
                         $order->total_amount,
-                        $order->status,
+                        $orderStatusLabels[$order->status] ?? $order->status,
                     ]);
                 }
             } elseif ($type === 'products') {
-                fputcsv($handle, ['Product', 'Category', 'Price', 'Stock', 'Status', 'Views']);
+                fputcsv($handle, ['Produit', 'Catégorie', 'Prix (FC)', 'Stock', 'Statut', 'Vues']);
                 foreach ($data as $product) {
                     fputcsv($handle, [
                         $product->name,
-                        $product->category->name ?? 'N/A',
+                        $product->category->name ?? 'N/D',
                         $product->price,
                         $product->available_stock,
                         $product->status,

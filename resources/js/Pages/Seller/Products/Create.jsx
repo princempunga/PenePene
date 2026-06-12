@@ -45,19 +45,19 @@ export default function ProductCreate({ categories }) {
 
     return (
         <>
-            <Head title="Add Product" />
-            <SellerLayout title="Add New Product">
+            <Head title="Ajouter un produit" />
+            <SellerLayout title="Nouveau produit">
                 <div className="mb-6">
-                    <Link href="/seller/products" className="text-sm text-gray-500 hover:text-primary-600">← Back to Products</Link>
+                    <Link href="/seller/products" className="text-sm text-gray-500 hover:text-primary-600">← Retour aux produits</Link>
                 </div>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Basic Information</h2>
+                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Informations de base</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit</label>
                                 <input
                                     type="text"
                                     value={data.name}
@@ -81,12 +81,12 @@ export default function ProductCreate({ categories }) {
 
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
                             <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Images</h2>
-                            <p className="text-sm text-gray-500">Upload product images (max 2MB each). The first image will be the primary one.</p>
+                            <p className="text-sm text-gray-500">Téléchargez des images du produit (2 Mo max chacune). La première image sera l'image principale.</p>
 
                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                                 <Upload size={24} className="text-gray-400 mb-2" />
-                                <span className="text-sm text-gray-600 font-medium">Click to upload images</span>
-                                <span className="text-xs text-gray-400 mt-1">PNG, JPG up to 2MB</span>
+                                <span className="text-sm text-gray-600 font-medium">Cliquez pour télécharger des images</span>
+                                <span className="text-xs text-gray-400 mt-1">PNG, JPG — 2 Mo maximum</span>
                                 <input
                                     type="file"
                                     multiple
@@ -105,7 +105,7 @@ export default function ProductCreate({ categories }) {
                                             <img src={src} alt="" className="w-full h-28 object-cover" />
                                             {index === 0 && (
                                                 <span className="absolute top-2 left-2 bg-primary-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                                                    Primary
+                                                    Principale
                                                 </span>
                                             )}
                                             <button
@@ -124,10 +124,10 @@ export default function ProductCreate({ categories }) {
 
                     <div className="space-y-6">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Organization</h2>
+                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Organisation</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
                                 <select
                                     value={data.category_id}
                                     onChange={(e) => {
@@ -139,7 +139,7 @@ export default function ProductCreate({ categories }) {
                                     }}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
                                 >
-                                    <option value="">Select Category</option>
+                                    <option value="">Choisir une catégorie</option>
                                     {categories.map((cat) => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
@@ -149,13 +149,13 @@ export default function ProductCreate({ categories }) {
 
                             {subcategories.length > 0 && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sous-catégorie</label>
                                     <select
                                         value={data.subcategory_id}
                                         onChange={(e) => setData('subcategory_id', e.target.value)}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
                                     >
-                                        <option value="">Select Subcategory (Optional)</option>
+                                        <option value="">Choisir une sous-catégorie (facultatif)</option>
                                         {subcategories.map((sub) => (
                                             <option key={sub.id} value={sub.id}>{sub.name}</option>
                                         ))}
@@ -165,15 +165,15 @@ export default function ProductCreate({ categories }) {
                             )}
 
                             <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800">
-                                New products are submitted for review and will appear as <strong>pending</strong> until approved.
+                                Les nouveaux produits sont soumis à validation et apparaîtront comme <strong>En attente</strong> jusqu'à leur approbation.
                             </div>
                         </div>
 
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Pricing & Stock</h2>
+                            <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Prix et stock</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (TZS)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Prix (CDF)</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -186,7 +186,7 @@ export default function ProductCreate({ categories }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Sale Price (Optional)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Prix promotionnel (facultatif)</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -199,7 +199,7 @@ export default function ProductCreate({ categories }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Initial Stock</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Stock initial</label>
                                 <input
                                     type="number"
                                     min="1"
@@ -216,7 +216,7 @@ export default function ProductCreate({ categories }) {
                             disabled={processing}
                             className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition-colors"
                         >
-                            {processing ? 'Saving...' : 'Save Product'}
+                            {processing ? 'Enregistrement...' : 'Enregistrer le produit'}
                         </button>
                     </div>
                 </form>

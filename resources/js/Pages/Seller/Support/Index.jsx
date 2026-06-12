@@ -1,30 +1,53 @@
 import React from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
-import { Ticket, Plus, Clock, CheckCircle2 } from 'lucide-react';
+import { Ticket, Plus, Clock } from 'lucide-react';
+
+const statusColors = {
+    open: 'bg-blue-100 text-blue-800',
+    in_progress: 'bg-amber-100 text-amber-800',
+    resolved: 'bg-green-100 text-green-800',
+    closed: 'bg-gray-100 text-gray-800',
+};
+
+const statusLabels = {
+    open: 'Ouvert',
+    in_progress: 'En cours',
+    resolved: 'Résolu',
+    closed: 'Fermé',
+};
+
+const categoryLabels = {
+    account: 'Compte',
+    order: 'Commande',
+    payment: 'Paiement / Retrait',
+    product: 'Produit',
+    technical: 'Problème technique',
+    other: 'Autre',
+};
+
+const priorityLabels = {
+    low: 'Faible',
+    medium: 'Moyenne',
+    high: 'Élevée',
+    urgent: 'Urgente',
+};
 
 export default function SellerSupportIndex({ tickets }) {
     const { flash } = usePage().props;
 
-    const statusColors = {
-        open: 'bg-blue-100 text-blue-800',
-        in_progress: 'bg-amber-100 text-amber-800',
-        resolved: 'bg-green-100 text-green-800',
-        closed: 'bg-gray-100 text-gray-800',
-    };
-
     return (
         <SellerLayout>
-            <Head title="Seller Support Tickets" />
+            <Head title="Assistance vendeur" />
 
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Seller Support</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Assistance vendeur</h1>
                 <Link
                     href="/seller/support/create"
                     className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition"
                 >
                     <Plus size={18} />
-                    New Ticket
+                    Nouveau ticket
                 </Link>
             </div>
 
@@ -50,14 +73,14 @@ export default function SellerSupportIndex({ tickets }) {
                                     <div className="flex items-center gap-2 mb-1">
                                         <h3 className="font-semibold text-gray-900 truncate">{ticket.subject}</h3>
                                         <span className={`px-2 py-0.5 rounded text-xs font-semibold ${statusColors[ticket.status]}`}>
-                                            {ticket.status.replace('_', ' ').toUpperCase()}
+                                            {statusLabels[ticket.status] || ticket.status}
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-500 truncate mb-2">
-                                        #{ticket.ticket_number} · Category: {ticket.category} · Priority: {ticket.priority}
+                                        #{ticket.ticket_number} · Catégorie : {categoryLabels[ticket.category] || ticket.category} · Priorité : {priorityLabels[ticket.priority] || ticket.priority}
                                     </p>
                                     <p className="text-xs text-gray-400 flex items-center gap-1">
-                                        <Clock size={12} /> Last updated: {new Date(ticket.updated_at).toLocaleString()}
+                                        <Clock size={12} /> Dernière mise à jour : {new Date(ticket.updated_at).toLocaleString('fr-FR')}
                                     </p>
                                 </div>
                             </Link>
@@ -66,7 +89,7 @@ export default function SellerSupportIndex({ tickets }) {
                 ) : (
                     <div className="p-12 text-center text-gray-500">
                         <Ticket size={40} className="mx-auto mb-3 opacity-20" />
-                        <p>You haven't opened any support tickets.</p>
+                        <p>Vous n&apos;avez ouvert aucun ticket d&apos;assistance.</p>
                     </div>
                 )}
             </div>

@@ -29,11 +29,22 @@ class SupportController extends Controller
 
     public function store(Request $request)
     {
+        $isSeller = request()->routeIs('seller.*');
+
         $request->validate([
             'subject'  => 'required|string|max:255',
             'body'     => 'required|string|max:5000',
             'category' => 'required|in:account,order,payment,product,technical,other',
             'priority' => 'required|in:low,medium,high,urgent',
+        ], [
+            'subject.required'  => $isSeller ? 'L\'objet est obligatoire.' : 'Subject is required.',
+            'subject.max'       => $isSeller ? 'L\'objet ne peut pas dépasser :max caractères.' : 'Subject may not exceed :max characters.',
+            'body.required'     => $isSeller ? 'La description est obligatoire.' : 'Description is required.',
+            'body.max'          => $isSeller ? 'La description ne peut pas dépasser :max caractères.' : 'Description may not exceed :max characters.',
+            'category.required' => $isSeller ? 'La catégorie est obligatoire.' : 'Category is required.',
+            'category.in'       => $isSeller ? 'La catégorie sélectionnée est invalide.' : 'Selected category is invalid.',
+            'priority.required' => $isSeller ? 'La priorité est obligatoire.' : 'Priority is required.',
+            'priority.in'       => $isSeller ? 'La priorité sélectionnée est invalide.' : 'Selected priority is invalid.',
         ]);
 
         $ticket = SupportTicket::create([
@@ -45,8 +56,12 @@ class SupportController extends Controller
             'status'   => 'open',
         ]);
 
-        return redirect()->route(request()->routeIs('seller.*') ? 'seller.support.show' : 'buyer.support.show', $ticket)
-            ->with('success', 'Your support ticket has been submitted. We will respond shortly.');
+        $isSeller = request()->routeIs('seller.*');
+
+        return redirect()->route($isSeller ? 'seller.support.show' : 'buyer.support.show', $ticket)
+            ->with('success', $isSeller
+                ? 'Votre ticket d\'assistance a été soumis. Nous vous répondrons sous peu.'
+                : 'Your support ticket has been submitted. We will respond shortly.');
     }
 
     public function show(SupportTicket $ticket)
@@ -68,11 +83,18 @@ class SupportController extends Controller
             abort(403);
         }
 
+        $isSeller = request()->routeIs('seller.*');
+
         if ($ticket->status === 'closed') {
-            return back()->withErrors(['error' => 'Cannot reply to a closed ticket.']);
+            return back()->withErrors(['error' => $isSeller
+                ? 'Impossible de répondre à un ticket fermé.'
+                : 'Cannot reply to a closed ticket.']);
         }
 
-        $request->validate(['body' => 'required|string|max:5000']);
+        $request->validate(['body' => 'required|string|max:5000'], [
+            'body.required' => $isSeller ? 'Le message est obligatoire.' : 'Message is required.',
+            'body.max'      => $isSeller ? 'Le message ne peut pas dépasser :max caractères.' : 'Message may not exceed :max characters.',
+        ]);
 
         $ticket->replies()->create([
             'user_id'        => Auth::id(),
@@ -84,6 +106,6 @@ class SupportController extends Controller
             $ticket->update(['status' => 'open']);
         }
 
-        return back()->with('success', 'Reply sent.');
+        return back()->with('success', $isSeller ? 'Réponse envoyée.' : 'Reply sent.');
     }
 }
