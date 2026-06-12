@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\CartController;
 
 // ─── Public Routes ───────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -36,6 +37,13 @@ Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 // Sellers public store
 Route::get('/sellers/{seller:slug}', [SellerController::class, 'publicStore'])->name('sellers.store');
+
+// ─── Cart (Guest-Accessible) ─────────────────────────────────────────────────
+Route::get('/cart',           [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add',      [CartController::class, 'add'])->name('cart.add');
+Route::patch('/cart/update',  [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
 // Static Pages
 Route::get('/about',           [PageController::class, 'about'])->name('about');
@@ -76,14 +84,33 @@ Route::middleware('auth')->group(function () {
     Route::post('/email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'resend'])
         ->middleware('throttle:6,1')->name('verification.send');
 
-    // ─── Internal Chat System ─────────────────────────────────────────────────
-    Route::get('/conversations', [\App\Http\Controllers\ChatController::class, 'index'])->name('conversations.index');
-    Route::post('/conversations/start', [\App\Http\Controllers\ChatController::class, 'startConversation'])->name('conversations.start');
-    Route::get('/conversations/{conversation}', [\App\Http\Controllers\ChatController::class, 'show'])->name('conversations.show');
-    Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('conversations.messages.send');
-    Route::patch('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'editMessage'])->name('messages.edit');
-    Route::delete('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'deleteMessage'])->name('messages.delete');
-    Route::post('/messages/{message}/read', [\App\Http\Controllers\ChatController::class, 'markAsRead'])->name('messages.read');
+    // ─── Internal Chat System (with /chat prefix to match frontend URLs) ──────
+    Route::prefix('chat')->group(function () {
+        Route::get('/conversations', [\App\Http\Controllers\ChatController::class, 'index'])->name('conversations.index');
+        Route::post('/conversations/start', [\App\Http\Controllers\ChatController::class, 'startConversation'])->name('conversations.start');
+        Route::get('/conversations/{conversation}', [\App\Http\Controllers\ChatController::class, 'show'])->name('conversations.show');
+        Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('conversations.messages.send');
+        Route::patch('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'editMessage'])->name('messages.edit');
+        Route::delete('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'deleteMessage'])->name('messages.delete');
+        Route::post('/messages/{message}/read', [\App\Http\Controllers\ChatController::class, 'markAsRead'])->name('messages.read');
+        Route::post('/conversations/{conversation}/messages/{message}/pin', [\App\Http\Controllers\ChatController::class, 'pinMessage'])->name('messages.pin');
+        Route::delete('/conversations/{conversation}/messages/{message}/pin', [\App\Http\Controllers\ChatController::class, 'unpinMessage'])->name('messages.unpin');
+    });
+
+    // Keep old /conversations routes as aliases for dashboard links
+    Route::get('/conversations', [\App\Http\Controllers\ChatController::class, 'index']);
+    Route::get('/conversations/{conversation}', [\App\Http\Controllers\ChatController::class, 'show']);
+    Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\ChatController::class, 'sendMessage']);
+    Route::patch('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'editMessage']);
+    Route::delete('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'deleteMessage']);
+    Route::post('/messages/{message}/read', [\App\Http\Controllers\ChatController::class, 'markAsRead']);
+
+    // Buyer messages → redirect to conversations system
+    Route::get('/buyer/messages', fn() => redirect('/conversations'))->name('buyer.messages.index');
+    Route::get('/buyer/messages/{conversation}', fn($c) => redirect("/conversations/{$c}"))->name('buyer.messages.show');
+    // Seller messages → same
+    Route::get('/seller/messages', fn() => redirect('/conversations'))->name('seller.messages.index');
+    Route::get('/seller/messages/{conversation}', fn($c) => redirect("/conversations/{$c}"))->name('seller.messages.show');
 
     // ─── Buyer Routes ─────────────────────────────────────────────────────────
     Route::middleware('role:buyer')->prefix('buyer')->name('buyer.')->group(function () {

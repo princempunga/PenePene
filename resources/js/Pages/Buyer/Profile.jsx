@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import BuyerLayout from '@/Layouts/BuyerLayout';
+import AppLayout from '@/Layouts/AppLayout';
 
 export default function Profile({ user, buyer }) {
     const { flash } = usePage().props;
@@ -33,9 +33,10 @@ export default function Profile({ user, buyer }) {
     };
 
     return (
-        <>
+        <AppLayout>
             <Head title="My Profile" />
-            <BuyerLayout title="Profile Settings">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile Settings</h1>
                 {flash?.success && (
                     <div className="mb-6 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
                         {flash.success}
@@ -187,7 +188,7 @@ export default function Profile({ user, buyer }) {
                         </form>
                     </div>
                 </div>
-            </BuyerLayout>
-        </>
+            </div>
+        </AppLayout>
     );
 }

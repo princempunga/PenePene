@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\PinnedMessage;
 use App\Models\Seller;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -27,14 +28,12 @@ class ChatController extends Controller
                 } elseif ($user->isSeller() && $user->seller) {
                     $query->where('seller_id', $user->seller->id);
                 } else {
-                    // Admins see nothing here by default
                     $query->whereRaw('1 = 0'); 
                 }
             })
             ->orderByDesc('last_message_at')
             ->get();
 
-        // For Inertia, return the appropriate view based on role
         if ($user->isBuyer()) {
             return Inertia::render('Buyer/Messages/Index', ['conversations' => $conversations]);
         } elseif ($user->isSeller()) {
@@ -73,18 +72,32 @@ class ChatController extends Controller
     {
         $this->authorizeConversation($conversation);
 
+        $userId = auth()->id();
+
         $messages = $conversation->messages()
             ->with(['sender', 'receiver'])
             ->oldest()
-            ->get();
+            ->get()
+            ->filter(fn($m) => !$m->isDeletedFor($userId)) // Hide "deleted for me" messages
+            ->values();
 
         // Mark unread as read
-        $messages->where('receiver_id', auth()->id())
+        $messages->where('receiver_id', $userId)
                  ->where('is_read', false)
                  ->each->markAsRead();
 
+        // Load pinned messages with the full message
+        $pinnedMessages = PinnedMessage::with(['message.sender'])
+            ->where('conversation_id', $conversation->id)
+            ->whereHas('message', fn($q) => $q->where('is_deleted', false))
+            ->orderByDesc('created_at')
+            ->get();
+
         if (request()->wantsJson()) {
-            return response()->json(['messages' => $messages]);
+            return response()->json([
+                'messages'        => $messages,
+                'pinned_messages' => $pinnedMessages,
+            ]);
         }
 
         $user = auth()->user();
@@ -106,13 +119,15 @@ class ChatController extends Controller
         
         if ($user->isBuyer()) {
             return Inertia::render('Buyer/Messages/Show', [
-                'conversations' => $conversations,
-                'conversation' => $conversation,
+                'conversations'   => $conversations,
+                'conversation'    => $conversation,
+                'pinned_messages' => $pinnedMessages,
             ]);
         } elseif ($user->isSeller()) {
             return Inertia::render('Seller/Messages/Show', [
-                'conversations' => $conversations,
-                'conversation' => $conversation,
+                'conversations'   => $conversations,
+                'conversation'    => $conversation,
+                'pinned_messages' => $pinnedMessages,
             ]);
         }
 
@@ -127,8 +142,8 @@ class ChatController extends Controller
         $this->authorizeConversation($conversation);
 
         $request->validate([
-            'body' => 'nullable|string|max:5000',
-            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,webp,mp4,webm,mov|max:25600', // 25MB max
+            'body'       => 'nullable|string|max:5000',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,webp,mp4,webm,mov|max:51200', // 50MB max
         ]);
 
         if (!$request->body && !$request->hasFile('attachment')) {
@@ -136,17 +151,16 @@ class ChatController extends Controller
         }
 
         $sender = auth()->user();
-        // Determine receiver
         $receiverId = $sender->id === $conversation->buyer_id 
             ? $conversation->seller->user_id 
             : $conversation->buyer_id;
 
         $messageData = [
             'conversation_id' => $conversation->id,
-            'sender_id' => $sender->id,
-            'receiver_id' => $receiverId,
-            'body' => $request->body,
-            'message_type' => 'text',
+            'sender_id'       => $sender->id,
+            'receiver_id'     => $receiverId,
+            'body'            => $request->body,
+            'message_type'    => 'text',
         ];
 
         if ($request->hasFile('attachment')) {
@@ -190,7 +204,7 @@ class ChatController extends Controller
         $request->validate(['body' => 'required|string|max:5000']);
 
         $message->update([
-            'body' => $request->body,
+            'body'      => $request->body,
             'is_edited' => true,
             'edited_at' => now(),
         ]);
@@ -199,22 +213,89 @@ class ChatController extends Controller
     }
 
     /**
-     * Delete a message (soft delete logic, sets is_deleted).
+     * Delete a message.
+     * delete_type: 'me' (delete for self only) | 'everyone' (soft delete for all)
      */
-    public function deleteMessage(Message $message)
+    public function deleteMessage(Request $request, Message $message)
     {
-        if ($message->sender_id !== auth()->id()) {
+        $userId = auth()->id();
+
+        if ($message->sender_id !== $userId && $message->receiver_id !== $userId) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $message->update([
-            'is_deleted' => true,
-            'deleted_at' => now(),
-            'body' => null, // clear content
-            'attachment_path' => null, // clear attachment reference
+        $deleteType = $request->input('delete_type', 'me');
+
+        if ($deleteType === 'everyone') {
+            // Only sender can delete for everyone
+            if ($message->sender_id !== $userId) {
+                return response()->json(['message' => 'Only the sender can delete for everyone.'], 403);
+            }
+
+            $message->update([
+                'is_deleted'      => true,
+                'deleted_at'      => now(),
+                'body'            => null,
+                'attachment_path' => null,
+            ]);
+
+            // Also remove any pin if the message was pinned
+            PinnedMessage::where('message_id', $message->id)->delete();
+
+        } else {
+            // Delete for me: add user to deleted_for array
+            $deletedFor = $message->deleted_for ?? [];
+            if (!in_array($userId, $deletedFor)) {
+                $deletedFor[] = $userId;
+            }
+            $message->update(['deleted_for' => $deletedFor]);
+        }
+
+        return response()->json([
+            'message'     => $message->fresh(),
+            'delete_type' => $deleteType,
+        ]);
+    }
+
+    /**
+     * Pin a message in a conversation.
+     */
+    public function pinMessage(Request $request, Conversation $conversation, Message $message)
+    {
+        $this->authorizeConversation($conversation);
+
+        if ($message->conversation_id !== $conversation->id) {
+            return response()->json(['message' => 'Message does not belong to this conversation.'], 422);
+        }
+
+        if ($message->is_deleted) {
+            return response()->json(['message' => 'Cannot pin a deleted message.'], 422);
+        }
+
+        $pinned = PinnedMessage::firstOrCreate([
+            'conversation_id' => $conversation->id,
+            'message_id'      => $message->id,
+        ], [
+            'pinned_by' => auth()->id(),
         ]);
 
-        return response()->json(['message' => $message]);
+        $pinned->load('message.sender');
+
+        return response()->json(['pinned_message' => $pinned]);
+    }
+
+    /**
+     * Unpin a message.
+     */
+    public function unpinMessage(Conversation $conversation, Message $message)
+    {
+        $this->authorizeConversation($conversation);
+
+        PinnedMessage::where('conversation_id', $conversation->id)
+            ->where('message_id', $message->id)
+            ->delete();
+
+        return response()->json(['success' => true, 'message_id' => $message->id]);
     }
 
     /**

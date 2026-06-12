@@ -31,7 +31,7 @@ class LoginController extends Controller
             return match ($user->role) {
                 'super_admin', 'admin' => redirect()->route('admin.dashboard'),
                 'seller'               => redirect()->route('seller.dashboard'),
-                default                => redirect()->intended(route('buyer.dashboard')),
+                default                => redirect()->intended('/'),
             };
         }
 

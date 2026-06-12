@@ -44,7 +44,7 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('buyer.dashboard')
-            ->with('success', 'Account created successfully! Please verify your email.');
+        return redirect('/')
+            ->with('success', 'Welcome to PenePene! Your account has been created.');
     }
 }

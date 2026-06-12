@@ -60,6 +60,7 @@ class HandleInertiaRequests extends Middleware
             'unread_notifications' => $request->user()
                 ? Notification::where('user_id', $request->user()->id)->where('is_read', false)->count()
                 : 0,
+            'cart_count' => collect(session('cart', []))->sum('quantity'),
             'unread_messages' => function () use ($request) {
                 $user = $request->user();
                 if (! $user || ! $user->isSeller() || ! $user->seller) {

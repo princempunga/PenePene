@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import BuyerLayout from '@/Layouts/BuyerLayout';
+import AppLayout from '@/Layouts/AppLayout';
 import { MapPin, Store, Package, X, Star } from 'lucide-react';
 
 const statusColors = {
@@ -26,9 +26,9 @@ export default function OrderShow({ order }) {
     const currentStep = statusSteps.indexOf(order.status);
 
     return (
-        <>
+        <AppLayout>
             <Head title={`Order ${order.order_number}`} />
-            <BuyerLayout>
+            <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="flex items-center gap-3 mb-6">
                     <Link href="/buyer/orders" className="text-sm text-gray-500 hover:text-primary-600">← Back to Orders</Link>
                     <span className="text-gray-300">/</span>
@@ -203,7 +203,7 @@ export default function OrderShow({ order }) {
                         </div>
                     </div>
                 </div>
-            </BuyerLayout>
-        </>
+            </div>
+        </AppLayout>
     );
 }

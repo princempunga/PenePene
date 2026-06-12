@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
-import BuyerLayout from '@/Layouts/BuyerLayout';
+import AppLayout from '@/Layouts/AppLayout';
 import Pagination from '@/Components/UI/Pagination';
 import { Package } from 'lucide-react';
 
@@ -14,9 +14,10 @@ const statusColors = {
 
 export default function OrdersIndex({ orders }) {
     return (
-        <>
+        <AppLayout>
             <Head title="My Orders" />
-            <BuyerLayout title="My Orders">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
                 {orders.data.length > 0 ? (
                     <>
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -93,7 +94,7 @@ export default function OrdersIndex({ orders }) {
                         </Link>
                     </div>
                 )}
-            </BuyerLayout>
-        </>
+            </div>
+        </AppLayout>
     );
 }
