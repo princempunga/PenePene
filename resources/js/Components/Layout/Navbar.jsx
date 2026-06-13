@@ -1,20 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { Menu, Search, ShoppingCart, User, Bell, Heart, MapPin, ChevronDown, Package, MessageSquare, LogOut, Settings } from 'lucide-react';
+import Logo from '@/Components/Brand/Logo';
+import LanguageSwitcher from '@/Components/Layout/LanguageSwitcher';
+import useTranslation from '@/hooks/useTranslation';
 
 // Returns the correct dashboard URL based on user role
 function getDashboardUrl(role) {
     if (role === 'super_admin' || role === 'admin') return '/admin/dashboard';
     if (role === 'seller') return '/seller/dashboard';
-    return '/buyer/dashboard';
+    return '/';
 }
 
 export default function Navbar({ onMenuClick }) {
-    const { auth, cart_count } = usePage().props;
+    const { auth, cart_count, wishlist_count: sharedWishlistCount } = usePage().props;
+    const { t } = useTranslation();
+    const [wishlistCount, setWishlistCount] = useState(sharedWishlistCount || 0);
     const [scrolled, setScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        setWishlistCount(sharedWishlistCount || 0);
+    }, [sharedWishlistCount]);
+
+    useEffect(() => {
+        const handler = (e) => {
+            if (typeof e.detail?.wishlist_count === 'number') {
+                setWishlistCount(e.detail.wishlist_count);
+            }
+        };
+        window.addEventListener('wishlist-updated', handler);
+        return () => window.removeEventListener('wishlist-updated', handler);
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -53,13 +72,14 @@ export default function Navbar({ onMenuClick }) {
             <div className="hidden lg:block bg-gray-900 text-gray-300 text-xs py-1.5">
                 <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
                     <div className="flex gap-4">
-                        <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
-                        <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-                        <Link href="/help-center" className="hover:text-white transition-colors">Help Center</Link>
+                        <Link href="/about" className="hover:text-white transition-colors">{t('nav.about')}</Link>
+                        <Link href="/contact" className="hover:text-white transition-colors">{t('nav.contact')}</Link>
+                        <Link href="/help-center" className="hover:text-white transition-colors">{t('nav.help_center')}</Link>
                     </div>
-                    <div className="flex gap-4">
-                        <span className="flex items-center gap-1"><MapPin size={12}/> Deliver to: <strong>Kinshasa</strong></span>
-                        <Link href="/seller/register" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">Sell on PenePene</Link>
+                    <div className="flex gap-4 items-center">
+                        <span className="flex items-center gap-1"><MapPin size={12}/> {t('nav.deliver_to')} <strong>Kinshasa</strong></span>
+                        <LanguageSwitcher variant="compact" />
+                        <Link href="/seller/register" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">{t('nav.sell_on')}</Link>
                     </div>
                 </div>
             </div>
@@ -75,9 +95,7 @@ export default function Navbar({ onMenuClick }) {
                         <Menu size={24} />
                     </button>
                     
-                    <Link href="/" className="flex items-center gap-2">
-                        <img src="/images/logo.png" alt="PenePene" className="h-10 md:h-12 w-auto object-contain" />
-                    </Link>
+                    <Logo className="h-11 md:h-12 w-auto max-w-[160px]" />
                 </div>
 
                 {/* Search Bar (Desktop) */}
@@ -87,11 +105,11 @@ export default function Navbar({ onMenuClick }) {
                             type="text" 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search for products, brands or categories..." 
+                            placeholder={t('nav.search_placeholder')}
                             className="w-full pl-5 pr-12 py-3.5 bg-gray-50 focus:bg-white border-none focus:ring-0 text-gray-900 placeholder-gray-400 font-medium transition-colors"
                         />
                         <button type="submit" className="px-8 bg-primary-600 text-white font-bold hover:bg-primary-700 transition-colors flex items-center gap-2">
-                            <Search size={20} /> Search
+                            <Search size={20} /> {t('nav.search')}
                         </button>
                     </form>
                 </div>
@@ -99,10 +117,11 @@ export default function Navbar({ onMenuClick }) {
                 {/* Icons & Account */}
                 <div className="flex items-center gap-2 md:gap-5 flex-shrink-0">
                     <Link href="/become-a-seller" className="hidden xl:flex items-center justify-center px-4 py-2 bg-amber-50 text-amber-700 font-bold rounded-lg hover:bg-amber-100 transition-colors text-sm">
-                        Start Selling
+                        {t('nav.start_selling')}
                     </Link>
 
                     <div className="flex items-center gap-1 sm:gap-3 text-gray-600">
+                        <LanguageSwitcher />
                         {auth?.user ? (
                             <>
                                 {/* Seller/Admin: show dashboard link */}
@@ -111,7 +130,7 @@ export default function Navbar({ onMenuClick }) {
                                         <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm">
                                             {auth.user.name?.[0]?.toUpperCase() || 'U'}
                                         </div>
-                                        <span className="font-medium text-sm group-hover:text-primary-600">My Account</span>
+                                        <span className="font-medium text-sm group-hover:text-primary-600">{t('nav.my_account')}</span>
                                     </Link>
                                 )}
 
@@ -147,7 +166,7 @@ export default function Navbar({ onMenuClick }) {
                                                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors"
                                                     >
                                                         <User size={16} className="text-gray-400" />
-                                                        My Profile
+                                                        {t('nav.my_profile')}
                                                     </Link>
                                                     <Link
                                                         href="/buyer/orders"
@@ -155,7 +174,7 @@ export default function Navbar({ onMenuClick }) {
                                                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors"
                                                     >
                                                         <Package size={16} className="text-gray-400" />
-                                                        My Orders
+                                                        {t('nav.my_orders')}
                                                     </Link>
                                                     <Link
                                                         href="/buyer/messages"
@@ -163,7 +182,7 @@ export default function Navbar({ onMenuClick }) {
                                                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors"
                                                     >
                                                         <MessageSquare size={16} className="text-gray-400" />
-                                                        My Messages
+                                                        {t('nav.my_messages')}
                                                     </Link>
                                                 </div>
 
@@ -173,7 +192,7 @@ export default function Navbar({ onMenuClick }) {
                                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                                                     >
                                                         <LogOut size={16} />
-                                                        Logout
+                                                        {t('nav.logout')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -184,14 +203,19 @@ export default function Navbar({ onMenuClick }) {
                         ) : (
                             <Link href="/login" className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors group">
                                 <User size={24} className="group-hover:text-primary-600" />
-                                <span className="hidden md:block font-bold text-sm group-hover:text-primary-600">Sign In</span>
+                                <span className="hidden md:block font-bold text-sm group-hover:text-primary-600">{t('nav.sign_in')}</span>
                             </Link>
                         )}
                         
                         <div className="w-px h-8 bg-gray-200 hidden md:block mx-1"></div>
 
-                        <Link href="/wishlist" className="hidden md:flex p-2 hover:bg-gray-100 rounded-full transition-colors group relative">
-                            <Heart size={24} className="group-hover:text-red-500" />
+                        <Link href="/favorites" className="hidden md:flex p-2 hover:bg-gray-100 rounded-full transition-colors group relative" title={t('nav.wishlist')}>
+                            <Heart size={24} className={`group-hover:text-red-500 ${wishlistCount > 0 ? 'text-red-500 fill-red-500' : ''}`} />
+                            {wishlistCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold border-2 border-white px-1">
+                                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                                </span>
+                            )}
                         </Link>
                         
                         <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative group flex items-center gap-2">
@@ -208,7 +232,7 @@ export default function Navbar({ onMenuClick }) {
                                     </span>
                                 )}
                             </div>
-                            <span className="hidden md:block font-bold text-sm group-hover:text-primary-600">Cart</span>
+                            <span className="hidden md:block font-bold text-sm group-hover:text-primary-600">{t('nav.cart')}</span>
                         </Link>
                     </div>
                 </div>
@@ -220,15 +244,15 @@ export default function Navbar({ onMenuClick }) {
                     <ul className="flex items-center gap-8 py-2.5 text-sm font-medium text-gray-600 overflow-x-auto hide-scrollbar">
                         <li>
                             <Link href="/categories" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold whitespace-nowrap">
-                                <Menu size={16} /> All Categories
+                                <Menu size={16} /> {t('nav.all_categories')}
                             </Link>
                         </li>
-                        <li><Link href="/categories/electronics" className="hover:text-primary-600 whitespace-nowrap">Electronics</Link></li>
-                        <li><Link href="/categories/fashion" className="hover:text-primary-600 whitespace-nowrap">Fashion</Link></li>
-                        <li><Link href="/categories/home-living" className="hover:text-primary-600 whitespace-nowrap">Home & Living</Link></li>
-                        <li><Link href="/categories/vehicles" className="hover:text-primary-600 whitespace-nowrap">Vehicles</Link></li>
-                        <li><Link href="/categories/health-beauty" className="hover:text-primary-600 whitespace-nowrap">Health & Beauty</Link></li>
-                        <li><Link href="/products?filter=sale" className="text-red-600 font-bold hover:text-red-700 whitespace-nowrap flex items-center gap-1">Flash Deals</Link></li>
+                        <li><Link href="/categories/electronics" className="hover:text-primary-600 whitespace-nowrap">{t('nav.electronics')}</Link></li>
+                        <li><Link href="/categories/fashion" className="hover:text-primary-600 whitespace-nowrap">{t('nav.fashion')}</Link></li>
+                        <li><Link href="/categories/home-living" className="hover:text-primary-600 whitespace-nowrap">{t('nav.home_living')}</Link></li>
+                        <li><Link href="/categories/vehicles" className="hover:text-primary-600 whitespace-nowrap">{t('nav.vehicles')}</Link></li>
+                        <li><Link href="/categories/health-beauty" className="hover:text-primary-600 whitespace-nowrap">{t('nav.health_beauty')}</Link></li>
+                        <li><Link href="/products?filter=sale" className="text-red-600 font-bold hover:text-red-700 whitespace-nowrap flex items-center gap-1">{t('nav.flash_deals')}</Link></li>
                     </ul>
                 </div>
             </div>

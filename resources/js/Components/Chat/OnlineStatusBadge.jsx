@@ -1,9 +1,10 @@
 import React from 'react';
 import { Clock } from 'lucide-react';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function OnlineStatusBadge({ isOnline, lastSeenText, className = '' }) {
-    // Determine if we should show the "Online now" status based on exact text or boolean
-    const isCurrentlyOnline = isOnline && lastSeenText === 'Online now';
+    const { t } = useTranslation();
+    const isCurrentlyOnline = isOnline || lastSeenText === t('chat_ext.online_now') || lastSeenText === 'Online now';
 
     return (
         <div className={`flex items-center gap-1.5 ${className}`}>
@@ -14,7 +15,7 @@ export default function OnlineStatusBadge({ isOnline, lastSeenText, className = 
                 <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isCurrentlyOnline ? 'bg-green-500' : 'bg-gray-400'}`}></span>
             </span>
             <span className={`text-xs font-medium ${isCurrentlyOnline ? 'text-green-600' : 'text-gray-500'}`}>
-                {lastSeenText || (isCurrentlyOnline ? 'Online now' : 'Offline')}
+                {isCurrentlyOnline ? t('chat_ext.online_now') : (lastSeenText || t('chat.offline'))}
             </span>
         </div>
     );

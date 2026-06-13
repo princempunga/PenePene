@@ -1,7 +1,12 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { Lock, Mail, Phone, User } from 'lucide-react';
+import AuthLayout from '@/Components/Auth/AuthLayout';
+import AuthInput from '@/Components/Auth/AuthInput';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function Register() {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
@@ -12,113 +17,111 @@ export default function Register() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/register');
+        post('/buyer/register');
     };
 
     return (
         <>
-            <Head title="Create Account" />
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
-                <div className="w-full max-w-md">
-                    <div className="text-center mb-8">
-                        <Link href="/" className="inline-block">
-                            <img src="/images/logo.png" alt="PenePene" className="h-12 w-auto object-contain mx-auto" />
+            <Head title={t('auth.create_buyer_account_title')} />
+            <AuthLayout
+                accent="blue"
+                title={t('auth.buyer_register_title')}
+                subtitle={t('auth.buyer_register_subtitle')}
+                headline={t('auth.buyer_register_headline')}
+                benefits={[
+                    t('auth.buyer_register_benefit_1'),
+                    t('auth.buyer_register_benefit_2'),
+                    t('auth.buyer_register_benefit_3'),
+                ]}
+                footer={
+                    <p className="text-center text-sm text-gray-500">
+                        {t('auth.already_have_account')}{' '}
+                        <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-800 transition-colors">
+                            {t('auth.sign_in_here')}
                         </Link>
-                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Create your account</h2>
-                        <p className="mt-2 text-gray-500">
-                            Already have an account?{' '}
-                            <Link href="/login" className="text-primary-600 font-medium hover:text-primary-700">Sign in</Link>
-                        </p>
-                    </div>
+                    </p>
+                }
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <AuthInput
+                        id="name"
+                        label={t('auth.full_name')}
+                        type="text"
+                        icon={User}
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        error={errors.name}
+                        placeholder={t('auth.name_placeholder')}
+                        autoComplete="name"
+                        required
+                    />
 
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                    <AuthInput
+                        id="email"
+                        label={t('auth.email')}
+                        type="email"
+                        icon={Mail}
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                        error={errors.email}
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        required
+                    />
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">Full Name</label>
-                                <input
-                                    id="name"
-                                    type="text"
-                                    value={data.name}
-                                    onChange={e => setData('name', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                                    placeholder="John Doe"
-                                    required
-                                />
-                                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-                            </div>
+                    <AuthInput
+                        id="phone"
+                        label={t('auth.phone_number')}
+                        type="tel"
+                        icon={Phone}
+                        value={data.phone}
+                        onChange={(e) => setData('phone', e.target.value)}
+                        error={errors.phone}
+                        placeholder={t('auth.phone_placeholder')}
+                        autoComplete="tel"
+                    />
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">Email Address</label>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={e => setData('email', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                                    placeholder="you@example.com"
-                                    required
-                                />
-                                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-                            </div>
+                    <AuthInput
+                        id="password"
+                        label={t('auth.password')}
+                        type="password"
+                        icon={Lock}
+                        value={data.password}
+                        onChange={(e) => setData('password', e.target.value)}
+                        error={errors.password}
+                        placeholder={t('auth.min_password_placeholder')}
+                        autoComplete="new-password"
+                        required
+                    />
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="phone">Phone Number <span className="text-gray-400">(optional)</span></label>
-                                <input
-                                    id="phone"
-                                    type="tel"
-                                    value={data.phone}
-                                    onChange={e => setData('phone', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                                    placeholder="+255 712 345 678"
-                                />
-                            </div>
+                    <AuthInput
+                        id="password_confirmation"
+                        label={t('auth.confirm_password')}
+                        type="password"
+                        icon={Lock}
+                        value={data.password_confirmation}
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                        placeholder={t('auth.confirm_password_placeholder')}
+                        autoComplete="new-password"
+                        required
+                    />
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">Password</label>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={e => setData('password', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                                    placeholder="Min. 8 characters"
-                                    required
-                                />
-                                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-                            </div>
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] disabled:opacity-70 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-blue-600/25 mt-4"
+                    >
+                        {processing ? t('auth.creating_account') : t('auth.create_buyer_account')}
+                    </button>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password_confirmation">Confirm Password</label>
-                                <input
-                                    id="password_confirmation"
-                                    type="password"
-                                    value={data.password_confirmation}
-                                    onChange={e => setData('password_confirmation', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                                    placeholder="Re-enter your password"
-                                    required
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                            >
-                                {processing ? 'Creating Account...' : 'Create Account'}
-                            </button>
-
-                            <p className="text-xs text-center text-gray-500 mt-2">
-                                By registering, you agree to our{' '}
-                                <Link href="/terms" className="text-primary-600">Terms of Service</Link>
-                                {' '}and{' '}
-                                <Link href="/privacy" className="text-primary-600">Privacy Policy</Link>.
-                            </p>
-                        </form>
-                    </div>
-                </div>
-            </div>
+                    <p className="text-xs text-center text-gray-500 leading-relaxed pt-2">
+                        {t('auth.agree_terms_prefix')}{' '}
+                        <Link href="/terms" className="text-blue-600 hover:underline">{t('auth.terms_of_service')}</Link>
+                        {' '}{t('auth.and_conjunction')}{' '}
+                        <Link href="/privacy" className="text-blue-600 hover:underline">{t('auth.privacy_policy')}</Link>.
+                    </p>
+                </form>
+            </AuthLayout>
         </>
     );
 }

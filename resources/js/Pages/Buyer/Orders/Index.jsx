@@ -1,8 +1,10 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import BuyerLayout from '@/Layouts/BuyerLayout';
+import BuyerAccountEmptyState from '@/Components/Buyer/BuyerAccountEmptyState';
 import Pagination from '@/Components/UI/Pagination';
 import { Package } from 'lucide-react';
+import useTranslation from '@/hooks/useTranslation';
 
 const statusColors = {
     pending:   'bg-amber-100 text-amber-800',
@@ -13,14 +15,18 @@ const statusColors = {
 };
 
 export default function OrdersIndex({ orders }) {
+    const { t } = useTranslation();
+
     return (
-        <AppLayout>
-            <Head title="My Orders" />
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
+        <>
+            <Head title={t('buyer.my_orders')} />
+            <BuyerLayout
+                title={t('buyer.my_orders')}
+                subtitle={t('buyer.orders_subtitle_full')}
+            >
                 {orders.data.length > 0 ? (
                     <>
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="divide-y divide-gray-100">
                                 {orders.data.map(order => (
                                     <div key={order.id} className="p-5 hover:bg-gray-50 transition-colors">
@@ -33,11 +39,11 @@ export default function OrdersIndex({ orders }) {
                                                     </span>
                                                 </div>
                                                 <p className="text-sm text-gray-500">
-                                                    Ordered {new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                                    {order.seller && ` · Seller: ${order.seller.business_name}`}
+                                                    {t('buyer.ordered')} {new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                    {order.seller && ` · ${t('buyer.seller_label')}: ${order.seller.business_name}`}
                                                 </p>
                                                 <p className="text-sm text-gray-500 mt-1">
-                                                    {order.items?.length || 0} item(s)
+                                                    {t('buyer.items_count', { count: order.items?.length || 0 })}
                                                 </p>
                                             </div>
 
@@ -49,12 +55,11 @@ export default function OrdersIndex({ orders }) {
                                                     href={`/buyer/orders/${order.id}`}
                                                     className="px-4 py-2 text-sm font-medium bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors"
                                                 >
-                                                    View Details
+                                                    {t('buyer.view_details')}
                                                 </Link>
                                             </div>
                                         </div>
 
-                                        {/* Product thumbnails */}
                                         {order.items && order.items.length > 0 && (
                                             <div className="mt-4 flex gap-2">
                                                 {order.items.slice(0, 4).map(item => {
@@ -85,16 +90,15 @@ export default function OrdersIndex({ orders }) {
                         <Pagination links={orders.links} />
                     </>
                 ) : (
-                    <div className="bg-white rounded-xl border border-gray-200 p-16 text-center shadow-sm">
-                        <Package size={48} className="text-gray-200 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">No orders yet</h3>
-                        <p className="text-gray-500 mb-6">Your orders will appear here once you start shopping.</p>
-                        <Link href="/products" className="inline-block bg-primary-600 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-primary-700">
-                            Start Shopping
-                        </Link>
-                    </div>
+                    <BuyerAccountEmptyState
+                        icon={Package}
+                        title={t('buyer.no_orders_empty_title')}
+                        description={t('buyer.no_orders_empty_desc')}
+                        actionLabel={t('buyer.start_shopping')}
+                        actionHref="/products"
+                    />
                 )}
-            </div>
-        </AppLayout>
+            </BuyerLayout>
+        </>
     );
 }

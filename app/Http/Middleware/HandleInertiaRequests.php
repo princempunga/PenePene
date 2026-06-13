@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\Notification;
+use App\Support\Translations;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -28,7 +30,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $locale = app()->getLocale();
+
         return array_merge(parent::share($request), [
+            'locale' => $locale,
+            'availableLocales' => collect(config('locales.supported', ['fr']))
+                ->mapWithKeys(fn (string $code) => [
+                    $code => [
+                        'code' => $code,
+                        'label' => config("locales.labels.{$code}", strtoupper($code)),
+                        'short' => config("locales.short.{$code}", strtoupper($code)),
+                    ],
+                ])
+                ->all(),
+            'translations' => Translations::forLocale($locale),
             'auth' => [
                 'user' => $request->user() ? (function () use ($request) {
                     $user = $request->user();
@@ -39,6 +54,7 @@ class HandleInertiaRequests extends Middleware
                         'role'              => $user->role,
                         'phone'             => $user->phone,
                         'avatar'            => $user->avatar,
+                        'created_at'        => $user->created_at?->toISOString(),
                         'email_verified_at' => $user->email_verified_at,
                     ];
 
@@ -61,6 +77,9 @@ class HandleInertiaRequests extends Middleware
                 ? Notification::where('user_id', $request->user()->id)->where('is_read', false)->count()
                 : 0,
             'cart_count' => collect(session('cart', []))->sum('quantity'),
+            'wishlist_count' => $request->user()?->buyer
+                ? Favorite::where('buyer_id', $request->user()->buyer->id)->count()
+                : 0,
             'unread_messages' => function () use ($request) {
                 $user = $request->user();
                 if (! $user || ! $user->isSeller() || ! $user->seller) {

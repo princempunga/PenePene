@@ -5,20 +5,21 @@ import {
     Star, User, LogOut, ChevronRight, Store, CreditCard, FileDown,
     Wallet, FileText, Settings, Menu, X,
 } from 'lucide-react';
+import useTranslation from '@/hooks/useTranslation';
 
 const navItems = [
-    { label: 'Tableau de bord',       href: '/seller/dashboard',        icon: LayoutDashboard, badge: null },
-    { label: 'Produits',              href: '/seller/products',         icon: Package,         badge: null },
-    { label: 'Commandes',             href: '/seller/orders',           icon: ShoppingCart,    badge: null },
-    { label: 'Messages',              href: '/seller/messages',         icon: MessageCircle,   badge: 'messages' },
-    { label: 'Notifications',         href: '/seller/notifications',    icon: Bell,            badge: 'notifications' },
-    { label: 'Avis',                  href: '/seller/reviews',          icon: Star,            badge: null },
-    { label: 'Paiements',             href: '/seller/payouts',          icon: Wallet,          badge: null },
-    { label: 'Documents',             href: '/seller/documents',        icon: FileText,        badge: null },
-    { label: 'Rapports',              href: '/seller/reports',          icon: FileDown,        badge: null },
-    { label: 'Paramètres de la boutique', href: '/seller/store/settings', icon: Settings,    badge: null },
-    { label: 'Profil',                href: '/seller/profile',          icon: User,            badge: null },
-    { label: 'Abonnements',           href: '/seller/subscriptions',    icon: CreditCard,      badge: null },
+    { key: 'layouts.seller.dashboard',      href: '/seller/dashboard',        icon: LayoutDashboard, badge: null },
+    { key: 'layouts.seller.products',       href: '/seller/products',         icon: Package,         badge: null },
+    { key: 'layouts.seller.orders',         href: '/seller/orders',           icon: ShoppingCart,    badge: null },
+    { key: 'layouts.seller.messages',       href: '/seller/messages',         icon: MessageCircle,   badge: 'messages' },
+    { key: 'layouts.seller.notifications',  href: '/seller/notifications',    icon: Bell,            badge: 'notifications' },
+    { key: 'layouts.seller.reviews',        href: '/seller/reviews',          icon: Star,            badge: null },
+    { key: 'layouts.seller.payouts',        href: '/seller/payouts',          icon: Wallet,          badge: null },
+    { key: 'layouts.seller.documents',      href: '/seller/documents',        icon: FileText,        badge: null },
+    { key: 'layouts.seller.reports',        href: '/seller/reports',          icon: FileDown,        badge: null },
+    { key: 'layouts.seller.store_settings', href: '/seller/store/settings',   icon: Settings,        badge: null },
+    { key: 'layouts.seller.profile',        href: '/seller/profile',          icon: User,            badge: null },
+    { key: 'layouts.seller.subscriptions',  href: '/seller/subscriptions',    icon: CreditCard,      badge: null },
 ];
 
 const sellerStatusLabels = {
@@ -35,8 +36,8 @@ function isNavActive(currentPath, href) {
     return currentPath === href || currentPath.startsWith(`${href}/`);
 }
 
-function NavLink({ item, currentPath, badges, onNavigate }) {
-    const { label, href, icon: Icon, badge } = item;
+function NavLink({ item, currentPath, badges, onNavigate, t }) {
+    const { key, href, icon: Icon, badge } = item;
     const isActive = isNavActive(currentPath, href);
     const count = badge === 'messages' ? badges.messages : badge === 'notifications' ? badges.notifications : 0;
 
@@ -51,7 +52,7 @@ function NavLink({ item, currentPath, badges, onNavigate }) {
             }`}
         >
             <Icon size={18} className="shrink-0" />
-            <span className="flex-1">{label}</span>
+            <span className="flex-1">{t(key)}</span>
             {count > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 flex items-center justify-center rounded-full">
                     {count > 9 ? '9+' : count}
@@ -63,6 +64,7 @@ function NavLink({ item, currentPath, badges, onNavigate }) {
 }
 
 export default function SellerLayout({ children, title }) {
+    const { t } = useTranslation();
     const page = usePage();
     const currentPath = (page.url ?? '').split('?')[0];
     const { auth, seller, unread_notifications, unread_messages } = page.props;
@@ -97,7 +99,7 @@ export default function SellerLayout({ children, title }) {
                         </div>
                     )}
                     <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{seller?.business_name || 'Portail vendeur'}</p>
+                        <p className="font-semibold text-gray-900 truncate">{seller?.business_name || t('layouts.seller.seller_portal')}</p>
                         <p className="text-xs text-gray-500 truncate">{auth.user?.email}</p>
                     </div>
                 </div>
@@ -121,6 +123,7 @@ export default function SellerLayout({ children, title }) {
                         currentPath={currentPath}
                         badges={badges}
                         onNavigate={closeSidebar}
+                        t={t}
                     />
                 ))}
 
@@ -132,7 +135,7 @@ export default function SellerLayout({ children, title }) {
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 border-l-2 border-transparent transition-colors"
                 >
                     <LogOut size={18} className="shrink-0" />
-                    Déconnexion
+                    {t('layouts.seller.sign_out')}
                 </Link>
             </nav>
         </>
@@ -145,26 +148,26 @@ export default function SellerLayout({ children, title }) {
                     type="button"
                     onClick={() => setSidebarOpen(!sidebarOpen)}
                     className="lg:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                    aria-label={sidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                    aria-label={sidebarOpen ? t('layouts.seller.close_menu') : t('layouts.seller.open_menu')}
                 >
                     {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
                 </button>
 
                 <Link href="/seller/dashboard" className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
                     PenePene
-                    <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-0.5 rounded-md">Vendeur</span>
+                    <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-0.5 rounded-md">{t('layouts.seller.seller_badge')}</span>
                 </Link>
 
                 <div className="flex-1" />
 
                 <div className="flex items-center gap-2 sm:gap-3">
                     <Link href="/" className="hidden sm:block text-sm text-gray-500 hover:text-primary-600 transition-colors">
-                        Voir le site
+                        {t('layouts.seller.view_site')}
                     </Link>
                     <Link
                         href="/seller/notifications"
                         className="relative p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        aria-label="Notifications"
+                        aria-label={t('layouts.seller.notifications')}
                     >
                         <Bell size={20} />
                         {badges.notifications > 0 && (

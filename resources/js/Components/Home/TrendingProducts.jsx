@@ -2,8 +2,10 @@ import React from 'react';
 import ProductCard from '../Product/ProductCard';
 import SectionHeader from '../UI/SectionHeader';
 import { motion } from 'framer-motion';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function TrendingProducts({ products }) {
+    const { t } = useTranslation();
     if (!products || products.length === 0) return null;
 
     // Use top 10 for trending, maybe layout differently
@@ -14,9 +16,9 @@ export default function TrendingProducts({ products }) {
         <section className="py-16 bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <SectionHeader 
-                    title="Trending Today" 
-                    subtitle="The most viewed and searched products on PenePene right now."
-                    actionText="View all trending"
+                    title={t('home.trending_products')}
+                    subtitle={t('home.trending_subtitle')}
+                    actionText={t('home.view_all_trending')}
                     actionLink="/products?sort=trending"
                 />
                 

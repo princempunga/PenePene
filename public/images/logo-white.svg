@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" fill="none" role="img" aria-label="PenePene">
+  <rect x="0" y="4" width="40" height="40" rx="10" fill="#FBBF24"/>
+  <path d="M12 16h10c3.3 0 6 2.7 6 6s-2.7 6-6 6h-4v6h-6V16zm6 10h4c.6 0 1-.4 1-1s-.4-1-1-1h-4v2z" fill="#1E3A8A"/>
+  <text x="50" y="33" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="26" font-weight="800" fill="#FFFFFF">Pene</text>
+  <text x="118" y="33" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="26" font-weight="800" fill="#FDE68A">Pene</text>
+</svg>

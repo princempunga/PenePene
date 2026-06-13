@@ -37,9 +37,6 @@ class SellerController extends Controller
             'seller' => $seller,
             'products' => $products,
             'reviews' => $reviews,
-            'auth' => [
-                'user' => auth()->user(),
-            ],
         ]);
     }
 }

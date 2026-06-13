@@ -21,6 +21,8 @@ class Seller extends Model
         'meta_title', 'meta_description',
     ];
 
+    protected $appends = ['is_verified'];
+
     protected function casts(): array
     {
         return [
@@ -30,6 +32,11 @@ class Seller extends Model
             'longitude'       => 'decimal:8',
             'business_hours'  => 'array',
         ];
+    }
+
+    public function getIsVerifiedAttribute(): bool
+    {
+        return $this->status === 'verified';
     }
 
     protected static function booted(): void

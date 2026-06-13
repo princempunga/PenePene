@@ -1,9 +1,14 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { X, Search } from 'lucide-react';
+import Logo from '@/Components/Brand/Logo';
+import LanguageSwitcher from '@/Components/Layout/LanguageSwitcher';
 import { motion, AnimatePresence } from 'framer-motion';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function MobileMenu({ isOpen, onClose }) {
+    const { t } = useTranslation();
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -23,7 +28,7 @@ export default function MobileMenu({ isOpen, onClose }) {
                         className="fixed inset-y-0 left-0 w-4/5 max-w-sm bg-white shadow-xl z-50 lg:hidden flex flex-col"
                     >
                         <div className="flex items-center justify-between p-4 border-b">
-                            <img src="/images/logo.png" alt="PenePene" className="h-8 w-auto object-contain" />
+                            <Logo className="h-10 w-auto max-w-[140px]" />
                             <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-900">
                                 <X size={24} />
                             </button>
@@ -34,7 +39,7 @@ export default function MobileMenu({ isOpen, onClose }) {
                                 <input 
                                     type="text" 
                                     name="q"
-                                    placeholder="Search products..." 
+                                    placeholder={t('mobile.search_placeholder')}
                                     className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-primary-500"
                                 />
                                 <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -45,31 +50,34 @@ export default function MobileMenu({ isOpen, onClose }) {
 
                         <nav className="flex-1 overflow-y-auto p-4 space-y-6">
                             <div>
-                                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Browse</h3>
+                                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t('mobile.browse')}</h3>
                                 <ul className="space-y-3">
-                                    <li><Link href="/" className="text-gray-700 hover:text-primary-600 font-medium">Home</Link></li>
-                                    <li><Link href="/products" className="text-gray-700 hover:text-primary-600 font-medium">All Products</Link></li>
-                                    <li><Link href="/categories" className="text-gray-700 hover:text-primary-600 font-medium">Categories</Link></li>
+                                    <li><Link href="/" className="text-gray-700 hover:text-primary-600 font-medium">{t('mobile.home')}</Link></li>
+                                    <li><Link href="/products" className="text-gray-700 hover:text-primary-600 font-medium">{t('mobile.all_products')}</Link></li>
+                                    <li><Link href="/categories" className="text-gray-700 hover:text-primary-600 font-medium">{t('footer.categories')}</Link></li>
                                 </ul>
                             </div>
                             
                             <div>
-                                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Help & Settings</h3>
+                                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t('mobile.help_settings')}</h3>
                                 <ul className="space-y-3">
-                                    <li><Link href="/become-a-seller" className="text-gray-700 hover:text-primary-600 font-medium">Sell on PenePene</Link></li>
-                                    <li><Link href="/faq" className="text-gray-700 hover:text-primary-600 font-medium">FAQ</Link></li>
-                                    <li><Link href="/contact" className="text-gray-700 hover:text-primary-600 font-medium">Contact Us</Link></li>
+                                    <li><Link href="/become-a-seller" className="text-gray-700 hover:text-primary-600 font-medium">{t('nav.sell_on')}</Link></li>
+                                    <li><Link href="/faq" className="text-gray-700 hover:text-primary-600 font-medium">{t('mobile.faq')}</Link></li>
+                                    <li><Link href="/contact" className="text-gray-700 hover:text-primary-600 font-medium">{t('footer.contact_us')}</Link></li>
                                 </ul>
                             </div>
                         </nav>
                         
-                        <div className="p-4 border-t bg-gray-50">
+                        <div className="p-4 border-t bg-gray-50 space-y-4">
+                            <div className="flex justify-center">
+                                <LanguageSwitcher variant="compact" />
+                            </div>
                             <div className="flex gap-4">
                                 <Link href="/login" className="flex-1 text-center py-2 px-4 border border-primary-600 text-primary-600 rounded-md font-medium">
-                                    Sign In
+                                    {t('nav.sign_in')}
                                 </Link>
                                 <Link href="/register" className="flex-1 text-center py-2 px-4 bg-primary-600 text-white rounded-md font-medium">
-                                    Register
+                                    {t('mobile.register')}
                                 </Link>
                             </div>
                         </div>

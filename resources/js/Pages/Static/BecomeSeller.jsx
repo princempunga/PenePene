@@ -1,9 +1,11 @@
 import React from 'react';
+import useTranslation from '@/hooks/useTranslation';
 import AppLayout from '@/Layouts/AppLayout';
 import { Link } from '@inertiajs/react';
 import { TrendingUp, Store, Users, ShieldCheck } from 'lucide-react';
 
 export default function BecomeSeller() {
+    const { t } = useTranslation();
     return (
         <AppLayout>
             {/* Hero Section */}
@@ -97,7 +99,7 @@ export default function BecomeSeller() {
                         
                         <div className="relative z-10 flex flex-col items-center text-center">
                             <div className="w-16 h-16 bg-primary-600 text-white font-bold text-2xl rounded-full flex items-center justify-center mb-6 shadow-md border-4 border-white">4</div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Start Selling</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">{t('nav.start_selling')}</h3>
                             <p className="text-gray-600 text-sm">Receive orders, manage communications, and ship your products.</p>
                         </div>
                     </div>

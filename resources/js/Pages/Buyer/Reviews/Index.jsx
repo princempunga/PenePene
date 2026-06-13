@@ -1,18 +1,24 @@
 import React from 'react';
+import useTranslation from '@/hooks/useTranslation';
 import { Head, Link } from '@inertiajs/react';
 import BuyerLayout from '@/Layouts/BuyerLayout';
+import BuyerAccountEmptyState from '@/Components/Buyer/BuyerAccountEmptyState';
 import RatingStars from '@/Components/UI/RatingStars';
 import Pagination from '@/Components/UI/Pagination';
 import { Star } from 'lucide-react';
 
 export default function ReviewsIndex({ reviews }) {
+    const { t } = useTranslation();
     return (
         <>
-            <Head title="My Reviews" />
-            <BuyerLayout title="My Reviews">
+            <Head title={t('reviews_page.title')} />
+            <BuyerLayout
+                title={t('reviews_page.title')}
+                subtitle="See feedback you've shared with sellers after your purchases."
+            >
                 {reviews.data.length > 0 ? (
                     <>
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="divide-y divide-gray-100">
                                 {reviews.data.map(review => (
                                     <div key={review.id} className="p-5">
@@ -42,11 +48,14 @@ export default function ReviewsIndex({ reviews }) {
                         <Pagination links={reviews.links} />
                     </>
                 ) : (
-                    <div className="bg-white rounded-xl border border-gray-200 p-16 text-center shadow-sm">
-                        <Star size={48} className="text-gray-200 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">No reviews yet</h3>
-                        <p className="text-gray-500">After receiving a delivered order, you can write a review.</p>
-                    </div>
+                    <BuyerAccountEmptyState
+                        icon={Star}
+                        title="No reviews yet"
+                        description="After receiving a delivered order, you can write a review to help other buyers."
+                        actionLabel={t('cart.browse_products')}
+                        actionHref="/products"
+                        accent="amber"
+                    />
                 )}
             </BuyerLayout>
         </>

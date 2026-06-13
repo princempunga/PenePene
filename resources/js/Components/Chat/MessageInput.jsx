@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Send, Paperclip, X } from 'lucide-react';
+import useTranslation from '@/hooks/useTranslation';
 
-export default function MessageInput({ onSendMessage, isSending }) {
-    const [body, setBody]           = useState('');
+export default function MessageInput({ onSendMessage, isSending, replyTo, onCancelReply }) {
+    const { t } = useTranslation();
+    const [body, setBody] = useState('');
     const [attachment, setAttachment] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
-    const fileInputRef              = useRef(null);
+    const fileInputRef = useRef(null);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -36,14 +38,38 @@ export default function MessageInput({ onSendMessage, isSending }) {
         e.preventDefault();
         if ((!body.trim() && !attachment) || isSending) return;
 
-        onSendMessage({ body: body.trim(), attachment });
+        onSendMessage({
+            body: body.trim(),
+            attachment,
+            replyToMessageId: replyTo?.id ?? null,
+        });
         setBody('');
         clearAttachment();
+        onCancelReply?.();
     };
 
     return (
         <div className="bg-white border-t border-gray-200 p-3 flex flex-col gap-2">
-            {/* Attachment preview */}
+            {replyTo && (
+                <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+                    <div className="flex-1 min-w-0 border-l-2 border-primary-500 pl-2">
+                        <p className="text-xs font-semibold text-primary-600 truncate">
+                            {t('chat.replying_to', { name: replyTo.sender?.name || 'User' })}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                            {replyTo.is_deleted ? t('chat.message_deleted') : replyTo.body || t('chat.sent_attachment')}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onCancelReply}
+                        className="p-1 rounded-full hover:bg-gray-200 text-gray-500 shrink-0"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
+
             {previewUrl && (
                 <div className="relative w-28 h-28 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group">
                     {attachment?.type.startsWith('video/') ? (
@@ -62,7 +88,6 @@ export default function MessageInput({ onSendMessage, isSending }) {
             )}
 
             <form onSubmit={handleSubmit} className="flex items-end gap-2">
-                {/* Attach button */}
                 <div className="shrink-0">
                     <input
                         type="file"
@@ -74,19 +99,18 @@ export default function MessageInput({ onSendMessage, isSending }) {
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors focus:outline-none"
-                        title="Attach file"
+                        className="p-3 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-full transition-colors"
+                        title={t('chat.attach_file')}
                     >
                         <Paperclip size={20} />
                     </button>
                 </div>
 
-                {/* Textarea */}
                 <div className="flex-1 bg-gray-100 rounded-2xl flex items-center">
                     <textarea
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder="Type a message..."
+                        placeholder={t('chat.type_message')}
                         className="w-full bg-transparent border-0 focus:ring-0 resize-none max-h-32 py-3 px-4 rounded-2xl text-sm"
                         rows="1"
                         onKeyDown={(e) => {
@@ -98,11 +122,10 @@ export default function MessageInput({ onSendMessage, isSending }) {
                     />
                 </div>
 
-                {/* Send button */}
                 <button
                     type="submit"
                     disabled={(!body.trim() && !attachment) || isSending}
-                    className="shrink-0 p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center focus:outline-none"
+                    className="shrink-0 p-3 bg-primary-600 text-white rounded-full hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Send size={20} className={isSending ? 'animate-pulse' : ''} />
                 </button>

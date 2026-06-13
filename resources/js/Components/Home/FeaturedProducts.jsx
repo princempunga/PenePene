@@ -2,8 +2,10 @@ import React from 'react';
 import ProductCard from '../Product/ProductCard';
 import SectionHeader from '../UI/SectionHeader';
 import { motion } from 'framer-motion';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function FeaturedProducts({ products }) {
+    const { t } = useTranslation();
     if (!products || products.length === 0) return null;
 
     const containerVariants = {
@@ -23,9 +25,9 @@ export default function FeaturedProducts({ products }) {
         <section className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <SectionHeader 
-                    title="Featured Products" 
-                    subtitle="Hand-picked premium quality products from trusted sellers."
-                    actionText="View All Featured"
+                    title={t('home.featured_products')}
+                    subtitle={t('home.featured_subtitle')}
+                    actionText={t('home.view_all_featured')}
                     actionLink="/products?filter=featured"
                 />
                 

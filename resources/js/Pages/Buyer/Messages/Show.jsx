@@ -1,38 +1,43 @@
 import React from 'react';
 import { Head, usePage } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import BuyerLayout from '@/Layouts/BuyerLayout';
 import ConversationList from '@/Components/Chat/ConversationList';
 import ChatWindow from '@/Components/Chat/ChatWindow';
 
-export default function MessageShow({ conversations, conversation }) {
+export default function MessageShow({ conversations, conversation, otherUser }) {
     const { auth } = usePage().props;
 
-    return (
-        <AppLayout>
-            <Head title={`Chat with ${conversation.seller?.business_name}`} />
-            
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-6">Messages</h1>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex h-[70vh] min-h-[500px]">
-                    {/* Conversation List Sidebar (hidden on mobile when a chat is open) */}
-                    <div className="hidden md:block w-80 lg:w-96 border-r border-gray-200 shrink-0 h-full">
-                    <ConversationList 
-                        conversations={conversations} 
-                        currentConversationId={conversation.id} 
-                        userType="buyer" 
-                    />
-                </div>
+    const chatPartner = otherUser || {
+        ...conversation.seller?.user,
+        business_name: conversation.seller?.business_name,
+        logo: conversation.seller?.logo,
+    };
 
-                {/* Chat Window */}
-                <div className="flex-1 flex flex-col h-full bg-gray-50">
-                    <ChatWindow 
-                        conversationId={conversation.id}
-                        currentUserId={auth.user?.id}
-                        otherUser={conversation.seller.user}
-                    />
+    return (
+        <>
+            <Head title={`Chat with ${conversation.seller?.business_name}`} />
+            <BuyerLayout
+                title="Messages"
+                subtitle={`Conversation with ${conversation.seller?.business_name || 'seller'}`}
+            >
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row min-h-[480px] sm:min-h-[560px]">
+                    <div className="hidden md:block w-80 lg:w-96 border-r border-gray-200 shrink-0">
+                        <ConversationList
+                            conversations={conversations}
+                            currentConversationId={conversation.id}
+                            userType="buyer"
+                        />
+                    </div>
+
+                    <div className="flex-1 min-w-0 min-h-[420px] md:min-h-0">
+                        <ChatWindow
+                            conversationId={conversation.id}
+                            currentUserId={auth.user?.id}
+                            otherUser={chatPartner}
+                        />
+                    </div>
                 </div>
-                </div>
-            </div>
-        </AppLayout>
+            </BuyerLayout>
+        </>
     );
 }

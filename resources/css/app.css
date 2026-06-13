@@ -19,3 +19,40 @@
     @apply antialiased text-gray-900 bg-gray-50;
   }
 }
+
+/* Hero Section Animations */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes heroFloatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes heroZoomBg {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+
+@keyframes heroShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@layer utilities {
+  .hero-float {
+    animation: heroFloat 5s ease-in-out infinite;
+  }
+  .hero-float-slow {
+    animation: heroFloatSlow 7s ease-in-out infinite;
+  }
+  .hero-zoom-bg {
+    animation: heroZoomBg 25s ease-out forwards;
+  }
+  .hero-shimmer {
+    background-size: 200% auto;
+    animation: heroShimmer 3s linear infinite;
+  }
+}

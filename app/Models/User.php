@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Translations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -32,14 +33,14 @@ class User extends Authenticatable
     public function getLastSeenText(): string
     {
         if ($this->is_online && $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5) {
-            return 'Online now';
+            return Translations::get('chat_ext.online_now', $this->locale);
         }
 
-        if (!$this->last_seen_at) {
-            return 'Offline';
+        if (! $this->last_seen_at) {
+            return Translations::get('chat.offline', $this->locale);
         }
 
-        return 'Last seen: ' . $this->last_seen_at->diffForHumans();
+        return Translations::get('chat.last_seen', $this->locale).' '.$this->last_seen_at->locale($this->locale ?? app()->getLocale())->diffForHumans();
     }
 
     // Role helpers

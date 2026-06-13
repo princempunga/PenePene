@@ -1,7 +1,10 @@
 import React from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import Logo from '@/Components/Brand/Logo';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function ForgotPassword() {
+    const { t } = useTranslation();
     const { flash } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({ email: '' });
 
@@ -12,15 +15,15 @@ export default function ForgotPassword() {
 
     return (
         <>
-            <Head title="Forgot Password" />
+            <Head title={t('auth.forgot_password_title')} />
             <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
                 <div className="w-full max-w-md">
                     <div className="text-center mb-8">
-                        <Link href="/" className="inline-block">
-                            <img src="/images/logo.png" alt="PenePene" className="h-12 w-auto object-contain mx-auto" />
-                        </Link>
-                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Forgot your password?</h2>
-                        <p className="mt-2 text-gray-500">Enter your email and we'll send you a reset link.</p>
+                        <div className="flex justify-center">
+                            <Logo className="h-16 w-auto max-w-[220px]" />
+                        </div>
+                        <h2 className="mt-4 text-2xl font-bold text-gray-900">{t('auth_ext.forgot_title')}</h2>
+                        <p className="mt-2 text-gray-500">{t('auth_ext.forgot_desc')}</p>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
@@ -32,7 +35,7 @@ export default function ForgotPassword() {
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">Email Address</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">{t('auth.email')}</label>
                                 <input
                                     id="email"
                                     type="email"
@@ -46,13 +49,13 @@ export default function ForgotPassword() {
                             </div>
 
                             <button type="submit" disabled={processing} className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-bold py-3 rounded-lg transition-colors">
-                                {processing ? 'Sending...' : 'Send Reset Link'}
+                                {processing ? t('auth_ext.sending') : t('auth.send_reset_link')}
                             </button>
                         </form>
 
                         <div className="mt-6 text-center">
                             <Link href="/login" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                                ← Back to Sign In
+                                {t('auth_ext.back_to_sign_in')}
                             </Link>
                         </div>
                     </div>

@@ -1,92 +1,138 @@
 import React from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import ProductCard from '@/Components/Product/ProductCard';
+import ProductFilters from '@/Components/Product/ProductFilters';
 import Pagination from '@/Components/UI/Pagination';
-import { Filter, SlidersHorizontal } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { SlidersHorizontal, Sparkles } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import useTranslation from '@/hooks/useTranslation';
 
-export default function Index({ products, filters }) {
+export default function Index({
+    products,
+    filters = {},
+    usingDemo = false,
+    category = null,
+    subcategory = null,
+    subcategoryMeta = null,
+    brandOptions = [],
+    pageMeta = null,
+}) {
+    const { t } = useTranslation();
+
     const handleSortChange = (e) => {
-        router.get('/products', { ...filters, sort: e.target.value }, { preserveState: true });
+        router.get('/products', { ...filters, sort: e.target.value }, { preserveState: true, preserveScroll: true });
     };
+
+    const productList = products?.data ?? [];
+
+    const pageTitle = pageMeta?.title
+        || subcategoryMeta?.name
+        || subcategory?.name
+        || (category ? category.name : t('products_page.all_products'));
+
+    const bannerImage = pageMeta?.image
+        || subcategoryMeta?.image
+        || category?.image
+        || '/images/categories/electronics.jpg';
+
+    const description = pageMeta?.description
+        || subcategoryMeta?.description
+        || (category
+            ? t('products_page.category_desc', { category: category.name.toLowerCase() })
+            : t('products_page.default_desc'));
 
     return (
         <AppLayout>
-            <div className="bg-white border-b">
-                <div className="max-w-7xl mx-auto px-4 py-8">
-                    <h1 className="text-3xl font-bold text-gray-900">All Products</h1>
-                    <p className="text-gray-500 mt-2">Discover the best products from local sellers.</p>
-                </div>
-            </div>
-
-            <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
-                
-                {/* Filters Sidebar */}
-                <aside className="w-full md:w-64 shrink-0">
-                    <div className="bg-white p-5 rounded-xl border border-gray-200 sticky top-24">
-                        <div className="flex items-center gap-2 mb-6 text-gray-900 font-semibold text-lg border-b pb-4">
-                            <Filter size={20} />
-                            <span>Filters</span>
-                        </div>
-                        
-                        <div className="mb-6">
-                            <h3 className="font-medium text-gray-900 mb-3">Price Range</h3>
-                            <div className="flex items-center gap-2">
-                                <input type="number" placeholder="Min" className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" />
-                                <span className="text-gray-400">-</span>
-                                <input type="number" placeholder="Max" className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" />
-                            </div>
-                            <button className="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium py-1.5 rounded transition-colors">
-                                Apply
-                            </button>
-                        </div>
-                        
-                        {/* More filters can be added here */}
-                    </div>
-                </aside>
-
-                {/* Main Content */}
-                <div className="flex-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 bg-white p-4 rounded-xl border border-gray-200">
-                        <div className="text-gray-600">
-                            Showing <span className="font-semibold text-gray-900">{products.from || 0}</span> to <span className="font-semibold text-gray-900">{products.to || 0}</span> of <span className="font-semibold text-gray-900">{products.total}</span> products
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                            <label className="text-gray-600 text-sm flex items-center gap-2">
-                                <SlidersHorizontal size={16} />
-                                Sort by:
-                            </label>
-                            <select 
-                                value={filters.sort || 'newest'} 
-                                onChange={handleSortChange}
-                                className="border border-gray-300 rounded-md text-sm py-1.5 pl-3 pr-8 focus:ring-primary-500 focus:border-primary-500"
-                            >
-                                <option value="newest">Newest Arrivals</option>
-                                <option value="popularity">Popularity</option>
-                                <option value="price_asc">Price: Low to High</option>
-                                <option value="price_desc">Price: High to Low</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {products.data.length > 0 ? (
-                        <>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                                {products.data.map(product => (
-                                    <ProductCard key={product.id} product={product} />
-                                ))}
-                            </div>
-                            <Pagination links={products.links} />
-                        </>
-                    ) : (
-                        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">No products found</h3>
-                            <p className="text-gray-500">Try adjusting your filters or search criteria.</p>
+            <section className="relative overflow-hidden bg-gray-900">
+                <img
+                    src={bannerImage}
+                    alt={pageTitle}
+                    className="absolute inset-0 w-full h-full object-cover opacity-40"
+                    onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-gray-900/50" />
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+                    <nav className="flex items-center gap-2 text-sm text-gray-300 mb-4 flex-wrap">
+                        <Link href="/" className="hover:text-white transition-colors">{t('products_page.home')}</Link>
+                        <span>/</span>
+                        {category ? (
+                            <>
+                                <Link href={`/categories/${category.slug}`} className="hover:text-white transition-colors">{category.name}</Link>
+                                {(subcategoryMeta || subcategory) && (
+                                    <>
+                                        <span>/</span>
+                                        <span className="text-white font-medium">{subcategoryMeta?.name || subcategory?.name}</span>
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <span className="text-white font-medium">{t('products_page.title')}</span>
+                        )}
+                    </nav>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-2">{pageTitle}</h1>
+                    <p className="text-gray-300 max-w-2xl text-sm sm:text-base">{description}</p>
+                    <p className="mt-3 text-sm text-gray-400">
+                        {t('products_page.products_found', { count: products?.total ?? productList.length })}
+                    </p>
+                    {usingDemo && (
+                        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-400/90 text-amber-950 px-4 py-1.5 text-sm font-semibold">
+                            <Sparkles size={16} />
+                            {t('products_page.demo_preview')}
                         </div>
                     )}
                 </div>
-                
+            </section>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                    <ProductFilters filters={filters} brandOptions={brandOptions} />
+
+                    <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                            <div className="text-gray-600 text-sm">
+                                {t('products_page.showing_products', {
+                                    from: products?.from || 0,
+                                    to: products?.to || 0,
+                                    total: products?.total ?? productList.length,
+                                })}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <label className="text-gray-600 text-sm flex items-center gap-2 whitespace-nowrap">
+                                    <SlidersHorizontal size={16} />
+                                    {t('products_page.sort_label')}
+                                </label>
+                                <select
+                                    value={filters.sort || 'newest'}
+                                    onChange={handleSortChange}
+                                    className="border border-gray-300 rounded-lg text-sm py-2 pl-3 pr-8 focus:ring-primary-500 focus:border-primary-500 min-w-[160px]"
+                                >
+                                    <option value="newest">{t('products_page.sort_newest')}</option>
+                                    <option value="price_asc">{t('products_page.sort_price_asc')}</option>
+                                    <option value="price_desc">{t('products_page.sort_price_desc')}</option>
+                                    <option value="popular">{t('products_page.sort_popular')}</option>
+                                    <option value="rating">{t('products_page.sort_rating')}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {productList.length > 0 ? (
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                                    {productList.map((product) => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                </div>
+                                <Pagination links={products?.links} />
+                            </>
+                        ) : (
+                            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{t('products_page.no_products')}</h3>
+                                <p className="text-gray-500">{t('products_page.browse_subcategory')}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );

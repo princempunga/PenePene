@@ -14,6 +14,7 @@ import SellerBanner from '@/Components/Home/SellerBanner';
 import Testimonials from '@/Components/Home/Testimonials';
 
 export default function Index({ 
+    heroProducts,
     featuredProducts, 
     popularCategories, 
     topSellers, 
@@ -24,7 +25,7 @@ export default function Index({
 }) {
     return (
         <AppLayout>
-            <HeroSection />
+            <HeroSection heroProducts={heroProducts} />
             <TrustIndicators />
             <PopularCategories categories={popularCategories} />
             <FlashDeals products={flashDeals} />

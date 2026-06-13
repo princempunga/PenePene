@@ -5,29 +5,30 @@ import {
     ListTree, LogOut, ChevronRight, Package, ShoppingCart,
     Megaphone, Ticket, FileDown, Settings, Star, Menu, X
 } from 'lucide-react';
+import Logo from '@/Components/Brand/Logo';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function AdminLayout({ children, title }) {
-    // ✅ FIX: usePage().url is the correct way to get the current URL in Inertia
-    //         DO NOT destructure url from props — it lives on the page object itself.
+    const { t } = useTranslation();
     const page = usePage();
-    const currentPath = page.url ?? '';          // e.g. "/admin/dashboard"
+    const currentPath = page.url ?? '';
     const { auth } = page.props;
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const navItems = [
-        { label: 'Dashboard',          href: '/admin/dashboard',        icon: LayoutDashboard, roles: ['super_admin', 'admin'] },
-        { label: 'Products',           href: '/admin/products',         icon: Package,         roles: ['super_admin', 'admin'] },
-        { label: 'Orders',             href: '/admin/orders',           icon: ShoppingCart,    roles: ['super_admin', 'admin'] },
-        { label: 'Sellers',            href: '/admin/sellers',          icon: UserCheck,       roles: ['super_admin', 'admin'] },
-        { label: 'Categories',         href: '/admin/categories',       icon: ListTree,        roles: ['super_admin', 'admin'] },
-        { label: 'Reviews',            href: '/admin/reviews',          icon: Star,            roles: ['super_admin', 'admin'] },
-        { label: 'Sponsored Ads',      href: '/admin/advertisements',   icon: Megaphone,       roles: ['super_admin', 'admin'] },
-        { label: 'Support Desk',       href: '/admin/support',          icon: Ticket,          roles: ['super_admin', 'admin'] },
-        { label: 'Reports',            href: '/admin/reports',          icon: FileDown,        roles: ['super_admin', 'admin'] },
-        { label: 'Sub-Admins',         href: '/admin/admins',           icon: Users,           roles: ['super_admin'] },
-        { label: 'Subscription Plans', href: '/admin/plans',            icon: Shield,          roles: ['super_admin'] },
-        { label: 'Settings',           href: '/admin/settings',         icon: Settings,        roles: ['super_admin'] },
+        { key: 'layouts.admin.dashboard',          href: '/admin/dashboard',        icon: LayoutDashboard, roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.products',           href: '/admin/products',         icon: Package,         roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.orders',             href: '/admin/orders',           icon: ShoppingCart,    roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.sellers',            href: '/admin/sellers',          icon: UserCheck,       roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.categories',         href: '/admin/categories',       icon: ListTree,        roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.reviews',            href: '/admin/reviews',          icon: Star,            roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.sponsored_ads',      href: '/admin/advertisements',   icon: Megaphone,       roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.support_desk',       href: '/admin/support',          icon: Ticket,          roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.reports',            href: '/admin/reports',          icon: FileDown,        roles: ['super_admin', 'admin'] },
+        { key: 'layouts.admin.sub_admins',         href: '/admin/admins',           icon: Users,           roles: ['super_admin'] },
+        { key: 'layouts.admin.subscription_plans', href: '/admin/plans',            icon: Shield,          roles: ['super_admin'] },
+        { key: 'layouts.admin.settings',           href: '/admin/settings',         icon: Settings,        roles: ['super_admin'] },
     ];
 
     const userRole = auth?.user?.role ?? '';
@@ -48,8 +49,7 @@ export default function AdminLayout({ children, title }) {
 
             {/* Navigation */}
             <nav className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                {allowedNavItems.map(({ label, href, icon: Icon }) => {
-                    // ✅ Safe isActive: only call startsWith if both currentPath and href are strings
+                {allowedNavItems.map(({ key, href, icon: Icon }) => {
                     const isActive = typeof currentPath === 'string' && typeof href === 'string'
                         ? currentPath.startsWith(href)
                         : false;
@@ -65,13 +65,12 @@ export default function AdminLayout({ children, title }) {
                             }`}
                         >
                             <Icon size={18} className="shrink-0" />
-                            <span className="flex-1">{label}</span>
+                            <span className="flex-1">{t(key)}</span>
                             {isActive && <ChevronRight size={14} className="text-slate-800" />}
                         </Link>
                     );
                 })}
 
-                {/* Logout */}
                 <Link
                     href="/logout"
                     method="post"
@@ -79,7 +78,7 @@ export default function AdminLayout({ children, title }) {
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 border-l-2 border-transparent transition-colors"
                 >
                     <LogOut size={18} className="shrink-0" />
-                    Sign Out
+                    {t('layouts.admin.sign_out')}
                 </Link>
             </nav>
         </>
@@ -99,17 +98,16 @@ export default function AdminLayout({ children, title }) {
                 </button>
 
                 {/* Logo */}
-                <Link href="/admin/dashboard" className="flex items-center gap-2">
-                    <img src="/images/logo.png" alt="PenePene" className="h-8 w-auto object-contain" />
-                    <span className="text-xs font-semibold bg-amber-500 text-white px-2 py-0.5 rounded-md ml-1">Admin</span>
-                </Link>
+                <div className="flex items-center gap-2">
+                    <Logo href="/admin/dashboard" surface className="h-9 w-auto max-w-[140px]" />
+                    <span className="text-xs font-semibold bg-amber-500 text-white px-2 py-0.5 rounded-md ml-1">{t('layouts.admin.admin_badge')}</span>
+                </div>
 
                 <div className="flex-1" />
 
-                {/* Right side */}
                 <div className="flex items-center gap-3 text-slate-300 text-sm">
                     <Link href="/" className="hover:text-white transition-colors hidden sm:block">
-                        ← View Site
+                        {t('layouts.admin.view_site')}
                     </Link>
                     <div className="w-px h-6 bg-slate-700"></div>
                     <span className="hidden sm:block font-medium">{auth?.user?.name}</span>

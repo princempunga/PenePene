@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import useTranslation from '@/hooks/useTranslation';
 import { Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
@@ -61,88 +62,101 @@ const StepCard = ({ step, icon: Icon, title, description, color }) => (
 );
 
 export default function About() {
+    const { t } = useTranslation();
+
+    const storyFeatures = useMemo(() => [
+        { icon: Shield, color: 'bg-blue-500', title: t('about.feature_verified_title'), desc: t('about.feature_verified_desc') },
+        { icon: Zap, color: 'bg-amber-500', title: t('about.feature_fast_title'), desc: t('about.feature_fast_desc') },
+        { icon: Heart, color: 'bg-red-500', title: t('about.feature_community_title'), desc: t('about.feature_community_desc') },
+        { icon: Globe, color: 'bg-green-500', title: t('about.feature_nationwide_title'), desc: t('about.feature_nationwide_desc') },
+    ], [t]);
+
+    const values = useMemo(() => [
+        { icon: Shield, color: 'bg-blue-500', title: t('about.value_trust_title'), desc: t('about.value_trust_desc') },
+        { icon: Heart, color: 'bg-red-500', title: t('about.value_community_title'), desc: t('about.value_community_desc') },
+        { icon: TrendingUp, color: 'bg-green-500', title: t('about.value_growth_title'), desc: t('about.value_growth_desc') },
+        { icon: Zap, color: 'bg-amber-500', title: t('about.value_simplicity_title'), desc: t('about.value_simplicity_desc') },
+        { icon: Star, color: 'bg-purple-500', title: t('about.value_quality_title'), desc: t('about.value_quality_desc') },
+        { icon: Users, color: 'bg-indigo-500', title: t('about.value_inclusion_title'), desc: t('about.value_inclusion_desc') },
+    ], [t]);
+
+    const sellerBenefits = t('about.seller_benefits') || [];
+    const sellerStats = t('about.seller_stats') || [];
+    const buyerFeatures = t('about.buyer_features') || [];
+
+    const buyerFeatureIcons = [Shield, Search, Heart, Star, MessageCircle, Package];
+    const buyerFeatureColors = ['bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-amber-500', 'bg-purple-500', 'bg-indigo-500'];
+    const sellerStatColors = ['text-amber-600 bg-amber-50', 'text-green-600 bg-green-50', 'text-blue-600 bg-blue-50', 'text-purple-600 bg-purple-50'];
+
     return (
         <AppLayout>
-            <Head title="About PenePene - Your Local Marketplace" />
+            <Head title={t('about.page_title')} />
 
-            {/* ── Hero ─────────────────────────────────────────────────────── */}
             <section className="relative bg-gradient-to-br from-gray-900 via-primary-900 to-primary-800 text-white overflow-hidden">
-                {/* Decorative blobs */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary-500/20 rounded-full blur-3xl" />
 
                 <div className="relative max-w-7xl mx-auto px-4 py-24 md:py-32 text-center">
                     <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 text-amber-300 px-4 py-2 rounded-full text-sm font-semibold mb-6">
                         <Store size={16} />
-                        <span>About Us</span>
+                        <span>{t('about.hero_badge')}</span>
                     </div>
                     <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
-                        About{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">
-                            PenePene
-                        </span>
+                        {t('about.hero_title')}
                     </h1>
                     <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-10">
-                        The premier local marketplace connecting buyers and sellers across the Democratic Republic of Congo — making commerce simple, trusted, and <em className="text-amber-400 not-italic font-bold">tout proche</em>.
+                        {t('about.hero_subtitle')}
+                        {t('about.hero_subtitle_emphasis') && t('about.hero_subtitle_emphasis') !== 'about.hero_subtitle_emphasis' && (
+                            <> <em className="text-amber-400 not-italic font-bold">{t('about.hero_subtitle_emphasis')}</em>.</>
+                        )}
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <Link href="/products" className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white font-bold px-8 py-4 rounded-xl transition-all hover:shadow-lg hover:-translate-y-0.5">
-                            Start Shopping <ArrowRight size={18} />
+                            {t('about.start_shopping')} <ArrowRight size={18} />
                         </Link>
                         <Link href="/become-a-seller" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-4 rounded-xl border border-white/20 transition-all">
-                            Become a Seller
+                            {t('about.become_seller')}
                         </Link>
                     </div>
                 </div>
             </section>
 
-            {/* ── Stats ──────────────────────────────────────────────────────── */}
             <section className="bg-gray-50 py-20">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">PenePene by the Numbers</h2>
-                        <p className="text-gray-500 mt-3 text-lg">A growing community of buyers and sellers</p>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{t('about.stats_title')}</h2>
+                        <p className="text-gray-500 mt-3 text-lg">{t('about.stats_subtitle')}</p>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                        <StatCard number="5000+"  label="Products Listed"  icon={Package}      color="bg-blue-500" />
-                        <StatCard number="500+"   label="Active Sellers"   icon={Store}        color="bg-amber-500" />
-                        <StatCard number="10000+" label="Happy Buyers"     icon={Users}        color="bg-green-500" />
-                        <StatCard number="15+"    label="Cities Covered"   icon={MapPin}       color="bg-purple-500" />
+                        <StatCard number="5000+" label={t('about.stat_products')} icon={Package} color="bg-blue-500" />
+                        <StatCard number="500+" label={t('about.stat_sellers')} icon={Store} color="bg-amber-500" />
+                        <StatCard number="10000+" label={t('about.stat_buyers')} icon={Users} color="bg-green-500" />
+                        <StatCard number="15+" label={t('about.stat_cities')} icon={MapPin} color="bg-purple-500" />
                     </div>
                 </div>
             </section>
 
-            {/* ── Why PenePene ─────────────────────────────────────────────── */}
             <section className="bg-white py-20">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div>
                             <div className="inline-flex items-center gap-2 bg-primary-50 text-primary-600 px-4 py-2 rounded-full text-sm font-semibold mb-5">
-                                <Target size={16} /> Our Story
+                                <Target size={16} /> {t('about.story_badge')}
                             </div>
                             <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
-                                Why PenePene <br />
-                                <span className="text-primary-600">Exists</span>
+                                {t('about.story_title')} <br />
+                                <span className="text-primary-600">{t('about.story_title_highlight')}</span>
                             </h2>
                             <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
+                                <p>{t('about.story_p1')}</p>
                                 <p>
-                                    In Congo, millions of talented entrepreneurs sell great products — but struggle to reach customers beyond their neighbourhood. At the same time, buyers waste hours searching for items that are available just streets away.
+                                    <strong className="text-gray-900">{t('about.story_p2_brand')}</strong> — {t('about.story_p2_meaning')} {t('about.story_p2_after')}
                                 </p>
-                                <p>
-                                    <strong className="text-gray-900">PenePene</strong> — meaning <em>"very close"</em> in Lingala — was born to bridge this gap. We built a platform where any seller can list their products in minutes and any buyer can discover them instantly.
-                                </p>
-                                <p>
-                                    No complicated shipping. No foreign platforms. Just <strong className="text-gray-900">local commerce, done right</strong>.
-                                </p>
+                                <p>{t('about.story_p3')}</p>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            {[
-                                { icon: Shield,    color: 'bg-blue-500',   title: 'Verified Sellers',   desc: 'Every seller is reviewed and verified before going live.' },
-                                { icon: Zap,       color: 'bg-amber-500',  title: 'Fast Discovery',     desc: 'Find exactly what you need in seconds with smart search.' },
-                                { icon: Heart,     color: 'bg-red-500',    title: 'Community First',    desc: 'We support local businesses and keep money in communities.' },
-                                { icon: Globe,     color: 'bg-green-500',  title: 'Nationwide Reach',   desc: 'Sellers in Kinshasa, Lubumbashi, Goma and beyond.' },
-                            ].map(v => (
+                            {storyFeatures.map(v => (
                                 <div key={v.title} className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                                     <div className={`w-10 h-10 ${v.color} rounded-lg flex items-center justify-center mb-3`}>
                                         <v.icon size={18} className="text-white" />
@@ -156,7 +170,6 @@ export default function About() {
                 </div>
             </section>
 
-            {/* ── Mission / Vision ─────────────────────────────────────────── */}
             <section className="bg-gradient-to-br from-primary-600 to-primary-800 py-20 text-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid md:grid-cols-2 gap-8">
@@ -164,82 +177,64 @@ export default function About() {
                             <div className="w-12 h-12 bg-amber-400/20 rounded-xl flex items-center justify-center mb-5">
                                 <Target size={24} className="text-amber-300" />
                             </div>
-                            <h3 className="text-2xl font-extrabold mb-3">Our Mission</h3>
-                            <p className="text-white/80 leading-relaxed text-lg">
-                                To empower every Congolese entrepreneur with a digital storefront and every buyer with instant access to local products — making commerce accessible, trusted, and rewarding for all.
-                            </p>
+                            <h3 className="text-2xl font-extrabold mb-3">{t('about.mission_title')}</h3>
+                            <p className="text-white/80 leading-relaxed text-lg">{t('about.mission_text')}</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
                             <div className="w-12 h-12 bg-green-400/20 rounded-xl flex items-center justify-center mb-5">
                                 <Eye size={24} className="text-green-300" />
                             </div>
-                            <h3 className="text-2xl font-extrabold mb-3">Our Vision</h3>
-                            <p className="text-white/80 leading-relaxed text-lg">
-                                To become the #1 trusted marketplace across Central Africa, where millions of people discover, buy, and sell products that are truly <em className="text-amber-300 not-italic">pene pene</em> — right next door.
-                            </p>
+                            <h3 className="text-2xl font-extrabold mb-3">{t('about.vision_title')}</h3>
+                            <p className="text-white/80 leading-relaxed text-lg">{t('about.vision_text')}</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* ── Core Values ──────────────────────────────────────────────── */}
             <section className="bg-gray-50 py-20">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="text-center mb-12">
                         <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                            <Heart size={16} /> Our Values
+                            <Heart size={16} /> {t('about.values_badge')}
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">What Drives Us Every Day</h2>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{t('about.values_title')}</h2>
                     </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <ValueCard icon={Shield}      color="bg-blue-500"    title="Trust & Safety"       description="We verify every seller and moderate every product to ensure buyers can shop with total confidence." />
-                        <ValueCard icon={Heart}       color="bg-red-500"     title="Community"            description="We put local communities first. Every purchase on PenePene supports a real person with a dream." />
-                        <ValueCard icon={TrendingUp}  color="bg-green-500"   title="Growth for Sellers"   description="We give sellers tools to grow: analytics, subscriptions, sponsored listings and more." />
-                        <ValueCard icon={Zap}         color="bg-amber-500"   title="Simplicity"           description="Listing a product, placing an order, or contacting a seller should take seconds — not hours." />
-                        <ValueCard icon={Star}        color="bg-purple-500"  title="Quality"              description="We set high standards for the products and services listed on our platform." />
-                        <ValueCard icon={Users}       color="bg-indigo-500"  title="Inclusion"            description="PenePene is for every seller — from a small roadside artisan to a large wholesaler." />
+                        {values.map(v => (
+                            <ValueCard key={v.title} icon={v.icon} color={v.color} title={v.title} description={v.desc} />
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* ── How It Works ─────────────────────────────────────────────── */}
             <section className="bg-white py-20">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="text-center mb-14">
                         <div className="inline-flex items-center gap-2 bg-primary-50 text-primary-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                            <Zap size={16} /> Simple Process
+                            <Zap size={16} /> {t('about.how_badge')}
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">How PenePene Works</h2>
-                        <p className="text-gray-500 mt-3 max-w-xl mx-auto">Three steps to buy anything from a local seller near you</p>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{t('about.how_title')}</h2>
+                        <p className="text-gray-500 mt-3 max-w-xl mx-auto">{t('about.how_subtitle')}</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-12 relative">
-                        {/* connector lines */}
                         <div className="hidden md:block absolute top-10 left-1/3 right-1/3 h-0.5 bg-gradient-to-r from-primary-200 to-primary-200 z-0" />
-                        <StepCard step={1} icon={Search}        color="bg-primary-600"  title="Search Products"      description="Browse thousands of products by category, keyword, or location. Filter by price, rating and availability." />
-                        <StepCard step={2} icon={MessageCircle} color="bg-amber-500"    title="Contact the Seller"   description="Found what you want? Message the seller directly to confirm availability, price, and delivery details." />
-                        <StepCard step={3} icon={ShoppingCart}  color="bg-green-500"    title="Order & Receive"      description="Place your order through the platform. Track its status and get your product delivered or pick it up." />
+                        <StepCard step={1} icon={Search} color="bg-primary-600" title={t('about.step1_title')} description={t('about.step1_desc')} />
+                        <StepCard step={2} icon={MessageCircle} color="bg-amber-500" title={t('about.step2_title')} description={t('about.step2_desc')} />
+                        <StepCard step={3} icon={ShoppingCart} color="bg-green-500" title={t('about.step3_title')} description={t('about.step3_desc')} />
                     </div>
                 </div>
             </section>
 
-            {/* ── Seller Benefits ──────────────────────────────────────────── */}
             <section className="bg-gradient-to-br from-amber-50 to-orange-50 py-20 border-y border-amber-100">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div>
                             <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-sm font-semibold mb-5">
-                                <Store size={16} /> For Sellers
+                                <Store size={16} /> {t('about.seller_badge')}
                             </div>
-                            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Grow Your Business <br /> With PenePene</h2>
+                            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">{t('about.seller_title')}</h2>
                             <div className="space-y-4">
-                                {[
-                                    'Create a professional storefront in minutes',
-                                    'Reach buyers across DRC — not just your neighbourhood',
-                                    'Manage products, orders and messages in one dashboard',
-                                    'Get insights on views, sales and customer behaviour',
-                                    'Boost visibility with sponsored product listings',
-                                    'Choose a subscription plan that fits your scale',
-                                ].map(item => (
+                                {Array.isArray(sellerBenefits) && sellerBenefits.map(item => (
                                     <div key={item} className="flex items-start gap-3">
                                         <CheckCircle size={20} className="text-amber-500 flex-shrink-0 mt-0.5" />
                                         <span className="text-gray-700">{item}</span>
@@ -247,18 +242,13 @@ export default function About() {
                                 ))}
                             </div>
                             <Link href="/become-a-seller" className="inline-flex items-center gap-2 mt-8 bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-4 rounded-xl transition-all hover:shadow-lg hover:-translate-y-0.5">
-                                Start Selling Today <ArrowRight size={18} />
+                                {t('about.become_seller')} <ArrowRight size={18} />
                             </Link>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            {[
-                                { n: '5 min',  label: 'To go live',          color: 'text-amber-600 bg-amber-50' },
-                                { n: 'Free',   label: 'Basic plan',           color: 'text-green-600 bg-green-50' },
-                                { n: '24/7',   label: 'Platform uptime',      color: 'text-blue-600 bg-blue-50' },
-                                { n: '100%',   label: 'Seller control',       color: 'text-purple-600 bg-purple-50' },
-                            ].map(s => (
-                                <div key={s.n} className={`rounded-2xl p-6 ${s.color.split(' ')[1]} border border-gray-100 text-center`}>
-                                    <div className={`text-4xl font-extrabold ${s.color.split(' ')[0]} mb-1`}>{s.n}</div>
+                            {Array.isArray(sellerStats) && sellerStats.map((s, i) => (
+                                <div key={s.label} className={`rounded-2xl p-6 ${sellerStatColors[i]?.split(' ')[1] || 'bg-gray-50'} border border-gray-100 text-center`}>
+                                    <div className={`text-4xl font-extrabold ${sellerStatColors[i]?.split(' ')[0] || 'text-gray-900'} mb-1`}>{s.value}</div>
                                     <div className="text-gray-600 text-sm font-medium">{s.label}</div>
                                 </div>
                             ))}
@@ -267,58 +257,49 @@ export default function About() {
                 </div>
             </section>
 
-            {/* ── Buyer Benefits ───────────────────────────────────────────── */}
             <section className="bg-white py-20">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div className="order-2 lg:order-1 bg-gradient-to-br from-primary-50 to-blue-50 rounded-3xl p-8 grid grid-cols-2 gap-4">
-                            {[
-                                { icon: Shield,     label: 'Verified Sellers Only',    color: 'bg-blue-500' },
-                                { icon: Search,     label: 'Smart Search & Filters',   color: 'bg-green-500' },
-                                { icon: Heart,      label: 'Save to Wishlist',          color: 'bg-red-500' },
-                                { icon: Star,       label: 'Ratings & Reviews',         color: 'bg-amber-500' },
-                                { icon: MessageCircle, label: 'Direct Seller Chat',     color: 'bg-purple-500' },
-                                { icon: Package,    label: 'Order Tracking',            color: 'bg-indigo-500' },
-                            ].map(b => (
-                                <div key={b.label} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center gap-3">
-                                    <div className={`w-9 h-9 ${b.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                                        <b.icon size={16} className="text-white" />
+                            {Array.isArray(buyerFeatures) && buyerFeatures.map((label, i) => {
+                                const Icon = buyerFeatureIcons[i] || Package;
+                                const color = buyerFeatureColors[i] || 'bg-blue-500';
+                                return (
+                                    <div key={label} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex items-center gap-3">
+                                        <div className={`w-9 h-9 ${color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                            <Icon size={16} className="text-white" />
+                                        </div>
+                                        <span className="text-gray-700 text-sm font-medium">{label}</span>
                                     </div>
-                                    <span className="text-gray-700 text-sm font-medium">{b.label}</span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         <div className="order-1 lg:order-2">
                             <div className="inline-flex items-center gap-2 bg-primary-50 text-primary-600 px-4 py-2 rounded-full text-sm font-semibold mb-5">
-                                <ShoppingBag size={16} /> For Buyers
+                                <ShoppingBag size={16} /> {t('about.buyer_badge')}
                             </div>
-                            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Shop Local. <br /> Shop Smart.</h2>
-                            <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                                Discover thousands of verified local products. Compare prices, read real reviews, and message sellers directly — all from one trusted platform.
-                            </p>
+                            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">{t('about.buyer_title')}</h2>
+                            <p className="text-gray-600 text-lg leading-relaxed mb-6">{t('about.buyer_desc')}</p>
                             <Link href="/products" className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold px-8 py-4 rounded-xl transition-all hover:shadow-lg hover:-translate-y-0.5">
-                                Browse Products <ArrowRight size={18} />
+                                {t('about.start_shopping')} <ArrowRight size={18} />
                             </Link>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* ── CTA ──────────────────────────────────────────────────────── */}
             <section className="bg-gradient-to-br from-gray-900 to-primary-900 py-20 text-white">
                 <div className="max-w-4xl mx-auto px-4 text-center">
                     <h2 className="text-4xl md:text-5xl font-extrabold mb-5">
-                        Ready to Join <span className="text-amber-400">PenePene?</span>
+                        {t('about.cta_title')} <span className="text-amber-400">{t('about.cta_title_highlight')}</span>
                     </h2>
-                    <p className="text-gray-300 text-lg mb-10 max-w-2xl mx-auto">
-                        Whether you're looking to buy amazing local products or grow your business online — PenePene is the place to be.
-                    </p>
+                    <p className="text-gray-300 text-lg mb-10 max-w-2xl mx-auto">{t('about.cta_subtitle')}</p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <Link href="/products" className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white font-bold px-8 py-4 rounded-xl transition-all hover:shadow-lg hover:-translate-y-0.5 text-lg">
-                            <ShoppingBag size={20} /> Start Shopping
+                            <ShoppingBag size={20} /> {t('about.start_shopping')}
                         </Link>
                         <Link href="/become-a-seller" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-4 rounded-xl border border-white/20 transition-all text-lg">
-                            <Store size={20} /> Become a Seller
+                            <Store size={20} /> {t('about.become_seller')}
                         </Link>
                     </div>
                 </div>

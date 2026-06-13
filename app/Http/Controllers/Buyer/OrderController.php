@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Buyer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Buyer;
+use App\Models\Conversation;
+use App\Models\ConversationUserState;
+use App\Models\Message;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -36,6 +40,71 @@ class OrderController extends Controller
         $order->load(['items.product.images', 'seller.user']);
 
         return Inertia::render('Buyer/Orders/Show', [
+            'order' => $order,
+        ]);
+    }
+
+    public function contactSeller(Request $request, Order $order)
+    {
+        $user = $request->user();
+        $buyer = $user->buyer;
+
+        if (! $buyer || $order->buyer_id !== $buyer->id) {
+            abort(403);
+        }
+
+        $order->load(['items.product', 'seller.user']);
+
+        if (! $order->seller_id || ! $order->seller?->user_id) {
+            return back()->withErrors(['contact' => 'This seller cannot be contacted right now.']);
+        }
+
+        $conversation = Conversation::firstOrCreate(
+            ['buyer_id' => $user->id, 'seller_id' => $order->seller_id],
+            ['last_message_at' => now()]
+        );
+
+        ConversationUserState::forUser($conversation, $user->id)->update([
+            'deleted_at' => null,
+            'archived_at' => null,
+        ]);
+
+        $productName = $order->items->first()?->product_name
+            ?? $order->items->first()?->product?->name
+            ?? 'your order';
+
+        $contextBody = "Hello, I am contacting you about Order #{$order->id}: {$productName}.";
+
+        $hasOrderContext = $conversation->messages()
+            ->where('body', 'like', "%Order #{$order->id}:%")
+            ->exists();
+
+        if (! $hasOrderContext) {
+            Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id'       => $user->id,
+                'receiver_id'     => $order->seller->user_id,
+                'body'            => $contextBody,
+                'message_type'    => 'text',
+            ]);
+
+            $conversation->update(['last_message_at' => now()]);
+        }
+
+        return redirect()->route('buyer.messages.show', $conversation);
+    }
+
+    public function confirmation(Request $request, Order $order)
+    {
+        $buyer = $request->user()->buyer ?? Buyer::create(['user_id' => $request->user()->id]);
+
+        if ($order->buyer_id !== $buyer->id) {
+            abort(403);
+        }
+
+        $order->load(['items.product.images', 'seller']);
+
+        return Inertia::render('Buyer/Orders/Confirmation', [
             'order' => $order,
         ]);
     }
@@ -80,6 +149,8 @@ class OrderController extends Controller
             'quantity'     => $request->quantity,
             'subtotal'     => $subtotal,
         ]);
+
+        $product->increment('confirmed_sales', $request->quantity);
 
         return redirect()->route('buyer.orders.show', $order)
             ->with('success', 'Order placed successfully!');

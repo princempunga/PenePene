@@ -9,6 +9,9 @@ use App\Http\Controllers\SellerController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\CartController;
 
+// ─── Locale ──────────────────────────────────────────────────────────────────
+Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
+
 // ─── Public Routes ───────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -19,14 +22,17 @@ Route::get('/dashboard', function () {
     return match ($user->role) {
         'super_admin', 'admin' => redirect()->route('admin.dashboard'),
         'seller'               => redirect()->route('seller.dashboard'),
-        default                => redirect()->route('buyer.dashboard'),
+        default                => redirect()->route('buyer.messages.index'),
     };
 })->middleware('auth')->name('dashboard');
 
 
 // Products
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/flash-deals', fn () => redirect()->route('products.index', ['filter' => 'sale']))->name('flash-deals');
+Route::get('/products/{slug}', [ProductController::class, 'show'])
+    ->where('slug', '[^/]+')
+    ->name('products.show');
 
 // Categories
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -49,17 +55,27 @@ Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.c
 Route::get('/about',           [PageController::class, 'about'])->name('about');
 Route::get('/contact',         [PageController::class, 'contact'])->name('contact');
 Route::get('/faq',             [PageController::class, 'faq'])->name('faq');
-Route::get('/pricing',         [PageController::class, 'pricing'])->name('pricing');
-Route::get('/become-a-seller', [PageController::class, 'becomeSeller'])->name('become-seller');
-Route::get('/terms',           [PageController::class, 'terms'])->name('terms');
-Route::get('/privacy',         [PageController::class, 'privacy'])->name('privacy');
-Route::get('/help-center',     [PageController::class, 'helpCenter'])->name('help-center');
+Route::get('/pricing',           [PageController::class, 'pricing'])->name('pricing');
+Route::get('/seller-resources',  [PageController::class, 'sellerResources'])->name('seller-resources');
+Route::get('/community-forum',  [PageController::class, 'communityForum'])->name('community-forum');
+Route::get('/blog',              [PageController::class, 'blog'])->name('blog');
+Route::get('/cookies',           [PageController::class, 'cookies'])->name('cookies');
+Route::get('/become-a-seller',   fn () => redirect()->route('seller.register'))->name('become-seller');
+Route::redirect('/seller/resources', '/seller-resources');
+Route::redirect('/seller/community', '/community-forum');
+Route::get('/terms',             [PageController::class, 'terms'])->name('terms');
+Route::get('/privacy',           [PageController::class, 'privacy'])->name('privacy');
+Route::get('/help-center',       [PageController::class, 'helpCenter'])->name('help-center');
+
+// Seller registration page (accessible to guests; authenticated sellers are redirected in controller)
+Route::get('/seller/register', [\App\Http\Controllers\Seller\Auth\RegisterController::class, 'create'])->name('seller.register');
 
 
 // ─── Auth (Guest Only) ───────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
-    Route::get('/register',            [\App\Http\Controllers\Auth\RegisterController::class, 'create'])->name('register');
-    Route::post('/register',           [\App\Http\Controllers\Auth\RegisterController::class, 'store']);
+    Route::get('/register',            fn() => \Inertia\Inertia::render('Auth/RegisterChoice'))->name('register');
+    Route::get('/buyer/register',      [\App\Http\Controllers\Auth\RegisterController::class, 'create'])->name('buyer.register');
+    Route::post('/buyer/register',     [\App\Http\Controllers\Auth\RegisterController::class, 'store']);
     Route::get('/login',               [\App\Http\Controllers\Auth\LoginController::class, 'create'])->name('login');
     Route::post('/login',              [\App\Http\Controllers\Auth\LoginController::class, 'store']);
     Route::get('/forgot-password',     [\App\Http\Controllers\Auth\PasswordController::class, 'requestForm'])->name('password.request');
@@ -67,8 +83,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\PasswordController::class, 'resetForm'])->name('password.reset');
     Route::post('/reset-password',     [\App\Http\Controllers\Auth\PasswordController::class, 'reset'])->name('password.store');
 
-    // Seller Registration (also guest-only)
-    Route::get('/seller/register',  [\App\Http\Controllers\Seller\Auth\RegisterController::class, 'create'])->name('seller.register');
     Route::post('/seller/register', [\App\Http\Controllers\Seller\Auth\RegisterController::class, 'store']);
 });
 
@@ -90,9 +104,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/conversations/start', [\App\Http\Controllers\ChatController::class, 'startConversation'])->name('conversations.start');
         Route::get('/conversations/{conversation}', [\App\Http\Controllers\ChatController::class, 'show'])->name('conversations.show');
         Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('conversations.messages.send');
+        Route::post('/conversations/{conversation}/forward', [\App\Http\Controllers\ChatController::class, 'forwardMessage'])->name('conversations.forward');
+        Route::post('/conversations/{conversation}/delete', [\App\Http\Controllers\ChatController::class, 'deleteConversation'])->name('conversations.delete');
+        Route::post('/conversations/{conversation}/clear', [\App\Http\Controllers\ChatController::class, 'clearConversation'])->name('conversations.clear');
+        Route::post('/conversations/{conversation}/archive', [\App\Http\Controllers\ChatController::class, 'archiveConversation'])->name('conversations.archive');
         Route::patch('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'editMessage'])->name('messages.edit');
         Route::delete('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'deleteMessage'])->name('messages.delete');
         Route::post('/messages/{message}/read', [\App\Http\Controllers\ChatController::class, 'markAsRead'])->name('messages.read');
+        Route::post('/messages/{message}/react', [\App\Http\Controllers\ChatController::class, 'reactMessage'])->name('messages.react');
+        Route::delete('/messages/{message}/react', [\App\Http\Controllers\ChatController::class, 'unreactMessage'])->name('messages.unreact');
+        Route::post('/messages/{message}/star', [\App\Http\Controllers\ChatController::class, 'starMessage'])->name('messages.star');
+        Route::delete('/messages/{message}/star', [\App\Http\Controllers\ChatController::class, 'unstarMessage'])->name('messages.unstar');
         Route::post('/conversations/{conversation}/messages/{message}/pin', [\App\Http\Controllers\ChatController::class, 'pinMessage'])->name('messages.pin');
         Route::delete('/conversations/{conversation}/messages/{message}/pin', [\App\Http\Controllers\ChatController::class, 'unpinMessage'])->name('messages.unpin');
     });
@@ -106,15 +128,28 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/{message}/read', [\App\Http\Controllers\ChatController::class, 'markAsRead']);
 
     // Buyer messages → redirect to conversations system
-    Route::get('/buyer/messages', fn() => redirect('/conversations'))->name('buyer.messages.index');
-    Route::get('/buyer/messages/{conversation}', fn($c) => redirect("/conversations/{$c}"))->name('buyer.messages.show');
+    Route::get('/buyer/messages', fn() => redirect('/chat/conversations'))->name('buyer.messages.index');
+    Route::get('/buyer/messages/{conversation}', fn($c) => redirect("/chat/conversations/{$c}"))->name('buyer.messages.show');
     // Seller messages → same
     Route::get('/seller/messages', fn() => redirect('/conversations'))->name('seller.messages.index');
     Route::get('/seller/messages/{conversation}', fn($c) => redirect("/conversations/{$c}"))->name('seller.messages.show');
 
+    Route::get('/orders/{order}/confirmation', [\App\Http\Controllers\Buyer\OrderController::class, 'confirmation'])
+        ->name('orders.confirmation');
+
+    // Favorites / wishlist (buyer)
+    Route::middleware('role:buyer')->group(function () {
+        Route::get('/favorites', [\App\Http\Controllers\Buyer\WishlistController::class, 'index'])->name('favorites.index');
+        Route::post('/favorites/toggle', [\App\Http\Controllers\Buyer\WishlistController::class, 'toggleItem'])->name('favorites.toggle');
+        Route::post('/favorites/{product:id}', [\App\Http\Controllers\Buyer\WishlistController::class, 'store'])->name('favorites.store');
+        Route::delete('/favorites/{product:id}', [\App\Http\Controllers\Buyer\WishlistController::class, 'destroyByProduct'])->name('favorites.destroy');
+    });
+
+    Route::redirect('/wishlist', '/favorites');
+
     // ─── Buyer Routes ─────────────────────────────────────────────────────────
     Route::middleware('role:buyer')->prefix('buyer')->name('buyer.')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Buyer\DashboardController::class, 'index'])->name('dashboard');
+        Route::redirect('/dashboard', '/buyer/messages')->name('dashboard');
 
         // Wishlist
         Route::get('/wishlist',              [\App\Http\Controllers\Buyer\WishlistController::class, 'index'])->name('wishlist');
@@ -125,6 +160,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders',                 [\App\Http\Controllers\Buyer\OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders',                [\App\Http\Controllers\Buyer\OrderController::class, 'store'])->name('orders.store');
         Route::get('/orders/{order}',         [\App\Http\Controllers\Buyer\OrderController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/contact-seller', [\App\Http\Controllers\Buyer\OrderController::class, 'contactSeller'])->name('orders.contact-seller');
         Route::patch('/orders/{order}/cancel',[\App\Http\Controllers\Buyer\OrderController::class, 'cancel'])->name('orders.cancel');
 
 
@@ -144,6 +180,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/profile/password',   [\App\Http\Controllers\Buyer\ProfileController::class, 'updatePassword'])->name('profile.password');
 
         // Support Tickets (Buyer)
+        Route::redirect('/support-tickets', '/buyer/support');
         Route::get('/support',              [\App\Http\Controllers\Buyer\SupportController::class, 'index'])->name('support.index');
         Route::get('/support/create',       [\App\Http\Controllers\Buyer\SupportController::class, 'create'])->name('support.create');
         Route::post('/support',             [\App\Http\Controllers\Buyer\SupportController::class, 'store'])->name('support.store');

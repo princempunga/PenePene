@@ -25,10 +25,48 @@ class PageController extends Controller
 
     public function pricing()
     {
-        $plans = SubscriptionPlan::active()->get();
+        $plans = SubscriptionPlan::active()->get()->map(function ($plan) {
+            $features = $plan->features;
+            if (is_string($features)) {
+                $features = json_decode($features, true) ?? [];
+            }
+
+            return [
+                'id'            => $plan->id,
+                'name'          => $plan->name,
+                'slug'          => $plan->slug,
+                'description'   => $plan->description,
+                'price'         => $plan->price,
+                'currency'      => $plan->currency,
+                'billing_cycle' => $plan->billing_cycle,
+                'is_featured'   => $plan->is_featured,
+                'features'      => is_array($features) ? $features : [],
+            ];
+        });
+
         return Inertia::render('Static/Pricing', [
-            'plans' => $plans
+            'plans' => $plans,
         ]);
+    }
+
+    public function sellerResources()
+    {
+        return Inertia::render('Static/SellerResources');
+    }
+
+    public function communityForum()
+    {
+        return Inertia::render('Static/CommunityForum');
+    }
+
+    public function blog()
+    {
+        return Inertia::render('Static/Blog');
+    }
+
+    public function cookies()
+    {
+        return Inertia::render('Static/Cookies');
     }
 
     public function becomeSeller()

@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             ['key' => 'contact_email',     'value' => 'support@penepene.co.tz','type' => 'string',  'group' => 'contact',  'label' => 'Contact Email'],
             ['key' => 'contact_phone',     'value' => '+255 XXX XXX XXX',     'type' => 'string',  'group' => 'contact',  'label' => 'Contact Phone'],
             ['key' => 'maintenance_mode',  'value' => '0',                    'type' => 'boolean', 'group' => 'general',  'label' => 'Maintenance Mode'],
-            ['key' => 'default_language',  'value' => 'sw',                   'type' => 'string',  'group' => 'general',  'label' => 'Default Language'],
+            ['key' => 'default_language',  'value' => 'fr',                   'type' => 'string',  'group' => 'general',  'label' => 'Default Language'],
         ];
         foreach ($settings as $setting) {
             PlatformSetting::firstOrCreate(['key' => $setting['key']], $setting);
@@ -82,22 +82,36 @@ class DatabaseSeeder extends Seeder
 
         // ── Categories ─────────────────────────────────────────────────────────
         $categories = [
-            ['name' => 'Electronics',    'subcats' => ['Phones & Tablets', 'Computers', 'Accessories', 'Audio & Video']],
-            ['name' => 'Fashion',        'subcats' => ['Men\'s Clothing', 'Women\'s Clothing', 'Shoes', 'Bags & Accessories']],
-            ['name' => 'Home & Garden',  'subcats' => ['Furniture', 'Kitchen', 'Garden', 'Decor']],
-            ['name' => 'Food & Drinks',  'subcats' => ['Fresh Produce', 'Beverages', 'Snacks', 'Grains & Cereals']],
-            ['name' => 'Health & Beauty','subcats' => ['Skincare', 'Hair Care', 'Health Supplements', 'Baby & Kids']],
-            ['name' => 'Vehicles',       'subcats' => ['Cars', 'Motorcycles', 'Spare Parts', 'Trucks']],
-            ['name' => 'Real Estate',    'subcats' => ['Houses for Sale', 'Houses for Rent', 'Land', 'Commercial Property']],
-            ['name' => 'Services',       'subcats' => ['Cleaning', 'Repairs', 'Tutoring', 'Events & Catering']],
+            ['name' => 'Electronics',       'subcats' => ['Mobile Phones', 'Laptops & Computers', 'Accessories', 'Audio & Sound', 'TVs', 'Phones & Tablets', 'Computers', 'Audio & Video']],
+            ['name' => 'Fashion',           'subcats' => ['Men\'s Clothing', 'Women\'s Clothing', 'Shoes', 'Bags & Accessories']],
+            ['name' => 'Home & Living',     'subcats' => ['Furniture', 'Kitchenware', 'Home Decor', 'Bedding']],
+            ['name' => 'Health & Beauty',   'subcats' => ['Skincare', 'Hair Care', 'Health Supplements', 'Baby & Kids']],
+            ['name' => 'Automotive',        'subcats' => ['Car Parts', 'Motorcycles', 'Vehicle Accessories', 'Tires']],
+            ['name' => 'Sports & Outdoors', 'subcats' => ['Fitness Equipment', 'Outdoor Gear', 'Sportswear', 'Camping']],
+            ['name' => 'Groceries',         'subcats' => ['Fresh Produce', 'Beverages', 'Snacks', 'Canned Goods']],
+            ['name' => 'Home & Garden',     'subcats' => ['Furniture', 'Kitchen', 'Garden', 'Decor']],
+            ['name' => 'Food & Drinks',     'subcats' => ['Fresh Produce', 'Beverages', 'Snacks', 'Grains & Cereals']],
+            ['name' => 'Vehicles',          'subcats' => ['Cars', 'Motorcycles', 'Spare Parts', 'Trucks']],
+            ['name' => 'Real Estate',       'subcats' => ['Houses for Sale', 'Houses for Rent', 'Land', 'Commercial Property']],
+            ['name' => 'Services',          'subcats' => ['Cleaning', 'Repairs', 'Tutoring', 'Events & Catering']],
         ];
 
-        foreach ($categories as $cat) {
+        foreach ($categories as $index => $cat) {
             $catSlug = Str::slug($cat['name']);
             $category = Category::firstOrCreate(
                 ['slug' => $catSlug],
-                ['name' => $cat['name'], 'slug' => $catSlug, 'is_active' => true]
+                [
+                    'name'        => $cat['name'],
+                    'slug'        => $catSlug,
+                    'image'       => "/images/categories/{$catSlug}.jpg",
+                    'is_active'   => true,
+                    'sort_order'  => $index + 1,
+                ]
             );
+
+            if (empty($category->image)) {
+                $category->update(['image' => "/images/categories/{$catSlug}.jpg"]);
+            }
             foreach ($cat['subcats'] as $subName) {
                 // Prefix with category slug to ensure global uniqueness
                 $subSlug = $catSlug . '-' . Str::slug($subName);

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useTranslation from '@/hooks/useTranslation';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/formatCurrency';
 import SellerLayout from '@/Layouts/SellerLayout';
@@ -34,6 +35,7 @@ function getPrimaryImage(product) {
 }
 
 export default function ProductsIndex({ products, filters = {} }) {
+    const { t } = useTranslation();
     const { flash } = usePage().props;
     const { delete: destroy, processing } = useForm({});
     const [search, setSearch] = useState(filters.search || '');
@@ -216,7 +218,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                 ) : (
                     <div className="bg-white rounded-xl border border-gray-200 p-16 text-center shadow-sm">
                         <Package size={48} className="text-gray-200 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun produit trouvé</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{t('products_page.no_products')}</h3>
                         <p className="text-gray-500 mb-6">
                             {hasFilters
                                 ? 'Aucun produit ne correspond à votre recherche ou à vos filtres.'

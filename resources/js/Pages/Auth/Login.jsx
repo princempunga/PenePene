@@ -1,12 +1,18 @@
 import React from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Lock, Mail } from 'lucide-react';
+import AuthLayout from '@/Components/Auth/AuthLayout';
+import AuthInput from '@/Components/Auth/AuthInput';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function Login() {
-    const { flash } = usePage().props;
+    const { flash, redirect: redirectTo } = usePage().props;
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
         remember: false,
+        redirect: redirectTo || '',
     });
 
     const handleSubmit = (e) => {
@@ -16,87 +22,92 @@ export default function Login() {
 
     return (
         <>
-            <Head title="Sign In" />
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
-                <div className="w-full max-w-md">
-                    <div className="text-center mb-8">
-                        <Link href="/" className="inline-block">
-                            <img src="/images/logo.png" alt="PenePene" className="h-12 w-auto object-contain mx-auto" />
+            <Head title={t('auth.sign_in')} />
+            <AuthLayout
+                accent="blue"
+                title={t('auth.sign_in_title')}
+                subtitle={t('auth.sign_in_subtitle')}
+                headline={t('auth.sign_in_headline')}
+                benefits={[
+                    t('auth.sign_in_benefit_1'),
+                    t('auth.sign_in_benefit_2'),
+                    t('auth.sign_in_benefit_3'),
+                ]}
+                footer={
+                    <p className="text-center text-sm text-gray-500">
+                        {t('auth.no_account')}{' '}
+                        <Link href="/register" className="text-blue-600 font-semibold hover:text-blue-800 transition-colors">
+                            {t('auth.create_one')}
                         </Link>
-                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Welcome back</h2>
-                        <p className="mt-2 text-gray-500">
-                            Don't have an account?{' '}
-                            <Link href="/register" className="text-primary-600 font-medium hover:text-primary-700">Create one free</Link>
-                        </p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
-                        {flash?.status && (
-                            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
-                                {flash.status}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">Email Address</label>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={e => setData('email', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                                    placeholder="you@example.com"
-                                    autoComplete="email"
-                                    required
-                                />
-                                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-                            </div>
-
-                            <div>
-                                <div className="flex justify-between mb-1">
-                                    <label className="text-sm font-medium text-gray-700" htmlFor="password">Password</label>
-                                    <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">Forgot password?</Link>
-                                </div>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={e => setData('password', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                                    placeholder="Your password"
-                                    required
-                                />
-                                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <input
-                                    id="remember"
-                                    type="checkbox"
-                                    checked={data.remember}
-                                    onChange={e => setData('remember', e.target.checked)}
-                                    className="w-4 h-4 text-primary-600 border-gray-300 rounded"
-                                />
-                                <label htmlFor="remember" className="text-sm text-gray-700">Remember me</label>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-                            >
-                                {processing ? 'Signing in...' : 'Sign In'}
-                            </button>
-                        </form>
-                    </div>
-
-                    <p className="text-center mt-6 text-sm text-gray-500">
-                        Want to sell on PenePene?{' '}
-                        <Link href="/become-a-seller" className="text-primary-600 font-medium">Become a Seller</Link>
                     </p>
-                </div>
-            </div>
+                }
+            >
+                {flash?.status && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl text-sm font-medium">
+                        {flash.status}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <AuthInput
+                        id="email"
+                        label={t('auth.email')}
+                        type="email"
+                        icon={Mail}
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                        error={errors.email}
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        required
+                    />
+
+                    <div>
+                        <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-sm font-semibold text-gray-700">{t('auth.password')}</span>
+                            <Link href="/forgot-password" className="text-sm text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                                {t('auth.forgot_password')}
+                            </Link>
+                        </div>
+                        <AuthInput
+                            id="password"
+                            label=""
+                            type="password"
+                            icon={Lock}
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            error={errors.password}
+                            placeholder={t('auth.password_placeholder')}
+                            required
+                        />
+                    </div>
+
+                    <div className="flex items-center pt-1">
+                        <input
+                            id="remember"
+                            type="checkbox"
+                            checked={data.remember}
+                            onChange={(e) => setData('remember', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <label htmlFor="remember" className="ml-2.5 block text-sm text-gray-600">
+                            {t('auth.remember_me')}
+                        </label>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] disabled:opacity-70 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-blue-600/25 mt-2"
+                    >
+                        {processing ? t('auth.signing_in') : t('auth.sign_in')}
+                    </button>
+                </form>
+
+                <p className="mt-6 text-center text-xs text-gray-400">
+                    {t('auth.secure_note')}
+                </p>
+            </AuthLayout>
         </>
     );
 }

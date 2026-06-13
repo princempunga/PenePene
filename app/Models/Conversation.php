@@ -30,6 +30,11 @@ class Conversation extends Model
         return $this->hasOne(Message::class)->latestOfMany();
     }
 
+    public function userStates()
+    {
+        return $this->hasMany(ConversationUserState::class);
+    }
+
     public function unreadCount(int $userId): int
     {
         return $this->messages()->where('sender_id', '!=', $userId)->whereNull('read_at')->count();

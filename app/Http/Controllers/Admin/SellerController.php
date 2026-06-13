@@ -38,8 +38,9 @@ class SellerController extends Controller
     public function verify(Request $request, Seller $seller)
     {
         $seller->update([
-            'is_verified' => true,
-            'status'      => 'active',
+            'status'      => 'verified',
+            'verified_at' => now(),
+            'verified_by' => $request->user()->id,
         ]);
 
         Notification::create([
@@ -60,8 +61,9 @@ class SellerController extends Controller
         ]);
 
         $seller->update([
-            'is_verified' => false,
             'status'      => 'rejected',
+            'verified_at' => null,
+            'verified_by' => null,
         ]);
 
         Notification::create([

@@ -9,9 +9,11 @@ use Inertia\Inertia;
 
 class LoginController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            'redirect' => $this->sanitizeRedirect($request->query('redirect')),
+        ]);
     }
 
     public function store(Request $request)
@@ -27,12 +29,18 @@ class LoginController extends Controller
             $user = Auth::user();
             $user->update(['is_online' => true, 'last_seen_at' => now()]);
 
-            // Redirect based on role
-            return match ($user->role) {
-                'super_admin', 'admin' => redirect()->route('admin.dashboard'),
-                'seller'               => redirect()->route('seller.dashboard'),
-                default                => redirect()->intended('/'),
+            $redirect = $this->sanitizeRedirect($request->input('redirect'));
+            if ($redirect) {
+                return redirect()->to($redirect);
+            }
+
+            $fallback = match ($user->role) {
+                'super_admin', 'admin' => route('admin.dashboard'),
+                'seller'               => route('seller.dashboard'),
+                default                => route('cart.index'),
             };
+
+            return redirect()->intended($fallback);
         }
 
         return back()->withErrors([
@@ -52,5 +60,14 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
+    }
+
+    private function sanitizeRedirect(?string $redirect): ?string
+    {
+        if (! $redirect || ! str_starts_with($redirect, '/') || str_starts_with($redirect, '//')) {
+            return null;
+        }
+
+        return $redirect;
     }
 }

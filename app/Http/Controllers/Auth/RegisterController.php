@@ -33,6 +33,7 @@ class RegisterController extends Controller
             'phone'    => $request->phone,
             'password' => Hash::make($request->password),
             'role'     => 'buyer',
+            'locale'   => $request->session()->get('locale', config('app.locale')),
         ]);
 
         // Create linked buyer profile

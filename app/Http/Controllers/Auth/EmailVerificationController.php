@@ -18,20 +18,20 @@ class EmailVerificationController extends Controller
     public function verify(EmailVerificationRequest $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->route('buyer.dashboard')->with('info', 'Email already verified.');
+            return redirect()->route('buyer.messages.index')->with('info', 'Email already verified.');
         }
 
         if ($request->user()->markEmailAsVerified()) {
             event(new Verified($request->user()));
         }
 
-        return redirect()->route('buyer.dashboard')->with('success', 'Email verified successfully!');
+        return redirect()->route('buyer.messages.index')->with('success', 'Email verified successfully!');
     }
 
     public function resend(Request $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->route('buyer.dashboard');
+            return redirect()->route('buyer.messages.index');
         }
 
         $request->user()->sendEmailVerificationNotification();

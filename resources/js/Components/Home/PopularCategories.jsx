@@ -1,79 +1,100 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { Package, Smartphone, Shirt, Car, Home, Heart, Dumbbell, Briefcase, UserPlus, Map } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SectionHeader from '../UI/SectionHeader';
+import useTranslation from '@/hooks/useTranslation';
 
-export default function PopularCategories({ categories }) {
-    // If we have less than 10 categories, we pad with premium demo data to maintain structural integrity
-    const demoCategories = [
-        { id: 'd1', name: 'Electronics', slug: 'electronics', icon: <Smartphone size={28} />, products_count: 1450 },
-        { id: 'd2', name: 'Fashion', slug: 'fashion', icon: <Shirt size={28} />, products_count: 2300 },
-        { id: 'd3', name: 'Vehicles', slug: 'vehicles', icon: <Car size={28} />, products_count: 850 },
-        { id: 'd4', name: 'Home & Living', slug: 'home-living', icon: <Home size={28} />, products_count: 1200 },
-        { id: 'd5', name: 'Health & Beauty', slug: 'health-beauty', icon: <Heart size={28} />, products_count: 3100 },
-        { id: 'd6', name: 'Sports', slug: 'sports', icon: <Dumbbell size={28} />, products_count: 640 },
-        { id: 'd7', name: 'Agriculture', slug: 'agriculture', icon: <Map size={28} />, products_count: 420 },
-        { id: 'd8', name: 'Services', slug: 'services', icon: <Briefcase size={28} />, products_count: 980 },
-        { id: 'd9', name: 'Jobs', slug: 'jobs', icon: <UserPlus size={28} />, products_count: 310 },
-        { id: 'd10', name: 'Real Estate', slug: 'real-estate', icon: <Home size={28} />, products_count: 560 },
-    ];
+const DEFAULT_IMAGE = '/images/categories/default.jpg';
 
-    const displayCategories = categories && categories.length > 5 ? categories : demoCategories;
+function getCategoryImage(category) {
+    if (category.image) {
+        if (category.image.startsWith('http') || category.image.startsWith('/')) {
+            return category.image;
+        }
+        if (category.image.startsWith('images/')) {
+            return `/${category.image}`;
+        }
+        return `/storage/${category.image}`;
+    }
 
+    if (category.slug) {
+        return `/images/categories/${category.slug}.jpg`;
+    }
+
+    return DEFAULT_IMAGE;
+}
+
+function formatProductCount(count, t) {
+    if (count === undefined || count === null) return null;
+    return count === 1 ? `1 ${t('home.item')}` : `${count.toLocaleString()} ${t('home.items')}`;
+}
+
+export default function PopularCategories({ categories = [] }) {
+    const { t } = useTranslation();
     const containerVariants = {
         hidden: { opacity: 0 },
         show: {
             opacity: 1,
-            transition: { staggerChildren: 0.05 }
-        }
+            transition: { staggerChildren: 0.06 },
+        },
     };
 
     const itemVariants = {
-        hidden: { opacity: 0, y: 20 },
-        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300 } }
+        hidden: { opacity: 0, y: 24 },
+        show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 24 } },
     };
+
+    if (!categories.length) {
+        return null;
+    }
 
     return (
         <section className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <SectionHeader 
-                    title="Popular Categories" 
-                    subtitle="Explore thousands of products across our top categories."
-                    actionText="View all categories"
+                <SectionHeader
+                    title={t('home.popular_categories')}
+                    subtitle={t('home.categories_subtitle')}
+                    actionText={t('home.view_all_categories')}
                     actionLink="/categories"
                 />
-                
-                <motion.div 
+
+                <motion.div
                     variants={containerVariants}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ once: true, margin: "-50px" }}
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
+                    viewport={{ once: true, margin: '-50px' }}
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
                 >
-                    {displayCategories.map(category => (
+                    {categories.map((category) => (
                         <motion.div key={category.id} variants={itemVariants}>
-                            <Link 
+                            <Link
                                 href={`/categories/${category.slug}`}
-                                className="bg-gray-50 p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group border border-transparent hover:border-gray-100 h-full"
+                                className="group relative block min-h-[180px] rounded-2xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.25)] transition-all duration-500 hover:-translate-y-1"
                             >
-                                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm text-primary-600 flex items-center justify-center mb-4 group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300">
-                                    {category.icon && typeof category.icon !== 'string' ? (
-                                        category.icon
-                                    ) : category.icon ? (
-                                        <img src={`/storage/${category.icon}`} alt={category.name} className="w-8 h-8" />
-                                    ) : (
-                                        <Package size={28} />
+                                <img
+                                    src={getCategoryImage(category)}
+                                    alt={category.name}
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                    onError={(e) => {
+                                        if (!e.target.src.endsWith(DEFAULT_IMAGE)) {
+                                            e.target.src = DEFAULT_IMAGE;
+                                        }
+                                    }}
+                                />
+
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 transition-opacity duration-500 group-hover:from-black/90 group-hover:via-black/50" />
+
+                                <div className="relative z-10 flex h-full min-h-[180px] flex-col justify-end p-4 sm:p-5">
+                                    {formatProductCount(category.products_count, t) && (
+                                        <span className="mb-2 inline-flex w-fit items-center rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm ring-1 ring-white/25 transition-colors duration-300 group-hover:bg-primary-600/80 group-hover:ring-primary-400/50">
+                                            {formatProductCount(category.products_count, t)}
+                                        </span>
                                     )}
+
+                                    <h3 className="text-base sm:text-lg font-bold text-white leading-tight drop-shadow-sm transition-transform duration-300 group-hover:translate-x-0.5">
+                                        {category.name}
+                                    </h3>
                                 </div>
-                                <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
-                                    {category.name}
-                                </h3>
-                                {(category.products_count !== undefined || category.products_count !== null) && (
-                                    <p className="text-sm text-gray-500 mt-1 font-medium">
-                                        {category.products_count}+ items
-                                    </p>
-                                )}
                             </Link>
                         </motion.div>
                     ))}

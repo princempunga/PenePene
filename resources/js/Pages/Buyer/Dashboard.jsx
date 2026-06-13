@@ -1,4 +1,5 @@
 import React from 'react';
+import useTranslation from '@/hooks/useTranslation';
 import { Head, Link, usePage } from '@inertiajs/react';
 import BuyerLayout from '@/Layouts/BuyerLayout';
 import { Package, Heart, MessageCircle, ShoppingBag, Bell } from 'lucide-react';
@@ -12,15 +13,16 @@ const statusColors = {
 };
 
 export default function Dashboard({ buyer, recentOrders, stats }) {
+    const { t } = useTranslation();
     const { auth, flash } = usePage().props;
 
     return (
         <>
-            <Head title="My Dashboard" />
+            <Head title={t('dashboard.title')} />
             <BuyerLayout>
                 {/* Greeting */}
                 <div className="mb-8 bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-lg">
-                    <p className="text-primary-100 text-sm font-medium mb-1">Welcome back,</p>
+                    <p className="text-primary-100 text-sm font-medium mb-1">{t('dashboard.welcome_back')}</p>
                     <h1 className="text-2xl font-bold">{auth.user?.name} 👋</h1>
                     {!auth.user?.email_verified_at && (
                         <div className="mt-4 bg-yellow-400/20 border border-yellow-400/40 rounded-lg p-3 text-sm flex items-start gap-2">

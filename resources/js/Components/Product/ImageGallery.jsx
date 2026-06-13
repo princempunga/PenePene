@@ -6,10 +6,14 @@ export default function ImageGallery({ images, productName }) {
     // If no images provided, use a placeholder array
     const displayImages = images && images.length > 0 
         ? images 
-        : [{ id: 'placeholder', image_path: 'images/placeholder.jpg' }];
+        : [{ id: 'placeholder', image_path: 'images/placeholder.svg' }];
 
     const activeImage = displayImages[activeIndex]?.image_path;
-    const activeUrl = activeImage?.startsWith('images/') ? `/${activeImage}` : `/storage/${activeImage}`;
+    const activeUrl = activeImage?.startsWith('images/')
+        ? `/${activeImage}`
+        : activeImage?.startsWith('/images/')
+            ? activeImage
+            : `/storage/${activeImage}`;
 
     return (
         <div className="flex flex-col gap-4">
@@ -19,7 +23,7 @@ export default function ImageGallery({ images, productName }) {
                     src={activeUrl} 
                     alt={productName} 
                     className="w-full h-full object-contain"
-                    onError={(e) => { e.target.src = '/images/placeholder.jpg'; }}
+                    onError={(e) => { e.target.src = '/images/placeholder.svg'; }}
                 />
             </div>
 
@@ -27,7 +31,11 @@ export default function ImageGallery({ images, productName }) {
             {displayImages.length > 1 && (
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-4">
                     {displayImages.map((img, index) => {
-                        const imgUrl = img.image_path?.startsWith('images/') ? `/${img.image_path}` : `/storage/${img.image_path}`;
+                        const imgUrl = img.image_path?.startsWith('images/')
+                            ? `/${img.image_path}`
+                            : img.image_path?.startsWith('/images/')
+                                ? img.image_path
+                                : `/storage/${img.image_path}`;
                         return (
                             <button 
                                 key={img.id || index}
@@ -42,7 +50,7 @@ export default function ImageGallery({ images, productName }) {
                                     src={imgUrl} 
                                     alt={`${productName} thumbnail ${index + 1}`} 
                                     className="w-full h-full object-cover"
-                                    onError={(e) => { e.target.src = '/images/placeholder.jpg'; }}
+                                    onError={(e) => { e.target.src = '/images/placeholder.svg'; }}
                                 />
                             </button>
                         );

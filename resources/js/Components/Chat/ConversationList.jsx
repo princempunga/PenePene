@@ -3,13 +3,16 @@ import { Link } from '@inertiajs/react';
 import OnlineStatusBadge from './OnlineStatusBadge';
 import { User, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function ConversationList({ conversations, currentConversationId, userType }) {
+    const { t } = useTranslation();
+
     if (!conversations || conversations.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 p-6 text-center">
                 <MessageSquare className="w-12 h-12 mb-4 opacity-50" />
-                <p>No conversations yet.</p>
+                <p>{t('chat.no_conversations_yet')}</p>
             </div>
         );
     }
@@ -17,11 +20,11 @@ export default function ConversationList({ conversations, currentConversationId,
     return (
         <div className="flex flex-col h-full bg-white border-r border-gray-200 w-full md:w-80 lg:w-96 shrink-0 overflow-y-auto">
             <div className="p-4 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('buyer.messages')}</h2>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {conversations.map((conv) => {
-                    const otherUser = userType === 'buyer' ? conv.seller.user : conv.buyer.user;
+                    const otherUser = userType === 'buyer' ? conv.seller.user : conv.buyer;
                     const businessName = userType === 'buyer' ? conv.seller.business_name : otherUser.name;
                     const avatar = userType === 'buyer' ? conv.seller.logo : otherUser.avatar;
                     const isActive = currentConversationId === conv.id;
@@ -61,10 +64,10 @@ export default function ConversationList({ conversations, currentConversationId,
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm text-gray-500 truncate pr-2">
                                         {latestMessage ? (
-                                            latestMessage.is_deleted ? <span className="italic">Message deleted</span> :
-                                            latestMessage.message_type !== 'text' ? `Sent an attachment` : 
+                                            latestMessage.is_deleted ? <span className="italic">{t('chat.message_deleted')}</span> :
+                                            latestMessage.message_type !== 'text' ? t('chat.sent_attachment') :
                                             latestMessage.body
-                                        ) : 'Started conversation'}
+                                        ) : t('chat.start_conversation')}
                                     </p>
                                 </div>
                             </div>

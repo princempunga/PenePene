@@ -1,97 +1,126 @@
 import React, { useState, useEffect } from 'react';
-import ProductCard from '../Product/ProductCard';
 import { motion } from 'framer-motion';
-import { Timer, ArrowRight } from 'lucide-react';
+import { Flame, ArrowRight } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import useTranslation from '@/hooks/useTranslation';
+import FlashDealCard from './FlashDealCard';
+
+function CountdownUnit({ value, label }) {
+    return (
+        <div className="flex flex-col items-center gap-1">
+            <div className="min-w-[52px] sm:min-w-[56px] bg-white text-[#EF4444] font-bold text-lg sm:text-xl px-3 py-2 rounded-xl shadow-md text-center tabular-nums">
+                {value}
+            </div>
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/80">{label}</span>
+        </div>
+    );
+}
 
 export default function FlashDeals({ products }) {
-    if (!products || products.length === 0) return null;
+    const { t } = useTranslation();
 
-    // Demo countdown timer
     const [timeLeft, setTimeLeft] = useState({
         hours: 12,
         minutes: 45,
-        seconds: 30
+        seconds: 11,
     });
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setTimeLeft(prev => {
-                if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-                if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-                if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+            setTimeLeft((prev) => {
+                if (prev.seconds > 0) {
+                    return { ...prev, seconds: prev.seconds - 1 };
+                }
+                if (prev.minutes > 0) {
+                    return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+                }
+                if (prev.hours > 0) {
+                    return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+                }
                 return { hours: 24, minutes: 0, seconds: 0 };
             });
         }, 1000);
+
         return () => clearInterval(timer);
     }, []);
+
+    if (!products || products.length === 0) {
+        return null;
+    }
 
     const pad = (num) => String(num).padStart(2, '0');
 
     return (
-        <section className="py-16 bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-black/20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+        <section
+            className="py-16 lg:py-20 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #0F2D7A 0%, #1E4ED8 100%)' }}
+        >
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2563EB]/30 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
+                <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-[#F59E0B]/10 rounded-full blur-3xl" />
+            </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-                        <div>
-                            <h2 className="text-3xl font-extrabold text-white flex items-center gap-2">
-                                <Timer size={32} className="text-yellow-400" />
-                                Flash Deals
-                            </h2>
-                            <p className="text-red-100 mt-1">Hurry up! These deals end soon.</p>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
+                        <div className="flex items-start sm:items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0 shadow-lg">
+                                <Flame size={26} className="text-[#F59E0B]" fill="currentColor" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                                    {t('home.flash_deals')}
+                                </h2>
+                                <p className="text-blue-100/90 text-sm mt-1 max-w-md">
+                                    {t('home.flash_deals_subtitle')}
+                                </p>
+                            </div>
                         </div>
-                        
-                        {/* Timer */}
-                        <div className="flex items-center gap-2">
-                            <div className="bg-white text-red-700 font-bold text-xl px-3 py-2 rounded-lg shadow-lg">
-                                {pad(timeLeft.hours)}
-                            </div>
-                            <span className="text-white font-bold text-xl">:</span>
-                            <div className="bg-white text-red-700 font-bold text-xl px-3 py-2 rounded-lg shadow-lg">
-                                {pad(timeLeft.minutes)}
-                            </div>
-                            <span className="text-white font-bold text-xl">:</span>
-                            <div className="bg-white text-red-700 font-bold text-xl px-3 py-2 rounded-lg shadow-lg w-12 text-center">
-                                {pad(timeLeft.seconds)}
-                            </div>
+
+                        <div className="flex items-end gap-2 sm:gap-3 pl-0 sm:pl-2">
+                            <CountdownUnit value={pad(timeLeft.hours)} label={t('home.countdown_hours')} />
+                            <span className="text-white/60 font-bold text-xl pb-6 hidden sm:inline">:</span>
+                            <CountdownUnit value={pad(timeLeft.minutes)} label={t('home.countdown_minutes')} />
+                            <span className="text-white/60 font-bold text-xl pb-6 hidden sm:inline">:</span>
+                            <CountdownUnit value={pad(timeLeft.seconds)} label={t('home.countdown_seconds')} />
                         </div>
                     </div>
-                    
-                    <Link 
-                        href="/products?filter=sale" 
-                        className="text-white hover:text-yellow-300 font-semibold group transition-colors flex items-center"
+
+                    <Link
+                        href="/products?filter=sale"
+                        className="inline-flex items-center justify-center gap-2 self-start lg:self-auto px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-semibold text-sm transition-all duration-300 hover:-translate-y-0.5 group"
                     >
-                        View all deals
-                        <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        {t('home.view_all_deals')}
+                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
-                
-                <div className="flex overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 snap-x snap-mandatory hide-scrollbar">
+
+                <div className="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-2 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:gap-6 lg:grid-cols-4">
                     {products.map((product, index) => (
-                        <motion.div 
-                            key={product.id} 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ delay: index * 0.1, type: "spring" }}
-                            className="min-w-[280px] sm:min-w-0 flex-shrink-0 snap-start h-full"
+                        <motion.div
+                            key={product.id}
+                            initial={{ opacity: 0, y: 24 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-40px' }}
+                            transition={{ delay: index * 0.08, duration: 0.4, ease: 'easeOut' }}
+                            className="min-w-[280px] sm:min-w-[300px] md:min-w-0 flex-shrink-0 snap-start h-full"
                         >
-                            <ProductCard product={product} badge="Flash Deal" />
+                            <FlashDealCard product={product} />
                         </motion.div>
                     ))}
                 </div>
             </div>
-            <style jsx>{`
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
+
+            <style>{`
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                .flash-deal-card {
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
                 }
-                .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
+                .flash-deal-card:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
                 }
             `}</style>
         </section>

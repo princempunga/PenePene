@@ -1,29 +1,32 @@
 import React from 'react';
 import { ShieldCheck, MapPin, MessageCircle, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import useTranslation from '@/hooks/useTranslation';
 
 export default function TrustIndicators() {
+    const { t } = useTranslation();
+
     const indicators = [
         {
             icon: <ShieldCheck className="w-8 h-8 text-primary-600" />,
-            title: "Verified Sellers",
-            description: "Shop with confidence from approved local businesses."
+            title: t('home.trust_verified_sellers'),
+            description: t('home.trust_verified_sellers_desc'),
         },
         {
             icon: <MapPin className="w-8 h-8 text-primary-600" />,
-            title: "Local Marketplace",
-            description: "Find products and services right in your neighborhood."
+            title: t('home.trust_local_marketplace'),
+            description: t('home.trust_local_marketplace_desc'),
         },
         {
             icon: <MessageCircle className="w-8 h-8 text-primary-600" />,
-            title: "Direct Contact",
-            description: "Chat directly with sellers with zero hidden fees."
+            title: t('home.trust_direct_contact'),
+            description: t('home.trust_direct_contact_desc'),
         },
         {
             icon: <Zap className="w-8 h-8 text-primary-600" />,
-            title: "Fast Discovery",
-            description: "Smart search to find exactly what you need, instantly."
-        }
+            title: t('home.trust_fast_discovery'),
+            description: t('home.trust_fast_discovery_desc'),
+        },
     ];
 
     return (
