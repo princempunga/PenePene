@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Seller;
 use App\Models\Subcategory;
+use App\Services\DemoSimulationService;
 use Illuminate\Support\Str;
 
 class DemoProductService
@@ -529,10 +530,11 @@ class DemoProductService
 
     public static function ensureDatabaseProduct(array $demo): Product
     {
-        $seller = Seller::query()
-            ->whereHas('user')
-            ->where('status', 'verified')
-            ->first()
+        $seller = DemoSimulationService::demoSeller()
+            ?? Seller::query()
+                ->whereHas('user')
+                ->where('status', 'verified')
+                ->first()
             ?? Seller::query()->whereHas('user')->first();
 
         if (! $seller) {

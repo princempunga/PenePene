@@ -12,6 +12,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_number', 'buyer_id', 'seller_id', 'status',
+        'payment_status', 'payment_method', 'paid_at',
         'subtotal', 'total', 'currency',
         'delivery_address', 'delivery_city', 'delivery_province', 'delivery_country',
         'buyer_notes', 'seller_notes', 'rejection_reason',
@@ -31,6 +32,7 @@ class Order extends Model
             'total'        => 'decimal:2',
             'confirmed_at' => 'datetime',
             'delivered_at' => 'datetime',
+            'paid_at'      => 'datetime',
         ];
     }
 

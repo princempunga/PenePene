@@ -22,7 +22,7 @@ export default function FeaturedProducts({ products }) {
     };
 
     return (
-        <section className="py-16 bg-white">
+        <section className="py-10 sm:py-14 lg:py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <SectionHeader 
                     title={t('home.featured_products')}
@@ -36,11 +36,11 @@ export default function FeaturedProducts({ products }) {
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true, margin: "-100px" }}
-                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5"
                 >
                     {products.map(product => (
-                        <motion.div key={product.id} variants={itemVariants} className="h-full">
-                            <ProductCard product={product} badge="Featured" />
+                        <motion.div key={product.id} variants={itemVariants} className="h-full min-w-0 w-full">
+                            <ProductCard product={product} badge="sale" compact />
                         </motion.div>
                     ))}
                 </motion.div>

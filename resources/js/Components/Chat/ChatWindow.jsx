@@ -6,6 +6,7 @@ import MessageInput from './MessageInput';
 import OnlineStatusBadge from './OnlineStatusBadge';
 import MediaPreviewModal from './MediaPreviewModal';
 import ForwardModal from './ForwardModal';
+import { deriveMessageStatus, withDeliveryStatus } from '@/utils/messageStatus';
 import { X, User, ArrowLeft, Pin, MoreVertical, Trash2, Eraser, Archive } from 'lucide-react';
 
 const jsonHeaders = { headers: { Accept: 'application/json' } };
@@ -35,10 +36,7 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
     const fetchMessages = async () => {
         try {
             const res = await axios.get(`/chat/conversations/${conversationId}`, jsonHeaders);
-            const serverMessages = (res.data.messages || []).map((m) => ({
-                ...m,
-                status: m.is_read ? 'read' : 'sent',
-            }));
+            const serverMessages = withDeliveryStatus(res.data.messages || [], currentUserId);
 
             setMessages((prev) => {
                 const tempMessages = prev.filter((m) => String(m.id).startsWith('temp_'));
@@ -67,7 +65,7 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
 
     useEffect(() => {
         fetchMessages();
-        pollingIntervalRef.current = setInterval(fetchMessages, 3000);
+        pollingIntervalRef.current = setInterval(fetchMessages, 1000);
         return () => { if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current); };
     }, [conversationId]);
 
@@ -141,7 +139,14 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
                     setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, upload_progress: pct } : m));
                 },
             });
-            setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...res.data.message, status: 'sent' } : m));
+            setMessages((prev) => prev.map((m) => {
+                if (m.id !== msg.id) return m;
+                const saved = res.data.message;
+                return {
+                    ...saved,
+                    status: deriveMessageStatus(saved, currentUserId),
+                };
+            }));
         } catch {
             setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, status: 'failed' } : m));
         }

@@ -8,6 +8,7 @@ use App\Models\Message;
 use App\Models\MessageReaction;
 use App\Models\PinnedMessage;
 use App\Models\StarredMessage;
+use App\Services\DemoSimulationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -90,6 +91,10 @@ class ChatController extends Controller
         $conversations = $this->conversationsForUser($user);
         $conversation->load(['buyer.buyer', 'seller.user']);
 
+        if ($user->isBuyer() && DemoSimulationService::isDemoSeller($conversation->seller)) {
+            DemoSimulationService::applyOnlineStatus($conversation->seller->user, $conversation->seller);
+        }
+
         $otherUser = $user->isBuyer()
             ? array_merge($conversation->seller->user->toArray(), [
                 'business_name' => $conversation->seller->business_name,
@@ -164,6 +169,10 @@ class ChatController extends Controller
         $conversation->update(['last_message_at' => now()]);
 
         ConversationUserState::forUser($conversation, $sender->id)->update(['deleted_at' => null]);
+
+        if ($sender->isBuyer() && DemoSimulationService::isDemoSeller($conversation->seller)) {
+            DemoSimulationService::scheduleBuyerMessageProgression($message, $conversation);
+        }
 
         return response()->json([
             'message' => $this->formatMessage($message->load(['sender', 'receiver', 'replyTo.sender', 'reactions.user', 'stars']), $sender->id),
@@ -426,7 +435,13 @@ class ChatController extends Controller
             })
             ->orderByDesc('last_message_at');
 
-        return $query->get();
+        return $query->get()->map(function (Conversation $conv) use ($user) {
+            if ($user->isBuyer() && DemoSimulationService::isDemoSeller($conv->seller)) {
+                DemoSimulationService::applyOnlineStatus($conv->seller->user, $conv->seller);
+            }
+
+            return $conv;
+        });
     }
 
     private function loadConversationMessages(Conversation $conversation, int $userId)
@@ -443,6 +458,10 @@ class ChatController extends Controller
 
         $messages = $query->get()->filter(fn (Message $m) => ! $m->isDeletedFor($userId));
 
+        $messages->where('receiver_id', $userId)->each(function (Message $m) {
+            $m->markAsDelivered();
+        });
+
         $messages->where('receiver_id', $userId)
             ->where('is_read', false)
             ->each->markAsRead();
@@ -457,6 +476,10 @@ class ChatController extends Controller
         $data = $message->toArray();
         $data['reactions'] = $this->reactionsForMessage($message, $userId);
         $data['is_starred'] = $message->stars->contains('user_id', $userId);
+
+        if ((int) $message->sender_id === $userId) {
+            $data['status'] = $message->deliveryStatus();
+        }
 
         return $data;
     }

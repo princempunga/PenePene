@@ -193,22 +193,34 @@ export default function Store({ seller, products, reviews }) {
 
                             {reviews.length > 0 ? (
                                 <div className="space-y-6">
-                                    {reviews.map(review => (
+                                    {reviews.map(review => {
+                                        const buyerName = review.buyer?.user?.name || review.buyer?.name || 'Customer';
+                                        const initials = review.buyer?.initials || buyerName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+                                        return (
                                         <div key={review.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="font-semibold text-gray-900">{review.buyer?.user?.name || 'Customer'}</span>
-                                                <span className="text-xs text-gray-500">
-                                                    {new Date(review.created_at).toLocaleDateString()}
-                                                </span>
+                                            <div className="flex items-start gap-3 mb-2">
+                                                <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0">
+                                                    {initials}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-semibold text-gray-900">{buyerName}</span>
+                                                        <span className="text-xs text-gray-500">
+                                                            {new Date(review.created_at).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mb-1">
+                                                        <RatingStars rating={review.rating} size={14} />
+                                                    </div>
+                                                    {review.comment && (
+                                                        <p className="text-sm text-gray-600 line-clamp-3">{review.comment}</p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="mb-2">
-                                                <RatingStars rating={review.rating} size={14} />
-                                            </div>
-                                            {review.comment && (
-                                                <p className="text-sm text-gray-600 line-clamp-3">{review.comment}</p>
-                                            )}
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <p className="text-gray-500 text-sm text-center py-4">No reviews yet.</p>

@@ -156,96 +156,111 @@ export default function ProductCard({ product, badge, showActions = true, compac
         <motion.div
             whileHover={{ y: -5 }}
             transition={{ type: 'spring', stiffness: 300 }}
-            className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col h-full group relative"
+            className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col h-full group relative min-w-0"
         >
             <button
                 type="button"
                 onClick={handleToggleWishlist}
                 disabled={favoriting}
-                className={`absolute top-3 right-3 z-20 p-2 rounded-full transition-all shadow-sm cursor-pointer disabled:opacity-60 ${
+                className={`absolute top-2 right-2 z-20 rounded-full transition-all shadow-sm cursor-pointer disabled:opacity-60 ${
+                    compact ? 'p-1.5' : 'p-2'
+                } ${
                     isFavorited
                         ? 'bg-red-50 text-red-500 hover:bg-red-100'
                         : 'bg-white/90 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-white'
                 }`}
                 aria-label={isFavorited ? t('product.remove_from_wishlist') : t('product.add_to_wishlist')}
             >
-                <Heart size={18} className={isFavorited ? 'fill-current' : ''} />
+                <Heart size={compact ? 15 : 18} className={isFavorited ? 'fill-current' : ''} />
             </button>
 
             {displayBadge && (
-                <div className={`absolute top-3 left-3 z-10 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm ${BADGE_STYLES[displayBadge] || 'bg-primary-600 text-white'}`}>
+                <div className={`absolute top-2 left-2 z-10 font-bold rounded-md shadow-sm ${
+                    compact ? 'text-[10px] px-2 py-0.5' : 'text-xs px-2.5 py-1'
+                } ${BADGE_STYLES[displayBadge] || 'bg-primary-600 text-white'}`}>
                     {t(BADGE_LABEL_KEYS[displayBadge] || displayBadge)}
                 </div>
             )}
 
-            <Link href={productUrl} className="block relative aspect-[4/3] overflow-hidden bg-gray-50 cursor-pointer">
+            <Link
+                href={productUrl}
+                className="block relative overflow-hidden bg-gray-50 cursor-pointer h-32 sm:h-36 md:h-auto md:aspect-[4/3]"
+            >
                 <img
                     src={imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                    className="w-full h-full object-contain p-2 md:object-cover md:p-0 transition-transform duration-500 ease-out md:group-hover:scale-105"
                     onError={(e) => { e.target.src = DEFAULT_PRODUCT_IMAGE; }}
                 />
             </Link>
 
-            <div className={`${compact ? 'p-3' : 'p-4'} flex flex-col flex-grow`}>
+            <div className="p-3 md:p-4 flex flex-col flex-grow min-w-0">
                 {product.category && (
-                    <span className="text-xs text-primary-600 font-semibold mb-1 uppercase tracking-wider">
+                    <span className="text-[10px] md:text-xs text-primary-600 font-semibold mb-1 uppercase tracking-wider">
                         {product.category.name}
                     </span>
                 )}
 
-                <Link href={productUrl} className="block mb-2 flex-grow cursor-pointer">
-                    <h3 className="font-semibold text-gray-900 line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors">
+                <Link href={productUrl} className="block mb-1.5 md:mb-2 flex-grow cursor-pointer min-w-0">
+                    <h3 className="font-semibold text-gray-900 line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors text-xs sm:text-sm md:text-base">
                         {product.name}
                     </h3>
                 </Link>
 
-                <div className="mt-auto">
-                    <div className="flex items-end gap-2 mb-2">
-                        <span className={`${compact ? 'text-lg' : 'text-xl'} font-extrabold text-gray-900`}>
+                <div className="mt-auto min-w-0">
+                    <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5 mb-1.5 md:mb-2">
+                        <span className="text-sm md:text-lg lg:text-xl font-extrabold text-gray-900">
                             {product.currency || 'USD'} {parseFloat(product.sale_price || product.price).toLocaleString()}
                         </span>
                         {product.sale_price && (
-                            <span className="text-sm text-gray-400 line-through mb-0.5 font-medium">
+                            <span className="text-[10px] md:text-sm text-gray-400 line-through font-medium">
                                 {parseFloat(product.price).toLocaleString()}
                             </span>
                         )}
                     </div>
 
-                    <div className="flex flex-col gap-2 text-xs text-gray-500 mb-3">
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 truncate min-w-0">
-                                {product.seller?.is_verified && <ShieldCheck size={14} className="text-green-500 flex-shrink-0" />}
+                    <div className="flex flex-col gap-1 text-[10px] md:text-xs text-gray-500 mb-2 md:mb-3">
+                        <div className="flex items-center justify-between gap-2 min-w-0">
+                            <div className="flex items-center gap-1 min-w-0">
+                                {product.seller?.is_verified && <ShieldCheck size={12} className="text-green-500 flex-shrink-0 md:w-3.5 md:h-3.5" />}
                                 <span className="truncate font-medium">
                                     {product.seller?.business_name || t('product.verified_seller')}
                                 </span>
                             </div>
-                            {rating > 0 && <RatingStars rating={rating} size={12} />}
+                            {rating > 0 && (
+                                <div className="hidden md:block shrink-0">
+                                    <RatingStars rating={rating} size={12} />
+                                </div>
+                            )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-gray-400">
-                            <MapPin size={12} className="flex-shrink-0" />
+                        <div className="flex items-center gap-1 text-gray-400 min-w-0">
+                            <MapPin size={11} className="flex-shrink-0 md:w-3 md:h-3" />
                             <span className="truncate">{product.city || product.seller?.city || t('product.local_delivery')}</span>
                         </div>
                     </div>
 
                     {showActions && (
-                        <div className="flex gap-2 pt-3 border-t border-gray-50">
+                        <div className="flex flex-col md:flex-row gap-1.5 md:gap-2 w-full min-w-0 pt-2 md:pt-3 border-t border-gray-50">
                             <button
                                 type="button"
                                 onClick={handleAddToCart}
                                 disabled={outOfStock || adding}
-                                className="flex-1 inline-flex items-center justify-center gap-1.5 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed text-white text-xs font-semibold py-2 rounded-lg transition-colors cursor-pointer"
+                                className="flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors cursor-pointer text-[11px] md:text-xs py-2 px-2 md:py-2.5"
                             >
-                                <ShoppingCart size={14} />
-                                {adding ? t('product.adding') : outOfStock ? t('product.out_of_stock') : t('product.add_to_cart')}
+                                <ShoppingCart size={14} className="shrink-0" />
+                                <span className="truncate">
+                                    {adding ? t('product.adding') : outOfStock ? t('product.out_of_stock') : t('product.add_to_cart')}
+                                </span>
                             </button>
                             <Link
                                 href={productUrl}
-                                className="flex-1 inline-flex items-center justify-center gap-1.5 border border-gray-200 hover:border-primary-500 hover:text-primary-600 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors cursor-pointer"
+                                className="flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 border border-gray-200 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 text-gray-700 font-semibold rounded-lg transition-colors cursor-pointer text-[11px] md:text-xs py-2 px-2 md:py-2.5"
                             >
-                                <Eye size={14} />
-                                {isDemo ? t('product.preview') : t('product.view_details')}
+                                <Eye size={14} className="shrink-0" />
+                                <span className="truncate">
+                                    {isDemo ? t('product.preview') : t('product.view_details')}
+                                </span>
                             </Link>
                         </div>
                     )}

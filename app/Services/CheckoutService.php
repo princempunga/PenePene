@@ -14,7 +14,7 @@ use RuntimeException;
 
 class CheckoutService
 {
-    public function process(User $user, array $cart): array
+    public function process(User $user, array $cart, array $options = []): array
     {
         if (empty($cart)) {
             throw new RuntimeException('Your cart is empty.');
@@ -27,7 +27,11 @@ class CheckoutService
             throw new RuntimeException('No valid products found in your cart.');
         }
 
-        return DB::transaction(function () use ($buyer, $user, $lineItems) {
+        $paymentStatus = $options['payment_status'] ?? 'pending';
+        $paymentMethod = $options['payment_method'] ?? null;
+        $orderStatus   = $options['order_status'] ?? ($paymentStatus === 'paid' ? 'confirmed' : 'pending');
+
+        return DB::transaction(function () use ($buyer, $user, $lineItems, $paymentStatus, $paymentMethod, $orderStatus) {
             $orders = [];
             $grouped = collect($lineItems)->groupBy('seller_id');
 
@@ -39,7 +43,11 @@ class CheckoutService
                     'seller_id'        => $sellerId,
                     'subtotal'         => $subtotal,
                     'total'            => $subtotal,
-                    'status'           => 'pending',
+                    'status'           => $orderStatus,
+                    'payment_status'   => $paymentStatus,
+                    'payment_method'   => $paymentMethod,
+                    'paid_at'          => $paymentStatus === 'paid' ? now() : null,
+                    'confirmed_at'     => $orderStatus === 'confirmed' ? now() : null,
                     'delivery_address' => $user->address ?? 'To be confirmed',
                     'currency'         => 'USD',
                 ]);

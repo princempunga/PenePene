@@ -15,7 +15,7 @@ export default function SponsoredProducts({ products }) {
                 />
                 
                 {/* Horizontal scroll container for mobile, grid for desktop */}
-                <div className="flex overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 snap-x snap-mandatory hide-scrollbar">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 md:gap-4 lg:gap-5 max-md:flex max-md:overflow-x-auto max-md:pb-8 max-md:-mx-4 max-md:px-4 max-md:snap-x max-md:snap-mandatory hide-scrollbar">
                     {products.map((product, index) => (
                         <motion.div 
                             key={product.id} 
@@ -23,9 +23,9 @@ export default function SponsoredProducts({ products }) {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ delay: index * 0.1 }}
-                            className="min-w-[280px] sm:min-w-0 flex-shrink-0 snap-start h-full"
+                            className="max-md:w-[72vw] max-md:max-w-[240px] max-md:flex-shrink-0 max-md:snap-start md:w-full h-full min-w-0"
                         >
-                            <ProductCard product={product} badge="Sponsored" />
+                            <ProductCard product={product} badge="sponsored" compact />
                         </motion.div>
                     ))}
                 </div>

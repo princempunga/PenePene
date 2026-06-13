@@ -10,15 +10,16 @@ class Message extends Model
         'conversation_id', 'sender_id', 'receiver_id', 'reply_to_message_id',
         'message_type', 'body',
         'attachment_path', 'attachment_mime', 'attachment_size',
-        'is_read', 'read_at', 'is_edited', 'edited_at', 'is_deleted', 'deleted_at',
+        'is_read', 'read_at', 'delivered_at', 'is_edited', 'edited_at', 'is_deleted', 'deleted_at',
         'deleted_for',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_read'     => 'boolean',
-            'read_at'     => 'datetime',
+            'is_read'      => 'boolean',
+            'read_at'      => 'datetime',
+            'delivered_at' => 'datetime',
             'is_edited'   => 'boolean',
             'edited_at'   => 'datetime',
             'is_deleted'  => 'boolean',
@@ -34,14 +35,36 @@ class Message extends Model
     public function reactions()    { return $this->hasMany(MessageReaction::class); }
     public function stars()        { return $this->hasMany(StarredMessage::class); }
 
+    public function markAsDelivered(): void
+    {
+        if (! $this->delivered_at) {
+            $this->update(['delivered_at' => now()]);
+        }
+    }
+
     public function markAsRead(): void
     {
-        if (!$this->is_read) {
+        if (! $this->is_read) {
             $this->update([
-                'is_read' => true,
-                'read_at' => now()
+                'is_read'      => true,
+                'read_at'      => now(),
+                'delivered_at' => $this->delivered_at ?? now(),
             ]);
         }
+    }
+
+    /** Delivery status from the sender's perspective. */
+    public function deliveryStatus(): string
+    {
+        if ($this->is_read || $this->read_at) {
+            return 'read';
+        }
+
+        if ($this->delivered_at) {
+            return 'delivered';
+        }
+
+        return 'sent';
     }
 
     public function isDeletedFor(int $userId): bool

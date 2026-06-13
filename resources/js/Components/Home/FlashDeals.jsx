@@ -8,7 +8,7 @@ import FlashDealCard from './FlashDealCard';
 function CountdownUnit({ value, label }) {
     return (
         <div className="flex flex-col items-center gap-1">
-            <div className="min-w-[52px] sm:min-w-[56px] bg-white text-[#EF4444] font-bold text-lg sm:text-xl px-3 py-2 rounded-xl shadow-md text-center tabular-nums">
+            <div className="min-w-[52px] sm:min-w-[56px] bg-white text-[#EF4444] font-bold text-base sm:text-xl px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-md text-center tabular-nums">
                 {value}
             </div>
             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/80">{label}</span>
@@ -52,7 +52,7 @@ export default function FlashDeals({ products }) {
 
     return (
         <section
-            className="py-16 lg:py-20 relative overflow-hidden"
+            className="py-10 sm:py-14 lg:py-20 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg, #0F2D7A 0%, #1E4ED8 100%)' }}
         >
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -62,23 +62,23 @@ export default function FlashDeals({ products }) {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
                         <div className="flex items-start sm:items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0 shadow-lg">
-                                <Flame size={26} className="text-[#F59E0B]" fill="currentColor" />
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0 shadow-lg">
+                                <Flame size={22} className="sm:w-[26px] sm:h-[26px] text-[#F59E0B]" fill="currentColor" />
                             </div>
                             <div>
-                                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
                                     {t('home.flash_deals')}
                                 </h2>
-                                <p className="text-blue-100/90 text-sm mt-1 max-w-md">
+                                <p className="text-blue-100/90 text-xs sm:text-sm mt-0.5 sm:mt-1 max-w-md">
                                     {t('home.flash_deals_subtitle')}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex items-end gap-2 sm:gap-3 pl-0 sm:pl-2">
+                        <div className="flex items-end gap-1.5 sm:gap-3 pl-0 sm:pl-2">
                             <CountdownUnit value={pad(timeLeft.hours)} label={t('home.countdown_hours')} />
                             <span className="text-white/60 font-bold text-xl pb-6 hidden sm:inline">:</span>
                             <CountdownUnit value={pad(timeLeft.minutes)} label={t('home.countdown_minutes')} />
@@ -96,7 +96,7 @@ export default function FlashDeals({ products }) {
                     </Link>
                 </div>
 
-                <div className="flex overflow-x-auto pb-4 -mx-4 px-4 gap-4 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-2 md:overflow-visible md:mx-0 md:px-0 md:pb-0 md:gap-6 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-4 lg:gap-5 max-md:flex max-md:overflow-x-auto max-md:pb-4 max-md:-mx-4 max-md:px-4 max-md:snap-x max-md:snap-mandatory hide-scrollbar">
                     {products.map((product, index) => (
                         <motion.div
                             key={product.id}
@@ -104,7 +104,7 @@ export default function FlashDeals({ products }) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: '-40px' }}
                             transition={{ delay: index * 0.08, duration: 0.4, ease: 'easeOut' }}
-                            className="min-w-[280px] sm:min-w-[300px] md:min-w-0 flex-shrink-0 snap-start h-full"
+                            className="max-md:w-[72vw] max-md:max-w-[240px] max-md:flex-shrink-0 max-md:snap-start md:w-full h-full min-w-0"
                         >
                             <FlashDealCard product={product} />
                         </motion.div>

@@ -8,6 +8,8 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutSimulationController;
+use App\Http\Controllers\DemoSellerPanelController;
 
 // ─── Locale ──────────────────────────────────────────────────────────────────
 Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
@@ -50,6 +52,20 @@ Route::post('/cart/add',      [CartController::class, 'add'])->name('cart.add');
 Route::patch('/cart/update',  [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+
+// Demo / simulation (testing only)
+Route::middleware('auth')->group(function () {
+    Route::get('/checkout/simulate', [CheckoutSimulationController::class, 'show'])->name('checkout.simulate');
+    Route::post('/checkout/simulate/pay', [CheckoutSimulationController::class, 'pay'])->name('checkout.simulate.pay');
+
+    Route::prefix('demo')->name('demo.')->group(function () {
+        Route::get('/seller-panel', [DemoSellerPanelController::class, 'index'])->name('seller-panel');
+        Route::post('/seller-panel/online', [DemoSellerPanelController::class, 'toggleOnline'])->name('seller-panel.online');
+        Route::get('/seller-panel/conversations/{conversation}/messages', [DemoSellerPanelController::class, 'messages'])->name('seller-panel.messages');
+        Route::post('/seller-panel/conversations/{conversation}/reply', [DemoSellerPanelController::class, 'reply'])->name('seller-panel.reply');
+        Route::patch('/seller-panel/orders/{order}/status', [DemoSellerPanelController::class, 'updateOrderStatus'])->name('seller-panel.order-status');
+    });
+});
 
 // Static Pages
 Route::get('/about',           [PageController::class, 'about'])->name('about');

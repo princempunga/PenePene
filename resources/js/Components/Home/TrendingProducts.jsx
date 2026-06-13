@@ -13,7 +13,7 @@ export default function TrendingProducts({ products }) {
     const rest = products.slice(3, 11);
 
     return (
-        <section className="py-16 bg-gray-50">
+        <section className="py-10 sm:py-14 bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <SectionHeader 
                     title={t('home.trending_products')}
@@ -22,7 +22,7 @@ export default function TrendingProducts({ products }) {
                     actionLink="/products?sort=trending"
                 />
                 
-                <div className="flex overflow-x-auto pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 snap-x snap-mandatory hide-scrollbar">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-4 lg:gap-5 max-md:flex max-md:overflow-x-auto max-md:pb-6 max-md:-mx-4 max-md:px-4 max-md:snap-x max-md:snap-mandatory hide-scrollbar">
                     {products.map((product, index) => (
                         <motion.div 
                             key={product.id} 
@@ -30,9 +30,9 @@ export default function TrendingProducts({ products }) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ delay: index * 0.05 }}
-                            className="min-w-[280px] sm:min-w-0 flex-shrink-0 snap-start h-full"
+                            className="max-md:w-[72vw] max-md:max-w-[240px] max-md:flex-shrink-0 max-md:snap-start md:w-full h-full min-w-0"
                         >
-                            <ProductCard product={product} badge={index < 3 ? 'Hot' : null} />
+                            <ProductCard product={product} badge={index < 3 ? 'hot_deal' : null} compact />
                         </motion.div>
                     ))}
                 </div>

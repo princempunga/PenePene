@@ -11,6 +11,7 @@ use App\Models\Seller;
 use App\Support\ProductListing;
 use App\Support\CatalogTranslations;
 use App\Services\DemoProductService;
+use App\Services\DemoSimulationService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 
@@ -200,6 +201,11 @@ class ProductController extends Controller
             ['user' => $product->seller->user?->only(['id', 'name', 'avatar', 'is_online', 'last_seen_at'])]
         );
 
+        if ($product->seller->user && DemoSimulationService::isDemoSeller($product->seller)) {
+            DemoSimulationService::applyOnlineStatus($product->seller->user, $product->seller);
+            $productArray['seller']['user'] = $product->seller->user->only(['id', 'name', 'avatar', 'is_online', 'last_seen_at', 'last_seen_text']);
+        }
+
         return Inertia::render('Products/Show', [
             'product'           => $productArray,
             'relatedProducts'   => $relatedProducts,
@@ -214,6 +220,10 @@ class ProductController extends Controller
         $seller = Seller::with('user')->find($sellerId);
 
         if ($seller) {
+            if ($seller->user && DemoSimulationService::isDemoSeller($seller)) {
+                DemoSimulationService::applyOnlineStatus($seller->user, $seller);
+            }
+
             $productData['seller'] = array_merge($productData['seller'] ?? [], [
                 'id'             => $seller->id,
                 'slug'           => $seller->slug ?? ($productData['seller']['slug'] ?? 'demo-seller'),
@@ -222,7 +232,7 @@ class ProductController extends Controller
                 'logo'           => $seller->logo,
                 'average_rating' => $seller->average_rating ?? ($productData['seller']['average_rating'] ?? 4.7),
                 'city'           => $seller->city ?? ($productData['seller']['city'] ?? 'Kinshasa'),
-                'user'           => $seller->user?->only(['id', 'name', 'avatar', 'is_online', 'last_seen_at']),
+                'user'           => $seller->user?->only(['id', 'name', 'avatar', 'is_online', 'last_seen_at', 'last_seen_text']),
             ]);
         }
 

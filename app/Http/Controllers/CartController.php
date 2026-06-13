@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Services\CheckoutService;
 use App\Services\DemoProductService;
+use App\Services\DemoSimulationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use RuntimeException;
@@ -221,6 +222,16 @@ class CartController extends Controller
         }
 
         $cart = $this->getCart();
+
+        if (empty($cart)) {
+            return redirect()
+                ->route('cart.index')
+                ->withErrors(['cart' => 'Your cart is empty.']);
+        }
+
+        if (DemoSimulationService::enabled()) {
+            return redirect()->route('checkout.simulate');
+        }
 
         try {
             $orders = $checkoutService->process(auth()->user(), $cart);

@@ -121,7 +121,7 @@ export default function FlashDealCard({ product }) {
     };
 
     return (
-        <article className="flash-deal-card group bg-white rounded-2xl border border-white/80 overflow-hidden flex flex-col h-full shadow-lg shadow-black/10">
+        <article className="flash-deal-card group bg-white rounded-xl sm:rounded-2xl border border-white/80 overflow-hidden flex flex-col h-full shadow-lg shadow-black/10 min-w-0">
             <div className="relative">
                 <button
                     type="button"
@@ -149,41 +149,41 @@ export default function FlashDealCard({ product }) {
                     )}
                 </div>
 
-                <Link href={productUrl} className="block relative aspect-[4/3] overflow-hidden bg-gray-50">
+                <Link href={productUrl} className="block relative h-32 sm:h-36 md:h-auto md:aspect-[4/3] overflow-hidden bg-gray-50">
                     <img
                         src={imageUrl}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        className="w-full h-full object-contain p-2 md:object-cover md:p-0 transition-transform duration-500 ease-out md:group-hover:scale-105"
                         onError={(e) => { e.target.src = DEFAULT_PRODUCT_IMAGE; }}
                     />
                 </Link>
             </div>
 
-            <div className="p-4 flex flex-col flex-grow">
+            <div className="p-3 sm:p-4 flex flex-col flex-grow min-w-0">
                 {product.category && (
-                    <span className="text-[11px] text-primary-600 font-bold mb-1.5 uppercase tracking-wider">
+                    <span className="text-[10px] sm:text-[11px] text-primary-600 font-bold mb-1 uppercase tracking-wider">
                         {product.category.name}
                     </span>
                 )}
 
-                <Link href={productUrl} className="block mb-3 flex-grow">
-                    <h3 className="font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors text-sm sm:text-base">
+                <Link href={productUrl} className="block mb-2 flex-grow">
+                    <h3 className="font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors text-sm md:text-base">
                         {product.name}
                     </h3>
                 </Link>
 
-                <div className="flex items-end gap-2 mb-3">
-                    <span className="text-xl font-extrabold text-[#0F2D7A]">
+                <div className="flex items-end gap-2 mb-2">
+                    <span className="text-base md:text-xl font-extrabold text-[#0F2D7A]">
                         {product.currency || 'USD'} {parseFloat(product.sale_price || product.price).toLocaleString()}
                     </span>
                     {product.sale_price && (
-                        <span className="text-sm text-gray-400 line-through font-medium pb-0.5">
+                        <span className="text-xs text-gray-400 line-through font-medium pb-0.5">
                             {parseFloat(product.price).toLocaleString()}
                         </span>
                     )}
                 </div>
 
-                <div className="space-y-2 text-xs text-gray-500 mb-4">
+                <div className="space-y-1.5 text-[11px] sm:text-xs text-gray-500 mb-3">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 truncate min-w-0">
                             {product.seller?.is_verified && (
@@ -201,22 +201,26 @@ export default function FlashDealCard({ product }) {
                     </div>
                 </div>
 
-                <div className="flex gap-2 mt-auto pt-3 border-t border-gray-100">
+                <div className="flex flex-col md:flex-row gap-1.5 md:gap-2 w-full min-w-0 mt-auto pt-2 md:pt-3 border-t border-gray-100">
                     <button
                         type="button"
                         onClick={handleAddToCart}
                         disabled={outOfStock || adding}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#F59E0B] hover:bg-amber-600 disabled:bg-gray-200 disabled:text-gray-500 text-white text-xs font-bold py-2.5 rounded-xl transition-colors duration-300 shadow-sm"
+                        className="flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 bg-[#F59E0B] hover:bg-amber-600 disabled:bg-gray-200 disabled:text-gray-500 text-white text-[11px] md:text-xs font-bold py-2 md:py-2.5 px-2 rounded-lg md:rounded-xl transition-colors duration-300 shadow-sm"
                     >
-                        <ShoppingCart size={14} />
-                        {adding ? t('product.adding') : outOfStock ? t('product.out_of_stock') : t('product.add_to_cart')}
+                        <ShoppingCart size={14} className="shrink-0" />
+                        <span className="truncate">
+                            {adding ? t('product.adding') : outOfStock ? t('product.out_of_stock') : t('product.add_to_cart')}
+                        </span>
                     </button>
                     <Link
                         href={productUrl}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 text-xs font-bold py-2.5 rounded-xl transition-colors duration-300"
+                        className="flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 border-2 border-primary-600 text-primary-600 hover:bg-primary-50 text-[11px] md:text-xs font-bold py-2 md:py-2.5 px-2 rounded-lg md:rounded-xl transition-colors duration-300"
                     >
-                        <Eye size={14} />
-                        {isDemo ? t('product.preview') : t('product.view_details')}
+                        <Eye size={14} className="shrink-0" />
+                        <span className="truncate">
+                            {isDemo ? t('product.preview') : t('product.view_details')}
+                        </span>
                     </Link>
                 </div>
             </div>

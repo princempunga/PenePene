@@ -200,7 +200,12 @@ export default function MessageBubble({
                                     <span className="flex items-center ml-0.5">
                                         {message.status === 'sending' && <Clock size={11} />}
                                         {message.status === 'sent' && <Check size={13} />}
-                                        {message.status === 'read' && <CheckCheck size={13} className="text-primary-200" />}
+                                        {message.status === 'delivered' && (
+                                            <CheckCheck size={13} className="text-white/60" />
+                                        )}
+                                        {message.status === 'read' && (
+                                            <CheckCheck size={13} className="text-sky-300" />
+                                        )}
                                         {message.status === 'failed' && <AlertCircle size={12} className="text-red-300" />}
                                     </span>
                                 )}
