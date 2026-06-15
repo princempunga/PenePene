@@ -81,12 +81,12 @@ export default function ProductCreate({ categories }) {
 
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
                             <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Images</h2>
-                            <p className="text-sm text-gray-500">Téléchargez des images du produit (2 Mo max chacune). La première image sera l'image principale.</p>
+                            <p className="text-sm text-gray-500">Téléchargez des images du produit (20 Mo max chacune). La première image sera l'image principale.</p>
 
                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                                 <Upload size={24} className="text-gray-400 mb-2" />
                                 <span className="text-sm text-gray-600 font-medium">Cliquez pour télécharger des images</span>
-                                <span className="text-xs text-gray-400 mt-1">PNG, JPG — 2 Mo maximum</span>
+                                <span className="text-xs text-gray-400 mt-1">PNG, JPG — 20 Mo maximum</span>
                                 <input
                                     type="file"
                                     multiple
@@ -164,8 +164,8 @@ export default function ProductCreate({ categories }) {
                                 </div>
                             )}
 
-                            <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800">
-                                Les nouveaux produits sont soumis à validation et apparaîtront comme <strong>En attente</strong> jusqu'à leur approbation.
+                            <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-xs text-green-800">
+                                Vos produits seront publiés et visibles <strong>immédiatement</strong> sur la plateforme.
                             </div>
                         </div>
 

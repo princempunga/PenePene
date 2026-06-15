@@ -40,6 +40,7 @@ export default function Register() {
     const [logoPreview, setLogoPreview] = useState(null);
     const [coverPreview, setCoverPreview] = useState(null);
     const [stepError, setStepError] = useState('');
+    const [generalError, setGeneralError] = useState('');
 
     const { data, setData, post, processing, errors } = useForm({
         name: '',
@@ -106,7 +107,26 @@ export default function Register() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/seller/register', { forceFormData: true });
+        setGeneralError('');
+        post('/seller/register', {
+            forceFormData: true,
+            onError: (errs) => {
+                if (errs.general) {
+                    setGeneralError(errs.general);
+                } else if (errs.name || errs.email || errs.phone || errs.password || errs.password_confirmation) {
+                    setStep(1);
+                    setStepError(t('seller.validation_personal') || 'Veuillez corriger les erreurs ci-dessous.');
+                } else if (errs.business_name || errs.business_category || errs.whatsapp || errs.city || errs.address || errs.description) {
+                    setStep(2);
+                    setStepError(t('seller.validation_store') || 'Veuillez corriger les erreurs ci-dessous.');
+                } else if (errs.logo || errs.cover_image) {
+                    setStep(3);
+                    setStepError('Veuillez corriger les erreurs liées aux images.');
+                } else {
+                    setGeneralError('Une erreur s\'est produite. Veuillez vérifier vos informations.');
+                }
+            }
+        });
     };
 
     const selectClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50/80 focus:bg-white outline-none transition-all shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500';
@@ -137,9 +157,9 @@ export default function Register() {
             >
                 <StepIndicator steps={STEPS} currentStep={step} accent="amber" />
 
-                {stepError && (
+                {(stepError || generalError) && (
                     <div className="mb-5 p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-                        {stepError}
+                        {generalError || stepError}
                     </div>
                 )}
 

@@ -57,50 +57,67 @@ class RegisterController extends Controller
             'city.required'          => 'La ville est obligatoire.',
         ]);
 
-        $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'phone'    => $request->phone,
-            'password' => Hash::make($request->password),
-            'role'     => 'seller',
-            'locale'   => $request->session()->get('locale', config('app.locale')),
-        ]);
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
-        $logoPath = null;
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('seller_logos', 'public');
+            $user = User::create([
+                'name'     => $request->name,
+                'email'    => $request->email,
+                'phone'    => $request->phone,
+                'password' => Hash::make($request->password),
+                'role'     => 'seller',
+                'locale'   => $request->session()->get('locale', config('app.locale')),
+            ]);
+
+            $logoPath = null;
+            if ($request->hasFile('logo')) {
+                $logoPath = $request->file('logo')->store('seller_logos', 'public');
+            }
+
+            $bannerPath = null;
+            if ($request->hasFile('cover_image')) {
+                $bannerPath = $request->file('cover_image')->store('seller_banners', 'public');
+            }
+
+            $fullDescription = $request->description;
+            if ($request->business_category) {
+                $fullDescription = 'Category: ' . $request->business_category . "\n\n" . $fullDescription;
+            }
+
+            $freePlan = SubscriptionPlan::where('is_active', true)->where('price', 0)->first()
+                     ?? SubscriptionPlan::where('is_active', true)->first();
+
+            $seller = Seller::create([
+                'user_id'                 => $user->id,
+                'business_name'           => $request->business_name,
+                'slug'                    => Str::slug($request->business_name) . '-' . uniqid(),
+                'description'             => $fullDescription,
+                'address'                 => $request->address,
+                'city'                    => $request->city,
+                'country'                 => 'Tanzania',
+                'whatsapp'                => $request->whatsapp,
+                'logo'                    => $logoPath,
+                'banner'                  => $bannerPath,
+                'status'                  => 'pending',
+            ]);
+
+            if ($freePlan) {
+                $seller->subscriptions()->create([
+                    'subscription_plan_id' => $freePlan->id,
+                    'status'               => 'active',
+                    'starts_at'            => now(),
+                    'expires_at'           => now()->addYears(10),
+                ]);
+            }
+
+            event(new Registered($user));
+
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Seller Registration Error: ' . $e->getMessage());
+            return back()->withErrors(['general' => 'Une erreur s\'est produite lors de la création de votre compte. Veuillez réessayer.']);
         }
-
-        $bannerPath = null;
-        if ($request->hasFile('cover_image')) {
-            $bannerPath = $request->file('cover_image')->store('seller_banners', 'public');
-        }
-
-        $fullDescription = $request->description;
-        if ($request->business_category) {
-            $fullDescription = 'Category: ' . $request->business_category . "\n\n" . $fullDescription;
-        }
-
-        $freePlan = SubscriptionPlan::where('is_active', true)->where('price', 0)->first()
-                 ?? SubscriptionPlan::where('is_active', true)->first();
-
-        Seller::create([
-            'user_id'                 => $user->id,
-            'business_name'           => $request->business_name,
-            'slug'                    => Str::slug($request->business_name) . '-' . uniqid(),
-            'description'             => $fullDescription,
-            'address'                 => $request->address,
-            'city'                    => $request->city,
-            'country'                 => 'Tanzania',
-            'whatsapp'                => $request->whatsapp,
-            'logo'                    => $logoPath,
-            'banner'                  => $bannerPath,
-            'status'                  => 'pending',
-            'subscription_plan_id'    => $freePlan ? $freePlan->id : null,
-            'subscription_expires_at' => now()->addYears(10),
-        ]);
-
-        event(new Registered($user));
 
         Auth::login($user);
 

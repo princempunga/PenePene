@@ -33,10 +33,10 @@ class ProductController extends Controller
             'status.required'         => 'Le statut est obligatoire.',
             'status.in'               => 'Le statut sélectionné est invalide.',
             'images.*.image'          => 'Chaque fichier doit être une image.',
-            'images.*.max'            => 'Chaque image ne peut pas dépasser 2 Mo.',
+            'images.*.max'            => 'Chaque image ne peut pas dépasser 20 Mo.',
             'image.required'          => 'L\'image est obligatoire.',
             'image.image'             => 'Le fichier doit être une image.',
-            'image.max'               => 'L\'image ne peut pas dépasser 2 Mo.',
+            'image.max'               => 'L\'image ne peut pas dépasser 20 Mo.',
         ];
     }
 
@@ -88,7 +88,7 @@ class ProductController extends Controller
             'price'          => 'required|numeric|min:0',
             'sale_price'     => 'nullable|numeric|min:0|lt:price',
             'initial_stock'  => 'required|integer|min:1',
-            'images.*'       => 'nullable|image|max:2048',
+            'images.*'       => 'nullable|image|max:20480',
         ], array_merge($this->productValidationMessages(), [
             'initial_stock.min' => 'Le stock initial doit être d\'au moins 1.',
         ]));
@@ -105,7 +105,7 @@ class ProductController extends Controller
             'initial_stock'   => $request->initial_stock,
             'confirmed_sales' => 0,
             'currency'        => 'CDF',
-            'status'          => 'pending',
+            'status'          => 'active',
         ]);
 
         if ($request->hasFile('images')) {
@@ -119,8 +119,8 @@ class ProductController extends Controller
             }
         }
 
-        return redirect()->route('seller.products.index')
-            ->with('success', 'Produit créé avec succès. Il sera visible une fois approuvé.');
+        return redirect()->route('seller.products.show', $product->id)
+            ->with('success', 'Produit créé avec succès et publié sur la boutique.');
     }
 
     public function show(Request $request, Product $product)
@@ -221,7 +221,7 @@ class ProductController extends Controller
         }
 
         $request->validate([
-            'image' => 'required|image|max:2048',
+            'image' => 'required|image|max:20480',
         ], $this->productValidationMessages());
 
         $hasPrimary = ProductImage::where('product_id', $product->id)->where('is_primary', true)->exists();

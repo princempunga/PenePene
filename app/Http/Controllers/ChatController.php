@@ -150,7 +150,7 @@ class ChatController extends Controller
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
             $mime = $file->getMimeType();
-            $path = $file->store('chat_attachments', 'public');
+            $path = $file->store('chat', 'public');
 
             $messageData['attachment_path'] = $path;
             $messageData['attachment_mime'] = $mime;

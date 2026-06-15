@@ -131,9 +131,10 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
             if (msg._payload.body) formData.append('body', msg._payload.body);
             if (msg._payload.attachment) formData.append('attachment', msg._payload.attachment);
             if (msg._payload.replyToMessageId) formData.append('reply_to_message_id', msg._payload.replyToMessageId);
+            if (msg.message_type) formData.append('message_type', msg.message_type);
 
             const res = await axios.post(`/chat/conversations/${conversationId}/messages`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' },
+                headers: { Accept: 'application/json' },
                 onUploadProgress: (e) => {
                     const pct = Math.round((e.loaded * 100) / e.total);
                     setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, upload_progress: pct } : m));
