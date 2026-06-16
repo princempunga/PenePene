@@ -225,19 +225,19 @@ export default function Show({
 
     return (
         <AppLayout>
-            <div className="bg-white border-b">
-                <div className="max-w-7xl mx-auto px-4 py-3 text-sm text-gray-500">
-                    <Link href="/" className="hover:text-primary-600">{t('product.breadcrumb_home')}</Link>
-                    <span className="mx-2">&gt;</span>
+            <div className="bg-white border-b overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 py-3 text-sm text-gray-500 flex items-center whitespace-nowrap overflow-hidden text-ellipsis">
+                    <Link href="/" className="hover:text-primary-600 shrink-0">{t('product.breadcrumb_home')}</Link>
+                    <span className="mx-2 shrink-0">&gt;</span>
                     {product.category && (
                         <>
-                            <Link href={`/categories/${product.category.slug}`} className="hover:text-primary-600">
+                            <Link href={`/categories/${product.category.slug}`} className="hover:text-primary-600 shrink-0">
                                 {product.category.name}
                             </Link>
-                            <span className="mx-2">&gt;</span>
+                            <span className="mx-2 shrink-0">&gt;</span>
                         </>
                     )}
-                    <span className="text-gray-900 truncate">{product.name}</span>
+                    <span className="text-gray-900 truncate min-w-0">{product.name}</span>
                 </div>
             </div>
 
