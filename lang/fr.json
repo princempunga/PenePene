@@ -131,17 +131,17 @@
         "free": "Gratuit",
         "total": "Total",
         "sign_in_required": "Connexion requise",
-        "sign_in_to_checkout": " pour finaliser votre commande.",
-        "processing_order": "Traitement de la commande...",
-        "confirm_order": "Confirmer la commande",
-        "sign_in_to_checkout_btn": "Se connecter pour payer",
+        "sign_in_to_checkout": " pour demander un devis.",
+        "processing_order": "Envoi de la demande...",
+        "confirm_order": "Demander un devis",
+        "sign_in_to_checkout_btn": "Se connecter pour demander un devis",
         "continue_shopping": "← Continuer les achats",
-        "checkout_error": "Impossible de passer votre commande. Veuillez réessayer."
+        "checkout_error": "Impossible d'envoyer la demande. Veuillez réessayer."
     },
     "product": {
         "add_to_cart": "Ajouter au panier",
         "adding": "Ajout en cours...",
-        "buy_now": "Acheter maintenant",
+        "buy_now": "Négocier avec le vendeur",
         "processing": "Traitement...",
         "add_to_wishlist": "Ajouter aux favoris",
         "saved_to_wishlist": "Enregistré dans les favoris",

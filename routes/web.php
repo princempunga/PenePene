@@ -124,6 +124,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/conversations/{conversation}/delete', [\App\Http\Controllers\ChatController::class, 'deleteConversation'])->name('conversations.delete');
         Route::post('/conversations/{conversation}/clear', [\App\Http\Controllers\ChatController::class, 'clearConversation'])->name('conversations.clear');
         Route::post('/conversations/{conversation}/archive', [\App\Http\Controllers\ChatController::class, 'archiveConversation'])->name('conversations.archive');
+        Route::patch('/conversations/{conversation}/status', [\App\Http\Controllers\ChatController::class, 'updateStatus'])->name('conversations.status.update');
         Route::patch('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'editMessage'])->name('messages.edit');
         Route::delete('/messages/{message}', [\App\Http\Controllers\ChatController::class, 'deleteMessage'])->name('messages.delete');
         Route::post('/messages/{message}/read', [\App\Http\Controllers\ChatController::class, 'markAsRead'])->name('messages.read');

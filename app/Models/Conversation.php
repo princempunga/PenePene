@@ -8,7 +8,7 @@ class Conversation extends Model
 {
     protected $fillable = [
         'buyer_id', 'seller_id', 'product_id', 'last_message_at',
-        'buyer_archived', 'seller_archived',
+        'buyer_archived', 'seller_archived', 'status',
     ];
 
     protected function casts(): array

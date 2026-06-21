@@ -28,7 +28,7 @@ class SellerController extends Controller
 
     public function show(Seller $seller)
     {
-        $seller->load(['user', 'plan']);
+        $seller->load(['user', 'activeSubscription.plan']);
         
         return Inertia::render('Admin/Sellers/Show', [
             'seller' => $seller,

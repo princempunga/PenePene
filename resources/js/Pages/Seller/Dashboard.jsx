@@ -158,6 +158,38 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                     />
                 </div>
 
+                {/* CRM Pipeline - Suivi des conversations */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="font-bold text-gray-900">Pipeline des négociations</h2>
+                        <Link href="/seller/messages" className="text-sm text-primary-600 font-medium hover:text-primary-700">
+                            Voir les conversations →
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Link href="/seller/messages" className="group bg-blue-50 border border-blue-100 hover:border-blue-300 hover:shadow-md rounded-xl p-4 transition-all">
+                            <p className="text-3xl font-bold text-blue-700 mb-1">{stats.activeInquiries ?? 0}</p>
+                            <p className="text-sm font-medium text-blue-600">Demandes</p>
+                            <p className="text-xs text-blue-400 mt-0.5">Nouvelles demandes de devis</p>
+                        </Link>
+                        <Link href="/seller/messages" className="group bg-amber-50 border border-amber-100 hover:border-amber-300 hover:shadow-md rounded-xl p-4 transition-all">
+                            <p className="text-3xl font-bold text-amber-700 mb-1">{stats.negotiating ?? 0}</p>
+                            <p className="text-sm font-medium text-amber-600">Négociation</p>
+                            <p className="text-xs text-amber-400 mt-0.5">En cours de discussion</p>
+                        </Link>
+                        <Link href="/seller/messages" className="group bg-indigo-50 border border-indigo-100 hover:border-indigo-300 hover:shadow-md rounded-xl p-4 transition-all">
+                            <p className="text-3xl font-bold text-indigo-700 mb-1">{stats.dealsConfirmed ?? 0}</p>
+                            <p className="text-sm font-medium text-indigo-600">Confirmés</p>
+                            <p className="text-xs text-indigo-400 mt-0.5">Accords conclus</p>
+                        </Link>
+                        <Link href="/seller/messages" className="group bg-green-50 border border-green-100 hover:border-green-300 hover:shadow-md rounded-xl p-4 transition-all">
+                            <p className="text-3xl font-bold text-green-700 mb-1">{stats.dealsSold ?? 0}</p>
+                            <p className="text-sm font-medium text-green-600">Vendus</p>
+                            <p className="text-xs text-green-400 mt-0.5">Transactions complètes</p>
+                        </Link>
+                    </div>
+                </div>
+
                 {/* Actions rapides */}
                 <div className="mb-8">
                     <h2 className="font-bold text-gray-900 mb-4">Actions rapides</h2>

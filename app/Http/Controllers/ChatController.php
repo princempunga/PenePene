@@ -105,17 +105,14 @@ class ChatController extends Controller
                         'body'             => null,
                     ]);
 
-                    // 2) Send the Greeting message ONLY if it's a completely new conversation
-                    $isNewConversation = $conversation->messages()->count() === 1; // Since we just created the product message, count is 1
-                    if ($isNewConversation) {
-                        Message::create([
-                            'conversation_id' => $conversation->id,
-                            'sender_id'       => $buyer->id,
-                            'receiver_id'     => $receiverId,
-                            'message_type'    => 'text',
-                            'body'            => 'Bonjour, je suis intéressé par ce produit.',
-                        ]);
-                    }
+                    // 2) Send the Greeting message automatically
+                    Message::create([
+                        'conversation_id' => $conversation->id,
+                        'sender_id'       => $buyer->id,
+                        'receiver_id'     => $receiverId,
+                        'message_type'    => 'text',
+                        'body'            => "Bonjour, je suis intéressé par ce produit et j'aimerais obtenir plus d'informations.",
+                    ]);
 
                     $conversation->update(['last_message_at' => now()]);
 
@@ -178,7 +175,7 @@ class ChatController extends Controller
 
         return Inertia::render($page, [
             'conversations'   => $conversations,
-            'conversation'    => $conversation,
+            'conversation'    => array_merge($conversation->toArray(), ['status' => $conversation->status]),
             'pinned_messages' => $pinnedMessages,
             'otherUser'       => $otherUser,
         ]);
@@ -610,5 +607,23 @@ class ChatController extends Controller
         if (! $isParticipant) {
             abort(403, 'Unauthorized access to this conversation.');
         }
+    }
+
+    public function updateStatus(Request $request, Conversation $conversation)
+    {
+        $this->authorizeConversation($conversation);
+
+        $request->validate([
+            'status' => 'required|in:inquiry,negotiating,confirmed,sold,cancelled',
+        ]);
+
+        // Only seller can update status
+        if ($conversation->seller->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $conversation->update(['status' => $request->status]);
+
+        return back()->with('success', 'Conversation status updated successfully.');
     }
 }

@@ -13,13 +13,13 @@ export default function SellerShow({ seller }) {
 
     const handleVerify = () => {
         if (confirm('Are you sure you want to verify this seller and make their store public?')) {
-            verifyForm.patch(`/admin/sellers/${seller.id}/verify`);
+            verifyForm.patch(`/admin/sellers/${seller.slug}/verify`);
         }
     };
 
     const handleReject = (e) => {
         e.preventDefault();
-        rejectForm.patch(`/admin/sellers/${seller.id}/reject`, {
+        rejectForm.patch(`/admin/sellers/${seller.slug}/reject`, {
             onSuccess: () => setShowRejectModal(false)
         });
     };
@@ -28,7 +28,7 @@ export default function SellerShow({ seller }) {
         const newStatus = e.target.value;
         statusForm.setData('status', newStatus);
         if (confirm(`Change seller status to ${newStatus}?`)) {
-            statusForm.patch(`/admin/sellers/${seller.id}/status`);
+            statusForm.patch(`/admin/sellers/${seller.slug}/status`);
         }
     };
 
@@ -70,7 +70,7 @@ export default function SellerShow({ seller }) {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">Selected Plan</p>
-                                        <p className="font-medium text-primary-700">{seller.plan?.name || 'Standard'}</p>
+                                        <p className="font-medium text-primary-700">{seller.active_subscription?.plan?.name || 'Standard'}</p>
                                     </div>
                                 </div>
                                 <div>

@@ -27,6 +27,8 @@ export default function MessageShow({ conversations, conversation, otherUser }) 
                         conversationId={conversation.id}
                         currentUserId={auth.user?.id}
                         otherUser={chatPartner}
+                        isSeller={true}
+                        conversationStatus={conversation.status}
                     />
                 </div>
             </div>

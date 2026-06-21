@@ -315,7 +315,7 @@ export default function Show({
                                 adding={adding}
                                 favoriting={favoriting}
                                 isFavorited={isFavorited}
-                                onBuyNow={() => addToCart(true)}
+                                onBuyNow={startChat}
                                 onAddToCart={() => addToCart(false)}
                                 onToggleFavorite={toggleFavorite}
                             />

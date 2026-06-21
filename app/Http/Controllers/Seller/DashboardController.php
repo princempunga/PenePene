@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
+use App\Models\Conversation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -52,6 +53,12 @@ class DashboardController extends Controller
             ->whereNull('read_at')
             ->count();
 
+        // CRM conversation stats (new B2B model)
+        $activeInquiries   = Conversation::where('seller_id', $sellerId)->where('status', 'inquiry')->count();
+        $negotiating       = Conversation::where('seller_id', $sellerId)->where('status', 'negotiating')->count();
+        $dealsConfirmed    = Conversation::where('seller_id', $sellerId)->where('status', 'confirmed')->count();
+        $dealsSold         = Conversation::where('seller_id', $sellerId)->where('status', 'sold')->count();
+
         $recentOrders = Order::with(['buyer.user', 'items'])
             ->where('seller_id', $sellerId)
             ->latest()
@@ -95,6 +102,10 @@ class DashboardController extends Controller
                 'revenueThisWeek'  => (float) $revenueThisWeek,
                 'unreadMessages'   => $unreadMessages,
                 'currency'         => 'CDF',
+                'activeInquiries'  => $activeInquiries,
+                'negotiating'      => $negotiating,
+                'dealsConfirmed'   => $dealsConfirmed,
+                'dealsSold'        => $dealsSold,
             ],
             'recentOrders'  => $recentOrders,
             'recentReviews' => $recentReviews,

@@ -213,12 +213,12 @@ class CartController extends Controller
         return redirect()->route('cart.index');
     }
 
-    public function checkout(Request $request, CheckoutService $checkoutService)
+    public function checkout(Request $request)
     {
         if (! auth()->check()) {
             return redirect()
                 ->guest(route('login'))
-                ->with('info', 'Please sign in to complete your order.');
+                ->with('info', 'Please sign in to request a quote.');
         }
 
         $cart = $this->getCart();
@@ -229,32 +229,98 @@ class CartController extends Controller
                 ->withErrors(['cart' => 'Your cart is empty.']);
         }
 
-        if (DemoSimulationService::enabled()) {
-            return redirect()->route('checkout.simulate');
+        $buyer = auth()->user()->buyer ?? \App\Models\Buyer::create(['user_id' => auth()->id()]);
+        
+        // Resolve items and group by seller
+        $lineItems = [];
+        foreach ($cart as $cartKey => $item) {
+            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+
+            if ($this->isDemoCartKey($cartKey)) {
+                $demo = DemoProductService::findBySlug($cartKey);
+                if (! $demo) continue;
+                $product = DemoProductService::ensureDatabaseProduct($demo);
+            } else {
+                $product = Product::with('seller')->active()->find($cartKey);
+            }
+
+            if (! $product || ! $product->seller_id) {
+                continue;
+            }
+
+            $lineItems[] = [
+                'product'    => $product,
+                'seller_id'  => $product->seller_id,
+                'quantity'   => $quantity,
+            ];
         }
 
-        try {
-            $orders = $checkoutService->process(auth()->user(), $cart);
-        } catch (RuntimeException $exception) {
+        if (empty($lineItems)) {
             return redirect()
                 ->route('cart.index')
-                ->withErrors(['cart' => $exception->getMessage()]);
-        } catch (\Throwable $exception) {
-            report($exception);
+                ->withErrors(['cart' => 'No valid products found in your cart.']);
+        }
 
-            return redirect()
-                ->route('cart.index')
-                ->withErrors(['cart' => 'We could not place your order. Please try again.']);
+        $grouped = collect($lineItems)->groupBy('seller_id');
+
+        foreach ($grouped as $sellerId => $items) {
+            $seller = \App\Models\Seller::find($sellerId);
+            if (!$seller) continue;
+
+            $conversation = \App\Models\Conversation::firstOrCreate([
+                'buyer_id'  => $buyer->id,
+                'seller_id' => $seller->id,
+            ]);
+
+            $messageBody = "Bonjour, je souhaite demander un devis pour les articles suivants :\n\n";
+            
+            foreach ($items as $item) {
+                $product = $item['product'];
+                $messageBody .= "- {$product->name} (Quantité : {$item['quantity']})\n";
+                
+                // Also send a product card message so they see the product UI
+                $image = $product->images?->where('is_primary', true)->first() ?? $product->images?->first();
+                $imageUrl = $image ? (str_starts_with($image->image_path, 'images/') ? '/' . $image->image_path : '/storage/' . $image->image_path) : null;
+                
+                $snapshot = [
+                    'product_id'   => $product->id,
+                    'name'         => $product->name,
+                    'price'        => $product->sale_price ?? $product->price,
+                    'currency'     => $product->currency ?? 'CDF',
+                    'category'     => $product->category?->name,
+                    'seller_name'  => $seller?->business_name,
+                    'seller_slug'  => $seller?->slug,
+                    'slug'         => $product->slug,
+                    'image_url'    => $imageUrl,
+                    'product_url'  => '/products/' . $product->slug,
+                ];
+
+                \App\Models\Message::create([
+                    'conversation_id'  => $conversation->id,
+                    'sender_id'        => $buyer->id,
+                    'receiver_id'      => $seller->user_id,
+                    'message_type'     => 'product',
+                    'product_id'       => $product->id,
+                    'product_snapshot' => $snapshot,
+                    'body'             => null,
+                ]);
+            }
+
+            \App\Models\Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id'       => $buyer->id,
+                'receiver_id'     => $seller->user_id,
+                'message_type'    => 'text',
+                'body'            => $messageBody,
+            ]);
+
+            $conversation->update(['last_message_at' => now()]);
         }
 
         $this->saveCart([]);
 
-        $primaryOrder = $orders[0];
-
         return redirect()
-            ->route('orders.confirmation', $primaryOrder)
-            ->with('success', count($orders) === 1
-                ? 'Your order was placed successfully!'
-                : count($orders) . ' orders were placed successfully!');
+            ->route('buyer.messages.index')
+            ->with('success', 'Votre demande de devis a été envoyée aux vendeurs.');
     }
 }

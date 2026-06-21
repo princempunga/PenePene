@@ -7,11 +7,19 @@ import OnlineStatusBadge from './OnlineStatusBadge';
 import MediaPreviewModal from './MediaPreviewModal';
 import ForwardModal from './ForwardModal';
 import { deriveMessageStatus, withDeliveryStatus } from '@/utils/messageStatus';
-import { X, User, ArrowLeft, Pin, MoreVertical, Trash2, Eraser, Archive } from 'lucide-react';
+import { X, User, ArrowLeft, Pin, MoreVertical, Trash2, Eraser, Archive, ChevronDown } from 'lucide-react';
 
 const jsonHeaders = { headers: { Accept: 'application/json' } };
 
-export default function ChatWindow({ conversationId, currentUserId, otherUser, onClose, isModal = false, onConversationDeleted }) {
+const CONVERSATION_STATUSES = [
+    { value: 'inquiry',     label: 'Demande',     color: 'bg-blue-100 text-blue-700' },
+    { value: 'negotiating', label: 'Négociation', color: 'bg-amber-100 text-amber-700' },
+    { value: 'confirmed',   label: 'Confirmé',    color: 'bg-indigo-100 text-indigo-700' },
+    { value: 'sold',        label: 'Vendu',       color: 'bg-green-100 text-green-700' },
+    { value: 'cancelled',   label: 'Annulé',      color: 'bg-red-100 text-red-700' },
+];
+
+export default function ChatWindow({ conversationId, currentUserId, otherUser, onClose, isModal = false, onConversationDeleted, conversationStatus, onStatusChange, isSeller = false }) {
     const [messages, setMessages] = useState([]);
     const [pinnedMessages, setPinnedMessages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,10 +31,29 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
     const [openMenuId, setOpenMenuId] = useState(null);
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
     const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+    const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState(conversationStatus || 'inquiry');
+    const [updatingStatus, setUpdatingStatus] = useState(false);
+    const statusMenuRef = useRef(null);
     const messagesEndRef = useRef(null);
     const pollingIntervalRef = useRef(null);
     const messageRefs = useRef({});
     const headerMenuRef = useRef(null);
+
+    const handleStatusChange = async (newStatus) => {
+        setUpdatingStatus(true);
+        setStatusMenuOpen(false);
+        try {
+            await axios.patch(`/chat/conversations/${conversationId}/status`, { status: newStatus }, jsonHeaders);
+            setCurrentStatus(newStatus);
+            onStatusChange && onStatusChange(newStatus);
+            showToast('Statut mis à jour', 'success');
+        } catch {
+            showToast('Impossible de mettre à jour le statut', 'error');
+        } finally {
+            setUpdatingStatus(false);
+        }
+    };
 
     const showToast = useCallback((msg, type = 'info') => {
         setToast({ msg, type });
@@ -77,6 +104,9 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
         const handleClick = (e) => {
             if (headerMenuRef.current && !headerMenuRef.current.contains(e.target)) {
                 setHeaderMenuOpen(false);
+            }
+            if (statusMenuRef.current && !statusMenuRef.current.contains(e.target)) {
+                setStatusMenuOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClick);
@@ -300,6 +330,34 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
                     </div>
                     <div className="min-w-0">
                         <h3 className="font-bold text-gray-900 truncate">{otherUser?.business_name || otherUser?.name}</h3>
+                        {isSeller && (
+                            <div className="relative" ref={statusMenuRef}>
+                                <button
+                                    type="button"
+                                    onClick={() => setStatusMenuOpen(v => !v)}
+                                    disabled={updatingStatus}
+                                    className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full mt-0.5 cursor-pointer transition-all ${(CONVERSATION_STATUSES.find(s => s.value === currentStatus) || CONVERSATION_STATUSES[0]).color}`}
+                                >
+                                    {(CONVERSATION_STATUSES.find(s => s.value === currentStatus) || CONVERSATION_STATUSES[0]).label}
+                                    <ChevronDown size={10} />
+                                </button>
+                                {statusMenuOpen && (
+                                    <div className="absolute left-0 top-full mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-50">
+                                        {CONVERSATION_STATUSES.map(s => (
+                                            <button
+                                                key={s.value}
+                                                type="button"
+                                                onClick={() => handleStatusChange(s.value)}
+                                                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold hover:bg-gray-50 ${currentStatus === s.value ? 'opacity-50 cursor-default' : ''}`}
+                                            >
+                                                <span className={`w-2 h-2 rounded-full ${s.color.split(' ')[0]}`} />
+                                                {s.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         <OnlineStatusBadge isOnline={otherUser?.is_online} lastSeenText={otherUser?.last_seen_text} />
                     </div>
                 </div>

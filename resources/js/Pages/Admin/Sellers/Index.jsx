@@ -77,7 +77,7 @@ export default function SellersIndex({ sellers, filters }) {
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <Link
-                                                        href={`/admin/sellers/${seller.id}`}
+                                                        href={`/admin/sellers/${seller.slug}`}
                                                         className="inline-flex items-center justify-center px-3 py-1.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition-colors"
                                                     >
                                                         Review
