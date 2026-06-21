@@ -6,9 +6,10 @@ import AppLayout from '@/Layouts/AppLayout';
 import ProductCard from '@/Components/Product/ProductCard';
 import Pagination from '@/Components/UI/Pagination';
 import RatingStars from '@/Components/UI/RatingStars';
-import { MapPin, Phone, ShieldCheck, Calendar, MessageSquareText, Package, Star } from 'lucide-react';
+import { MapPin, Phone, ShieldCheck, Calendar, MessageSquareText, Package, Star, Shield, Award, Zap, Flag } from 'lucide-react';
 import ChatWindow from '@/Components/Chat/ChatWindow';
 import OnlineStatusBadge from '@/Components/Chat/OnlineStatusBadge';
+import ReportSellerModal from '@/Components/ReportSellerModal';
 
 export default function Store({ seller, products, reviews }) {
     const { t } = useTranslation();
@@ -16,7 +17,26 @@ export default function Store({ seller, products, reviews }) {
     const [showChatModal, setShowChatModal] = useState(false);
     const [conversationId, setConversationId] = useState(null);
     const [startingChat, setStartingChat] = useState(false);
+    const [reportModalOpen, setReportModalOpen] = useState(false);
     const autoChatStarted = useRef(false);
+
+    const renderTrustBadge = (badge) => {
+        const badgesConfig = {
+            'New Seller': { icon: <Star size={14} />, classes: 'bg-green-50 text-green-700 border-green-200' },
+            'Verified Seller': { icon: <ShieldCheck size={14} />, classes: 'bg-blue-50 text-blue-700 border-blue-200' },
+            'Premium Seller': { icon: <Zap size={14} />, classes: 'bg-amber-50 text-amber-700 border-amber-200' },
+            'Top Rated Seller': { icon: <Award size={14} />, classes: 'bg-purple-50 text-purple-700 border-purple-200' },
+            'Trusted Seller': { icon: <Shield size={14} />, classes: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+            'Recommended Seller': { icon: <Star size={14} fill="currentColor" />, classes: 'bg-rose-50 text-rose-700 border-rose-200' },
+        };
+        const config = badgesConfig[badge] || { icon: <Shield size={14} />, classes: 'bg-gray-50 text-gray-700 border-gray-200' };
+        return (
+            <div key={badge} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${config.classes}`}>
+                {config.icon}
+                {badge}
+            </div>
+        );
+    };
 
     const startChat = useCallback(async () => {
         if (!auth?.user) {
@@ -101,14 +121,11 @@ export default function Store({ seller, products, reviews }) {
                             <div className="flex flex-col gap-2 mb-3">
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-3xl font-bold text-gray-900">{seller.business_name}</h1>
-                                    {seller.status === 'verified' && (
-                                        <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full text-xs font-semibold border border-blue-100">
-                                            <ShieldCheck size={14} />
-                                            Verified
-                                        </div>
-                                    )}
                                 </div>
-                                <OnlineStatusBadge isOnline={seller.user.is_online} lastSeenText={seller.user.last_seen_text} />
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                    <OnlineStatusBadge isOnline={seller.user.is_online} lastSeenText={seller.user.last_seen_text} />
+                                    {seller.trust_badges?.map(renderTrustBadge)}
+                                </div>
                             </div>
 
                             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
@@ -139,12 +156,21 @@ export default function Store({ seller, products, reviews }) {
                                 className="flex-1 md:flex-none flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 <MessageSquareText size={18} />
-                                {startingChat ? 'Connecting...' : 'Chat with Seller'}
+                                {startingChat ? 'Connecting...' : 'Contacter'}
                             </button>
                             <a href={`tel:${seller.phone}`} className="flex-1 md:flex-none flex items-center justify-center gap-2 py-2.5 px-6 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-lg font-medium transition-colors shadow-sm">
                                 <Phone size={18} />
-                                Call Seller
+                                Appeler
                             </a>
+                            {auth?.user?.role === 'buyer' && (
+                                <button
+                                    type="button"
+                                    onClick={() => setReportModalOpen(true)}
+                                    className="hidden md:flex items-center justify-center gap-2 text-xs text-gray-400 hover:text-red-500 transition-colors mt-1"
+                                >
+                                    <Flag size={12} /> Signaler ce vendeur
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -245,6 +271,13 @@ export default function Store({ seller, products, reviews }) {
                     </div>
                 </div>
             )}
+
+            <ReportSellerModal
+                sellerId={seller.id}
+                sellerName={seller.business_name}
+                isOpen={reportModalOpen}
+                onClose={() => setReportModalOpen(false)}
+            />
         </AppLayout>
     );
 }

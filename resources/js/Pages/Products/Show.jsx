@@ -12,6 +12,8 @@ import ProductCard from '@/Components/Product/ProductCard';
 import ChatWindow from '@/Components/Chat/ChatWindow';
 import { dispatchToast } from '@/Components/UI/Toast';
 import useTranslation from '@/hooks/useTranslation';
+import ReportSellerModal from '@/Components/ReportSellerModal';
+import { Flag, CheckCircle, Package } from 'lucide-react';
 
 function ProductActions({
     availableStock,
@@ -30,11 +32,11 @@ function ProductActions({
             <button
                 type="button"
                 onClick={onBuyNow}
-                disabled={disabled}
+                disabled={adding}
                 className="w-full h-14 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-bold flex items-center justify-center gap-2 whitespace-nowrap transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                <Zap className="w-5 h-5 shrink-0" />
-                <span>{adding ? t('product.processing') : t('product.buy_now')}</span>
+                <MessageCircle className="w-5 h-5 shrink-0" />
+                <span>{adding ? t('product.processing') : 'Contacter le vendeur'}</span>
             </button>
 
             <button
@@ -68,6 +70,7 @@ function ProductActions({
 export default function Show({
     product,
     relatedProducts,
+    reviews = [],
     usingDemo = false,
     favoriteProductId = null,
     isFavorited: initialFavorited = false,
@@ -81,6 +84,7 @@ export default function Show({
     const [showChatModal, setShowChatModal] = useState(false);
     const [conversationId, setConversationId] = useState(null);
     const [startingChat, setStartingChat] = useState(false);
+    const [reportModalOpen, setReportModalOpen] = useState(false);
     const autoChatStarted = useRef(false);
 
     const seller = product.seller;
@@ -218,8 +222,8 @@ export default function Show({
     }, [auth?.user?.id, auth?.user?.role, startChat]);
 
     const chatPartner = seller?.user
-        ? { ...seller.user, business_name: seller.business_name, logo: seller.logo }
-        : { name: seller?.business_name, business_name: seller?.business_name };
+        ? { ...seller.user, business_name: seller.business_name, logo: seller.logo, seller_id: seller.id }
+        : { name: seller?.business_name, business_name: seller?.business_name, seller_id: seller?.id };
 
     const sellerPhone = seller?.phone?.replace(/[^0-9+]/g, '') || '+243812345678';
 
@@ -344,12 +348,24 @@ export default function Show({
                                         </div>
                                     )}
                                 </Link>
-                                <div className="min-w-0">
-                                    <h3 className="font-bold text-gray-900 truncate">
-                                        <Link href={isDemo ? '/products' : `/sellers/${seller.slug}`} className="hover:text-primary-600">
-                                            {seller.business_name}
-                                        </Link>
-                                    </h3>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h3 className="font-bold text-gray-900 text-lg truncate">
+                                            <Link href={`/sellers/${seller.slug}`} className="hover:text-primary-600 transition-colors">
+                                                {seller.business_name}
+                                            </Link>
+                                        </h3>
+                                        {auth?.user?.role === 'buyer' && !isDemo && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setReportModalOpen(true)}
+                                                title="Signaler ce vendeur"
+                                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                            >
+                                                <Flag size={16} />
+                                            </button>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                                         <MapPin size={14} className="shrink-0" />
                                         <span className="truncate">{seller.city}</span>
@@ -434,6 +450,57 @@ export default function Show({
                     </div>
                 </div>
 
+                {reviews?.length > 0 && (
+                    <div className="mt-16 pt-12 border-t border-gray-200">
+                        <div className="mb-8 flex items-center justify-between">
+                            <h2 className="text-2xl font-bold text-gray-900">Avis sur ce produit</h2>
+                            <div className="text-right">
+                                <span className="font-bold text-xl text-gray-900">{product.average_rating > 0 ? parseFloat(product.average_rating).toFixed(1) : '-'} / 5</span>
+                                <span className="block text-sm text-gray-500">Basé sur {product.total_reviews || reviews.length} avis</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {reviews.map((review) => (
+                                <div key={review.id} className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                                                {review.buyer?.user?.name?.charAt(0) || 'A'}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900 text-sm">{review.buyer?.user?.name || 'Acheteur anonyme'}</h4>
+                                                <span className="text-xs text-gray-500">
+                                                    {new Date(review.created_at).toLocaleDateString('fr-FR', {
+                                                        year: 'numeric', month: 'short', day: 'numeric',
+                                                    })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {review.conversation_id && (
+                                            <span className="flex items-center gap-1 text-[10px] font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                                <CheckCircle size={10} />
+                                                Achat Vérifié
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="mb-2">
+                                        <RatingStars rating={review.rating} size={14} />
+                                    </div>
+                                    {review.title && <h5 className="font-semibold text-gray-800 text-sm mb-1">{review.title}</h5>}
+                                    <p className="text-sm text-gray-600 leading-relaxed">{review.comment || <span className="italic text-gray-400">Aucun commentaire</span>}</p>
+
+                                    {review.seller_reply && (
+                                        <div className="mt-3 ml-4 border-l-2 border-primary-200 pl-4 bg-primary-50/40 rounded-r-lg py-2">
+                                            <p className="text-xs font-semibold text-primary-700 mb-1">💬 Réponse du vendeur</p>
+                                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{review.seller_reply}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {relatedProducts?.length > 0 && (
                     <div className="mt-16 pt-12 border-t border-gray-200">
                         <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('product.related_products')}</h2>
@@ -453,11 +520,21 @@ export default function Show({
                             conversationId={conversationId}
                             currentUserId={auth.user?.id}
                             otherUser={chatPartner}
+                            onConversationDeleted={() => setShowChatModal(false)}
                             onClose={() => setShowChatModal(false)}
                             isModal
                         />
                     </div>
                 </div>
+            )}
+
+            {!isDemo && (
+                <ReportSellerModal
+                    sellerId={seller.id}
+                    sellerName={seller.business_name}
+                    isOpen={reportModalOpen}
+                    onClose={() => setReportModalOpen(false)}
+                />
             )}
         </AppLayout>
     );

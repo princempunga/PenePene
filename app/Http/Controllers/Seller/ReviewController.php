@@ -13,7 +13,7 @@ class ReviewController extends Controller
     {
         $seller = $request->user()->seller;
 
-        $query = Review::with(['buyer.user', 'order.items.product'])
+        $query = Review::with(['buyer.user', 'product', 'conversation'])
             ->where('seller_id', $seller->id);
 
         if ($request->filled('rating')) {
@@ -37,5 +37,25 @@ class ReviewController extends Controller
             ],
             'filters' => $request->only(['rating']),
         ]);
+    }
+
+    public function reply(Request $request, Review $review)
+    {
+        $seller = $request->user()->seller;
+
+        if ($review->seller_id !== $seller->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'seller_reply' => 'required|string|max:1000',
+        ]);
+
+        $review->update([
+            'seller_reply' => $request->seller_reply,
+            'replied_at'   => now(),
+        ]);
+
+        return back()->with('success', 'Reply posted successfully.');
     }
 }

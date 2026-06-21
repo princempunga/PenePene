@@ -183,8 +183,10 @@ Route::middleware('auth')->group(function () {
 
         // Reviews
         Route::get('/reviews',                [\App\Http\Controllers\Buyer\ReviewController::class, 'index'])->name('reviews.index');
-        Route::get('/orders/{order}/review',  [\App\Http\Controllers\Buyer\ReviewController::class, 'create'])->name('reviews.create');
-        Route::post('/orders/{order}/review', [\App\Http\Controllers\Buyer\ReviewController::class, 'store'])->name('reviews.store');
+        Route::get('/conversations/{conversation}/review',  [\App\Http\Controllers\Buyer\ReviewController::class, 'create'])->name('reviews.create');
+        Route::post('/conversations/{conversation}/review', [\App\Http\Controllers\Buyer\ReviewController::class, 'store'])->name('reviews.store');
+        Route::post('/reviews/{review}/vote', [\App\Http\Controllers\Buyer\ReviewVoteController::class, 'store'])->name('reviews.vote');
+        Route::post('/reports', [\App\Http\Controllers\Buyer\ReportController::class, 'store'])->name('reports.store');
 
         // Notifications
         Route::get('/notifications',                                 [\App\Http\Controllers\Buyer\NotificationController::class, 'index'])->name('notifications.index');
@@ -257,6 +259,7 @@ Route::middleware('auth')->group(function () {
 
         // Reviews
         Route::get('/reviews', [\App\Http\Controllers\Seller\ReviewController::class, 'index'])->name('reviews.index');
+        Route::post('/reviews/{review}/reply', [\App\Http\Controllers\Seller\ReviewController::class, 'reply'])->name('reviews.reply');
 
         // Documents
         Route::get('/documents',                    [\App\Http\Controllers\Seller\DocumentController::class, 'index'])->name('documents.index');
@@ -321,8 +324,8 @@ Route::middleware('auth')->group(function () {
         // Categories
         Route::get('/categories',              [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
         Route::post('/categories',             [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('categories.store');
-        Route::put('/categories/{category}',   [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');
-        Route::delete('/categories/{category}',[\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
+        Route::put('/categories/{id}',   [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{id}',[\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
 
         // Subscription Plans
         Route::get('/plans',            [\App\Http\Controllers\Admin\SubscriptionPlanController::class, 'index'])->name('plans.index');
@@ -338,6 +341,12 @@ Route::middleware('auth')->group(function () {
         // Support Tickets (Admin)
         Route::get('/support',                          [\App\Http\Controllers\Admin\SupportController::class, 'index'])->name('support.index');
         Route::get('/support/{ticket}',                 [\App\Http\Controllers\Admin\SupportController::class, 'show'])->name('support.show');
+
+        // Trust & Safety Center
+        Route::get('/trust-center',                     [\App\Http\Controllers\Admin\TrustCenterController::class, 'index'])->name('trust-center.index');
+        Route::get('/trust-center/{report}',            [\App\Http\Controllers\Admin\TrustCenterController::class, 'show'])->name('trust-center.show');
+        Route::put('/trust-center/{report}',            [\App\Http\Controllers\Admin\TrustCenterController::class, 'updateStatus'])->name('trust-center.updateStatus');
+        Route::post('/trust-center/sellers/{seller}/strike', [\App\Http\Controllers\Admin\TrustCenterController::class, 'issueStrike'])->name('trust-center.strike');
         Route::post('/support/{ticket}/reply',          [\App\Http\Controllers\Admin\SupportController::class, 'reply'])->name('support.reply');
         Route::patch('/support/{ticket}/status',        [\App\Http\Controllers\Admin\SupportController::class, 'updateStatus'])->name('support.status');
         Route::patch('/support/{ticket}/assign',        [\App\Http\Controllers\Admin\SupportController::class, 'assign'])->name('support.assign');

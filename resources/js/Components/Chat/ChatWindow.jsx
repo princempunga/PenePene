@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import OnlineStatusBadge from './OnlineStatusBadge';
 import MediaPreviewModal from './MediaPreviewModal';
 import ForwardModal from './ForwardModal';
+import ReportSellerModal from '@/Components/ReportSellerModal';
 import { deriveMessageStatus, withDeliveryStatus } from '@/utils/messageStatus';
-import { X, User, ArrowLeft, Pin, MoreVertical, Trash2, Eraser, Archive, ChevronDown } from 'lucide-react';
+import { X, User, ArrowLeft, Pin, MoreVertical, Trash2, Eraser, Archive, ChevronDown, Flag, Star } from 'lucide-react';
 
 const jsonHeaders = { headers: { Accept: 'application/json' } };
 
@@ -34,6 +35,7 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(conversationStatus || 'inquiry');
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [reportModalOpen, setReportModalOpen] = useState(false);
     const statusMenuRef = useRef(null);
     const messagesEndRef = useRef(null);
     const pollingIntervalRef = useRef(null);
@@ -363,6 +365,35 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
+                    {/* Report button - only for buyers */}
+                    {!isSeller && otherUser?.seller_id && (
+                        <button
+                            type="button"
+                            onClick={() => setReportModalOpen(true)}
+                            title="Signaler ce vendeur"
+                            className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        >
+                            <Flag size={16} />
+                        </button>
+                    )}
+                    {/* Leave Review button - only for buyers */}
+                    {!isSeller && (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                if (!['confirmed', 'sold'].includes(currentStatus)) {
+                                    e.preventDefault();
+                                    showToast("La transaction doit être confirmée ou vendue par le vendeur avant de laisser un avis.", "info");
+                                } else {
+                                    router.visit(`/buyer/conversations/${conversationId}/review`);
+                                }
+                            }}
+                            title="Laisser un avis"
+                            className={`p-2 rounded-full transition-colors ${['confirmed', 'sold'].includes(currentStatus) ? 'text-amber-500 hover:text-amber-700 hover:bg-amber-50' : 'text-gray-400 hover:bg-gray-100'}`}
+                        >
+                            <Star size={16} />
+                        </button>
+                    )}
                     <div className="relative" ref={headerMenuRef}>
                         <button
                             type="button"
@@ -510,6 +541,15 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
                     border-left: 0;
                 }
             `}</style>
+            {/* Report Seller Modal */}
+            {!isSeller && (
+                <ReportSellerModal
+                    sellerId={otherUser?.seller_id}
+                    sellerName={otherUser?.business_name || otherUser?.name}
+                    isOpen={reportModalOpen}
+                    onClose={() => setReportModalOpen(false)}
+                />
+            )}
         </div>
     );
 }

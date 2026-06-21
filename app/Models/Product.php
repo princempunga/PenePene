@@ -100,6 +100,7 @@ class Product extends Model
     public function orderItems()  { return $this->hasMany(OrderItem::class); }
     public function favoritedBy() { return $this->hasMany(Favorite::class); }
     public function sponsored()   { return $this->hasMany(SponsoredProduct::class); }
+    public function reviews()     { return $this->hasMany(Review::class); }
 
     public function getRouteKeyName(): string { return 'slug'; }
 }

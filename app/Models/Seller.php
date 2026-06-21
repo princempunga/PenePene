@@ -19,9 +19,10 @@ class Seller extends Model
         'status', 'rejection_reason', 'verified_at', 'verified_by',
         'average_rating', 'total_reviews', 'total_sales', 'total_views',
         'meta_title', 'meta_description',
+        'strikes', 'trust_score', 'response_rate', 'response_time_minutes',
     ];
 
-    protected $appends = ['is_verified'];
+    protected $appends = ['is_verified', 'trust_badges'];
 
     protected function casts(): array
     {
@@ -31,12 +32,49 @@ class Seller extends Model
             'latitude'        => 'decimal:8',
             'longitude'       => 'decimal:8',
             'business_hours'  => 'array',
+            'trust_score'     => 'decimal:2',
+            'response_rate'   => 'decimal:2',
         ];
     }
 
     public function getIsVerifiedAttribute(): bool
     {
         return $this->status === 'verified';
+    }
+
+    public function getTrustBadgesAttribute(): array
+    {
+        $badges = [];
+
+        // New Seller: Account age < 30 days
+        if ($this->created_at && $this->created_at->diffInDays(now()) < 30) {
+            $badges[] = 'New Seller';
+        }
+
+        // Verified Seller
+        if ($this->status === 'verified') {
+            $badges[] = 'Verified Seller';
+        }
+
+        // Premium Seller
+        if ($this->isPremium()) {
+            $badges[] = 'Premium Seller';
+        }
+
+        // Top Rated Seller
+        if ($this->total_reviews >= 100 && $this->average_rating >= 4.8 && $this->strikes == 0) {
+            $badges[] = 'Top Rated Seller';
+        } elseif ($this->total_reviews >= 50 && $this->average_rating >= 4.5 && $this->strikes == 0) {
+            // Trusted Seller
+            $badges[] = 'Trusted Seller';
+        }
+
+        // Recommended Seller (arbitrary criteria: response rate > 95% and fast response time)
+        if ($this->total_reviews >= 10 && $this->average_rating >= 4.0 && $this->response_rate >= 95 && $this->response_time_minutes <= 120 && $this->strikes == 0) {
+            $badges[] = 'Recommended Seller';
+        }
+
+        return $badges;
     }
 
     protected static function booted(): void
@@ -70,6 +108,7 @@ class Seller extends Model
     public function sponsoredProducts() { return $this->hasMany(SponsoredProduct::class); }
     public function commissions()       { return $this->hasMany(Commission::class); }
     public function payouts()           { return $this->hasMany(Payout::class); }
+    public function reports()           { return $this->hasMany(SellerReport::class, 'reported_seller_id'); }
 
     public function activeSubscription()
     {

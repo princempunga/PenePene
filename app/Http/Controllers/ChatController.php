@@ -168,6 +168,7 @@ class ChatController extends Controller
             ? array_merge($conversation->seller->user->toArray(), [
                 'business_name' => $conversation->seller->business_name,
                 'logo'          => $conversation->seller->logo,
+                'seller_id'     => $conversation->seller->id,
             ])
             : $conversation->buyer->toArray();
 

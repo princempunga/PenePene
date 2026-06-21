@@ -25,6 +25,7 @@ export default function AdminLayout({ children, title }) {
         { key: 'Homepage Promotions',               href: '/admin/promotions',      icon: Megaphone,       roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.sponsored_ads',       href: '/admin/advertisements',  icon: Megaphone,       roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.support_desk',        href: '/admin/support',         icon: Ticket,          roles: ['super_admin', 'admin'] },
+        { key: 'Trust & Safety',                    href: '/admin/trust-center',    icon: Shield,          roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.reports',             href: '/admin/reports',         icon: FileDown,        roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.sub_admins',          href: '/admin/admins',          icon: Users,           roles: ['super_admin'] },
         { key: 'layouts.admin.subscription_plans',  href: '/admin/plans',           icon: Shield,          roles: ['super_admin'] },

@@ -167,6 +167,7 @@ class ProductController extends Controller
             return Inertia::render('Products/Show', [
                 'product'           => $productData,
                 'relatedProducts'   => $related,
+                'reviews'           => [],
                 'usingDemo'         => true,
                 'favoriteProductId' => $dbProduct->id,
                 'isFavorited'       => $this->isFavorited($dbProduct->id),
@@ -189,6 +190,13 @@ class ProductController extends Controller
             ->take(4)
             ->get();
 
+        $reviews = $product->reviews()
+            ->with('buyer.user')
+            ->approved()
+            ->latest()
+            ->take(5)
+            ->get();
+
         $productArray = $product->toArray();
         if ($product->category) {
             $productArray['category']['name'] = CatalogTranslations::categoryName(
@@ -209,6 +217,7 @@ class ProductController extends Controller
         return Inertia::render('Products/Show', [
             'product'           => $productArray,
             'relatedProducts'   => $relatedProducts,
+            'reviews'           => $reviews,
             'usingDemo'         => false,
             'favoriteProductId' => $product->id,
             'isFavorited'       => $this->isFavorited($product->id),
