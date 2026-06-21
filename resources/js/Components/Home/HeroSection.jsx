@@ -3,6 +3,7 @@ import { Link, router } from '@inertiajs/react';
 import { Search, MapPin, TrendingUp, Users, ShoppingBag, Star, ShieldCheck, ArrowRight } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import useTranslation from '@/hooks/useTranslation';
+import FeaturedSellersSection from './FeaturedSellersSection';
 
 const DEFAULT_HERO_IMAGE = '/images/demo-products/default.jpg';
 
@@ -69,7 +70,7 @@ function handleHeroImageError(event, product) {
     event.currentTarget.src = DEFAULT_HERO_IMAGE;
 }
 
-export default function HeroSection({ heroProducts = [] }) {
+export default function HeroSection({ heroProducts = [], featuredPromotions = [] }) {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [location, setLocation] = useState('');
@@ -100,9 +101,7 @@ export default function HeroSection({ heroProducts = [] }) {
         { label: t('home.cities_covered'), value: "20+", icon: <MapPin size={18} className="text-amber-300" /> },
     ];
 
-    // Prepare hero card data
-    const card1 = heroProducts[0] || null;
-    const card2 = heroProducts[1] || null;
+
 
     return (
         <div ref={heroRef} className="relative overflow-hidden">
@@ -225,131 +224,8 @@ export default function HeroSection({ heroProducts = [] }) {
                     </motion.div>
 
                     {/* ── Right Side: Dynamic Product Cards ── */}
-                    <div className="hidden lg:block lg:col-span-5 relative h-[460px]">
-                        {/* Card 1 — Main featured card */}
-                        <motion.div
-                            initial={{ y: 60, opacity: 0, rotateY: -5 }}
-                            animate={{ y: 0, opacity: 1, rotateY: 0 }}
-                            transition={{ duration: 0.9, delay: 0.3, ease: 'easeOut' }}
-                            className="hero-float absolute top-0 right-6 w-[272px] group"
-                        >
-                            <div className="bg-white rounded-2xl shadow-2xl shadow-black/30 overflow-hidden border border-white/80 transition-all duration-500 group-hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.4)] group-hover:-translate-y-2">
-                                {/* Image */}
-                                <div className="h-44 relative overflow-hidden rounded-t-2xl bg-gray-900/5">
-                                    <img
-                                        src={getProductImage(card1)}
-                                        alt={card1?.name || t('home.featured_product')}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        onError={(e) => handleHeroImageError(e, card1)}
-                                    />
-                                    {/* Badge overlay */}
-                                    <div className="absolute top-3 left-3 flex gap-2">
-                                        <span className="bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-sm">
-                                            {t('home.hot_deal')}
-                                        </span>
-                                    </div>
-                                    {card1?.category && (
-                                        <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-md">
-                                            {card1.category.name}
-                                        </div>
-                                    )}
-                                </div>
-                                {/* Info */}
-                                <div className="p-4">
-                                    {card1?.category && (
-                                        <div className="text-[11px] text-primary-600 font-bold uppercase tracking-wider mb-1">
-                                            {card1.category.name}
-                                        </div>
-                                    )}
-                                    <h4 className="font-bold text-gray-900 leading-tight mb-2 line-clamp-2 text-sm">
-                                        {card1?.name || t('home.featured_product')}
-                                    </h4>
-                                    <div className="flex justify-between items-end">
-                                        <span className="font-extrabold text-lg text-gray-900">
-                                            {card1 ? formatPrice(card1) : '$0'}
-                                        </span>
-                                        <span className="text-xs text-gray-500 flex items-center gap-1">
-                                            <MapPin size={11} />
-                                            {card1?.city || card1?.seller?.city || 'Local'}
-                                        </span>
-                                    </div>
-                                    {card1?.seller && (
-                                        <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-gray-50 text-xs text-gray-500">
-                                            {card1.seller.is_verified && <ShieldCheck size={12} className="text-green-500" />}
-                                            <span className="truncate">{card1.seller.business_name || t('home.verified_sellers_badge')}</span>
-                                            {card1.average_rating > 0 && (
-                                                <span className="flex items-center gap-0.5 ml-auto text-amber-500">
-                                                    <Star size={11} fill="currentColor" />
-                                                    {card1.average_rating.toFixed(1)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        {/* Card 2 — Secondary floating card */}
-                        <motion.div
-                            initial={{ y: 100, opacity: 0, rotateY: 5 }}
-                            animate={{ y: 0, opacity: 1, rotateY: 0 }}
-                            transition={{ duration: 0.9, delay: 0.6, ease: 'easeOut' }}
-                            className="hero-float-slow absolute bottom-8 left-0 w-[232px] group"
-                        >
-                            <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl shadow-black/20 overflow-hidden border border-white/60 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
-                                {/* Image */}
-                                <div className="h-36 relative overflow-hidden rounded-t-2xl bg-gray-900/5">
-                                    <img
-                                        src={getProductImage(card2)}
-                                        alt={card2?.name || t('home.popular_product')}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        onError={(e) => handleHeroImageError(e, card2)}
-                                    />
-                                    {card2?.sale_price && (
-                                        <div className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
-                                            {t('home.sale')}
-                                        </div>
-                                    )}
-                                </div>
-                                {/* Info */}
-                                <div className="p-3">
-                                    <h4 className="font-bold text-gray-900 text-sm mb-1 truncate">
-                                        {card2?.name || t('home.popular_product')}
-                                    </h4>
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-extrabold text-primary-600">
-                                            {card2 ? formatPrice(card2) : '$0'}
-                                        </span>
-                                        {card2?.city && (
-                                            <span className="text-[10px] text-gray-500 flex items-center gap-0.5">
-                                                <MapPin size={10} />
-                                                {card2.city}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        {/* ── Floating glassmorphism badge ── */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 1.0, duration: 0.5 }}
-                            className="hero-float-slow absolute top-[210px] left-4 z-30"
-                        >
-                            <div className="bg-white/15 backdrop-blur-xl border border-white/25 rounded-xl px-4 py-3 shadow-lg">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-9 h-9 rounded-full bg-green-500/20 flex items-center justify-center">
-                                        <ShieldCheck size={18} className="text-green-400" />
-                                    </div>
-                                    <div>
-                                        <p className="text-white text-xs font-bold">{t('home.verified_sellers_badge')}</p>
-                                        <p className="text-blue-200 text-[10px]">{t('home.trusted_100')}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
+                    <div className="w-full lg:col-span-5 relative h-[380px] sm:h-[460px] mt-12 lg:mt-0 flex justify-center items-center">
+                        <FeaturedSellersSection promotions={featuredPromotions} />
                     </div>
                 </div>
             </motion.div>

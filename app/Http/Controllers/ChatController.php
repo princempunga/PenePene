@@ -7,6 +7,7 @@ use App\Models\ConversationUserState;
 use App\Models\Message;
 use App\Models\MessageReaction;
 use App\Models\PinnedMessage;
+use App\Models\Product;
 use App\Models\StarredMessage;
 use App\Services\DemoSimulationService;
 use Illuminate\Http\Request;
@@ -38,7 +39,10 @@ class ChatController extends Controller
 
     public function startConversation(Request $request)
     {
-        $request->validate(['seller_id' => 'required|exists:sellers,id']);
+        $request->validate([
+            'seller_id'  => 'required|exists:sellers,id',
+            'product_id' => 'nullable|exists:products,id',
+        ]);
 
         $buyer = auth()->user();
         if (! $buyer->isBuyer()) {
@@ -53,6 +57,74 @@ class ChatController extends Controller
         ConversationUserState::forUser($conversation, $buyer->id)->update([
             'deleted_at' => null,
         ]);
+
+        // ── Auto-send product card + greeting if product_id provided ──────────
+        if ($request->product_id) {
+            $product = Product::with(['images', 'category', 'seller'])->find($request->product_id);
+
+            if ($product) {
+                $seller     = $product->seller;
+                $image      = $product->images?->where('is_primary', true)->first()
+                           ?? $product->images?->first();
+                $imageUrl   = $image ? (
+                    str_starts_with($image->image_path, 'images/')
+                        ? '/' . $image->image_path
+                        : '/storage/' . $image->image_path
+                ) : null;
+
+                $receiverId = $seller->user_id;
+
+                $snapshot = [
+                    'product_id'   => $product->id,
+                    'name'         => $product->name,
+                    'price'        => $product->sale_price ?? $product->price,
+                    'currency'     => $product->currency ?? 'CDF',
+                    'category'     => $product->category?->name,
+                    'seller_name'  => $seller?->business_name,
+                    'seller_slug'  => $seller?->slug,
+                    'slug'         => $product->slug,
+                    'image_url'    => $imageUrl,
+                    'product_url'  => '/products/' . $product->slug,
+                ];
+
+                // Check if this exact product was already shared in this conversation
+                $alreadySent = $conversation->messages()
+                    ->where('message_type', 'product')
+                    ->where('product_id', $product->id)
+                    ->exists();
+
+                if (!$alreadySent) {
+                    // 1) Send the Product card message
+                    $productMessage = Message::create([
+                        'conversation_id'  => $conversation->id,
+                        'sender_id'        => $buyer->id,
+                        'receiver_id'      => $receiverId,
+                        'message_type'     => 'product',
+                        'product_id'       => $product->id,
+                        'product_snapshot' => $snapshot,
+                        'body'             => null,
+                    ]);
+
+                    // 2) Send the Greeting message ONLY if it's a completely new conversation
+                    $isNewConversation = $conversation->messages()->count() === 1; // Since we just created the product message, count is 1
+                    if ($isNewConversation) {
+                        Message::create([
+                            'conversation_id' => $conversation->id,
+                            'sender_id'       => $buyer->id,
+                            'receiver_id'     => $receiverId,
+                            'message_type'    => 'text',
+                            'body'            => 'Bonjour, je suis intéressé par ce produit.',
+                        ]);
+                    }
+
+                    $conversation->update(['last_message_at' => now()]);
+
+                    if ($buyer->isBuyer() && DemoSimulationService::isDemoSeller($conversation->seller)) {
+                        DemoSimulationService::scheduleBuyerMessageProgression($productMessage, $conversation);
+                    }
+                }
+            }
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['conversation_id' => $conversation->id]);
@@ -118,11 +190,17 @@ class ChatController extends Controller
 
         $request->validate([
             'body'                 => 'nullable|string|max:5000',
-            'attachment'           => 'nullable|file|mimes:jpg,jpeg,png,webp,mp4,webm,mov|max:51200',
+            'attachment'           => 'nullable|file|max:51200',
             'reply_to_message_id'  => 'nullable|exists:messages,id',
+            'message_type'         => 'nullable|in:text,image,video,file,product',
+            'product_id'           => 'nullable|exists:products,id',
+            'product_snapshot'     => 'nullable|array',
         ]);
 
-        if (! $request->body && ! $request->hasFile('attachment')) {
+        $messageType = $request->input('message_type', 'text');
+
+        // Allow product messages without body or attachment
+        if ($messageType !== 'product' && ! $request->body && ! $request->hasFile('attachment')) {
             return response()->json(['message' => 'Message or attachment is required.'], 422);
         }
 
@@ -144,8 +222,34 @@ class ChatController extends Controller
             'receiver_id'          => $receiverId,
             'reply_to_message_id'  => $request->reply_to_message_id,
             'body'                 => $request->body,
-            'message_type'         => 'text',
+            'message_type'         => $messageType,
         ];
+
+        // Handle product message type
+        if ($messageType === 'product' && $request->product_id) {
+            $product    = Product::with(['images', 'category', 'seller'])->find($request->product_id);
+            $image      = $product?->images?->where('is_primary', true)->first()
+                       ?? $product?->images?->first();
+            $imageUrl   = $image ? (
+                str_starts_with($image->image_path, 'images/')
+                    ? '/' . $image->image_path
+                    : '/storage/' . $image->image_path
+            ) : null;
+
+            $messageData['product_id']       = $product?->id;
+            $messageData['product_snapshot'] = $request->product_snapshot ?? ($product ? [
+                'product_id'  => $product->id,
+                'name'        => $product->name,
+                'price'       => $product->sale_price ?? $product->price,
+                'currency'    => $product->currency ?? 'CDF',
+                'category'    => $product->category?->name,
+                'seller_name' => $product->seller?->business_name,
+                'seller_slug' => $product->seller?->slug,
+                'slug'        => $product->slug,
+                'image_url'   => $imageUrl,
+                'product_url' => '/products/' . $product->slug,
+            ] : null);
+        }
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');

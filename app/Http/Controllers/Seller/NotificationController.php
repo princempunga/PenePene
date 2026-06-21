@@ -37,6 +37,10 @@ class NotificationController extends Controller
 
         $notification->update(['is_read' => true, 'read_at' => now()]);
 
+        if ($notification->action_url) {
+            return redirect($notification->action_url);
+        }
+
         return back();
     }
 

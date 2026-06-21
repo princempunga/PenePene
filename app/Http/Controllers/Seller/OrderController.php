@@ -113,7 +113,16 @@ class OrderController extends Controller
 
         if ($oldStatus !== $newStatus) {
             $order->load('buyer.user');
-            $order->buyer->user->notify(new OrderStatusUpdated($order));
+            
+            $statusLabel = self::STATUS_LABELS_FR[$newStatus] ?? $newStatus;
+            
+            \App\Models\Notification::create([
+                'user_id'    => $order->buyer->user->id,
+                'type'       => 'order',
+                'title'      => 'Mise à jour de votre commande',
+                'body'       => "Votre commande {$order->order_number} est maintenant {$statusLabel}.",
+                'action_url' => "/buyer/orders/{$order->id}"
+            ]);
         }
 
         return back()->with('success', 'Le statut de la commande a été mis à jour avec succès.');

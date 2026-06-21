@@ -4,6 +4,7 @@ import {
     Check, CheckCheck, File, Download, Clock, AlertCircle, RefreshCw, ChevronDown, Star,
 } from 'lucide-react';
 import MessageActionsMenu from './MessageActionsMenu';
+import ProductCardBubble from './ProductCardBubble';
 
 const LONG_PRESS_MS = 500;
 
@@ -134,7 +135,11 @@ export default function MessageBubble({
                         </p>
                     ) : (
                         <div className="relative">
-                            {attachSrc && (
+                            {message.message_type === 'product' && message.product_snapshot && (
+                                <ProductCardBubble product={message.product_snapshot} isOwnMessage={isOwnMessage} />
+                            )}
+
+                            {attachSrc && message.message_type !== 'product' && (
                                 <div className={`mb-1 rounded-xl overflow-hidden relative
                                     ${message.message_type === 'file' ? 'w-full' : 'max-w-[280px]'}`}>
                                     {message.message_type === 'image' && (
@@ -180,7 +185,7 @@ export default function MessageBubble({
                                     {message.status === 'sending' && message.message_type !== 'file' && (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white rounded-xl">
                                             <div className="w-7 h-7 border-2 border-white/30 border-t-white rounded-full animate-spin mb-1" />
-                                            <span className="text-[10px] font-bold">{message.upload_progress || 0}%</span>
+                                            <span className="text-[10px] font-bold">{message.upload_progress !== undefined ? message.upload_progress : 0}%</span>
                                         </div>
                                     )}
                                 </div>

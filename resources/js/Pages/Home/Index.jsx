@@ -21,11 +21,12 @@ export default function Index({
     sponsoredProducts, 
     nearbyProducts, 
     trendingProducts, 
-    flashDeals 
+    flashDeals,
+    featuredPromotions
 }) {
     return (
         <AppLayout>
-            <HeroSection heroProducts={heroProducts} />
+            <HeroSection heroProducts={heroProducts} featuredPromotions={featuredPromotions} />
             <TrustIndicators />
             <PopularCategories categories={popularCategories} />
             <FlashDeals products={flashDeals} />

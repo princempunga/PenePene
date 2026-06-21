@@ -148,7 +148,9 @@ export default function ChatWindow({ conversationId, currentUserId, otherUser, o
                     status: deriveMessageStatus(saved, currentUserId),
                 };
             }));
-        } catch {
+        } catch (error) {
+            console.error('Upload failed:', error.response?.data || error.message);
+            showToast(error.response?.data?.message || 'Failed to send message', 'error');
             setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, status: 'failed' } : m));
         }
     };

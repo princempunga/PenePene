@@ -8,6 +8,7 @@ class Message extends Model
 {
     protected $fillable = [
         'conversation_id', 'sender_id', 'receiver_id', 'reply_to_message_id',
+        'product_id', 'product_snapshot',
         'message_type', 'body',
         'attachment_path', 'attachment_mime', 'attachment_size',
         'is_read', 'read_at', 'delivered_at', 'is_edited', 'edited_at', 'is_deleted', 'deleted_at',
@@ -24,11 +25,13 @@ class Message extends Model
             'edited_at'   => 'datetime',
             'is_deleted'  => 'boolean',
             'deleted_at'  => 'datetime',
-            'deleted_for' => 'array',
+            'deleted_for'       => 'array',
+            'product_snapshot'  => 'array',
         ];
     }
 
     public function conversation() { return $this->belongsTo(Conversation::class); }
+    public function product()       { return $this->belongsTo(Product::class)->withTrashed(); }
     public function sender()       { return $this->belongsTo(User::class, 'sender_id'); }
     public function receiver()     { return $this->belongsTo(User::class, 'receiver_id'); }
     public function replyTo()      { return $this->belongsTo(Message::class, 'reply_to_message_id'); }

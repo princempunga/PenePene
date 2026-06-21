@@ -182,7 +182,7 @@ export default function Show({
         try {
             const res = await axios.post(
                 '/chat/conversations/start',
-                { seller_id: seller.id },
+                { seller_id: seller.id, product_id: product?.id },
                 { headers: { Accept: 'application/json' } },
             );
 
@@ -206,7 +206,7 @@ export default function Show({
         } finally {
             setStartingChat(false);
         }
-    }, [auth?.user, seller?.id]);
+    }, [auth?.user?.id, auth?.user?.role, seller?.id]);
 
     useEffect(() => {
         if (autoChatStarted.current) return;

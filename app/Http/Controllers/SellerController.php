@@ -10,7 +10,8 @@ class SellerController extends Controller
 {
     public function publicStore(Seller $seller)
     {
-        if ($seller->status !== 'verified') {
+        // Only block explicitly rejected or banned sellers
+        if (in_array($seller->status, ['rejected', 'banned'])) {
             abort(404);
         }
 
