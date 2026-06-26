@@ -35,16 +35,16 @@ function QuickAction({ href, icon: Icon, label, description, color }) {
     return (
         <Link
             href={href}
-            className="group bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:border-amber-300 hover:shadow-md transition-all flex items-start gap-3"
+            className="group bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:border-primary-300 hover:shadow-md transition-all flex items-start gap-3"
         >
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
                 <Icon size={18} />
             </div>
             <div className="min-w-0 flex-1">
-                <p className="font-semibold text-gray-900 group-hover:text-amber-700 transition-colors">{label}</p>
+                <p className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">{label}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{description}</p>
             </div>
-            <ArrowRight size={16} className="text-gray-300 group-hover:text-amber-500 shrink-0 mt-1 transition-colors" />
+            <ArrowRight size={16} className="text-gray-300 group-hover:text-primary-500 shrink-0 mt-1 transition-colors" />
         </Link>
     );
 }
@@ -58,7 +58,7 @@ function EmptyState({ icon: Icon, title, description, actionLabel, actionHref })
             {actionLabel && actionHref && (
                 <Link
                     href={actionHref}
-                    className="inline-flex items-center gap-2 bg-amber-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+                    className="inline-flex items-center gap-2 bg-primary-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-primary-700 transition-colors"
                 >
                     {actionLabel}
                 </Link>
@@ -81,13 +81,13 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
             <SellerLayout title="Tableau de bord">
 
                 {/* Bannière de bienvenue */}
-                <div className="mb-8 bg-gradient-to-r from-amber-500 to-amber-700 rounded-2xl p-6 text-white shadow-lg">
-                    <p className="text-amber-100 text-sm font-medium mb-1">Bon retour,</p>
+                <div className="mb-8 bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-lg">
+                    <p className="text-primary-100 text-sm font-medium mb-1">Bon retour,</p>
                     <h2 className="text-2xl font-bold">{store?.business_name || auth.user?.name} 👋</h2>
-                    <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-amber-100">
+                    <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-primary-100">
                         {stats.averageRating > 0 && (
                             <span className="flex items-center gap-1.5">
-                                <Star size={14} className="text-amber-200 fill-amber-200" />
+                                <Star size={14} className="text-primary-200 fill-primary-200" />
                                 {stats.averageRating.toFixed(1)} note moyenne
                             </span>
                         )}
@@ -199,7 +199,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                             icon={Plus}
                             label="Ajouter un produit"
                             description="Mettre un nouvel article en ligne"
-                            color="bg-amber-50 text-amber-600"
+                            color="bg-primary-50 text-primary-600"
                         />
                         <QuickAction
                             href="/seller/orders"
@@ -230,7 +230,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                     <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="font-bold text-gray-900">Chiffre d&apos;affaires (7 derniers jours)</h2>
-                            <Link href="/seller/reports" className="text-sm text-amber-600 font-medium hover:text-amber-700">
+                            <Link href="/seller/reports" className="text-sm text-primary-600 font-medium hover:text-primary-700">
                                 Rapport complet →
                             </Link>
                         </div>
@@ -246,7 +246,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                             </div>
                                             <div className="flex-1 w-full max-w-[48px] flex flex-col justify-end">
                                                 <div
-                                                    className="w-full bg-amber-500 rounded-t-md transition-all duration-500"
+                                                    className="w-full bg-primary-500 rounded-t-md transition-all duration-500"
                                                     style={{ height: `${Math.max(heightPct, data.amount > 0 ? 4 : 0)}%`, minHeight: data.amount > 0 ? '4px' : '0' }}
                                                 />
                                             </div>
@@ -277,7 +277,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                 </div>
                                 <Link
                                     href="/seller/orders?status=pending"
-                                    className="text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 shrink-0"
+                                    className="text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-100 shrink-0"
                                 >
                                     Voir
                                 </Link>
@@ -290,7 +290,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                 </div>
                                 <Link
                                     href="/seller/products"
-                                    className="text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 shrink-0"
+                                    className="text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-100 shrink-0"
                                 >
                                     Gérer
                                 </Link>
@@ -303,7 +303,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                 </div>
                                 <Link
                                     href="/seller/products"
-                                    className="text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 shrink-0"
+                                    className="text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-100 shrink-0"
                                 >
                                     Examiner
                                 </Link>
@@ -317,7 +317,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center">
                             <h2 className="font-bold text-gray-900">Commandes récentes</h2>
-                            <Link href="/seller/orders" className="text-sm text-amber-600 font-medium hover:text-amber-700">
+                            <Link href="/seller/orders" className="text-sm text-primary-600 font-medium hover:text-primary-700">
                                 Tout voir →
                             </Link>
                         </div>
@@ -346,7 +346,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                             </span>
                                             <Link
                                                 href={`/seller/orders/${order.id}`}
-                                                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+                                                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                                             >
                                                 Voir
                                             </Link>
@@ -413,7 +413,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                 <div className="mt-6">
                     <Link
                         href="/seller/profile"
-                        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-amber-600 transition-colors"
+                        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary-600 transition-colors"
                     >
                         <User size={14} />
                         Gérer le profil et les paramètres de la boutique

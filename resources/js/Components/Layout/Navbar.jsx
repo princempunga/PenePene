@@ -67,7 +67,7 @@ export default function Navbar({ onMenuClick }) {
     const isAdmin = auth?.user?.role === 'admin' || auth?.user?.role === 'super_admin';
 
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-white border-b border-gray-100'}`}>
+        <header className={`hidden md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-white border-b border-gray-100'}`}>
             {/* Top Bar */}
             <div className="hidden lg:block bg-gray-900 text-gray-300 text-xs py-1.5">
                 <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">

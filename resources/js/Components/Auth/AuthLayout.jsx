@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2, Shield, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Logo from '@/Components/Brand/Logo';
 
 const accents = {
@@ -34,7 +35,12 @@ export default function AuthLayout({
     return (
         <div className="min-h-screen bg-slate-50 flex overflow-x-hidden">
             {/* Brand panel */}
-            <div className={`hidden lg:flex lg:w-[44%] xl:w-[42%] bg-gradient-to-br ${theme.panel} text-white relative overflow-hidden p-10 xl:p-14 flex-col justify-between`}>
+            <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className={`hidden lg:flex lg:w-[44%] xl:w-[42%] bg-gradient-to-br ${theme.panel} text-white relative overflow-hidden p-10 xl:p-14 flex-col justify-between`}
+            >
                 <div className={`absolute -top-24 -right-24 w-96 h-96 rounded-full ${theme.glow} blur-3xl`} />
                 <div className={`absolute bottom-0 left-0 w-80 h-80 rounded-full ${theme.glow} blur-3xl`} />
                 <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
@@ -73,11 +79,16 @@ export default function AuthLayout({
                     Trusted by thousands of buyers and sellers across the region.
                     <div className="mt-2 opacity-70">© {new Date().getFullYear()} PenePene Marketplace</div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Form panel */}
             <div className="flex-1 flex items-center justify-center p-5 sm:p-8 lg:p-10 xl:p-14 min-h-screen overflow-y-auto">
-                <div className={`w-full ${maxWidth}`}>
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
+                    className={`w-full ${maxWidth}`}
+                >
                     <div className="bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(15,23,42,0.12)] border border-gray-100/80 p-7 sm:p-9 lg:p-10">
                         <div className="text-center mb-8">
                             <div className="flex justify-center mb-6">
@@ -91,7 +102,7 @@ export default function AuthLayout({
                     </div>
 
                     {footer && <div className="mt-6">{footer}</div>}
-                </div>
+                </motion.div>
             </div>
         </div>
     );
