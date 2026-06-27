@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { blockAdminDemoAction } from '@/lib/adminDemo';
 import { Plus, Edit, Trash2, ListTree, ChevronDown, ChevronRight, X } from 'lucide-react';
 
 // Recursive category tree item
@@ -53,7 +52,7 @@ const CategoryItem = ({ category, onEdit, onDelete, level = 0 }) => {
 };
 
 export default function CategoriesIndex({ categories, allCategories }) {
-    const { flash, errors, usingDemoData } = usePage().props;
+    const { flash, errors } = usePage().props;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
 
@@ -65,7 +64,6 @@ export default function CategoriesIndex({ categories, allCategories }) {
     });
 
     const openModal = (category = null) => {
-        if (blockAdminDemoAction(usingDemoData)) return;
         clearErrors();
         if (category) {
             setEditingCategory(category);
@@ -94,7 +92,6 @@ export default function CategoriesIndex({ categories, allCategories }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (blockAdminDemoAction(usingDemoData)) return;
         if (editingCategory) {
             put(`/admin/categories/${editingCategory.id}`, {
                 onSuccess: () => closeModal(),
@@ -107,7 +104,6 @@ export default function CategoriesIndex({ categories, allCategories }) {
     };
 
     const handleDelete = (id) => {
-        if (blockAdminDemoAction(usingDemoData)) return;
         if (confirm('Are you sure you want to delete this category? Note: Categories with assigned products cannot be deleted.')) {
             destroy(`/admin/categories/${id}`);
         }
@@ -116,7 +112,7 @@ export default function CategoriesIndex({ categories, allCategories }) {
     return (
         <>
             <Head title="Categories" />
-            <AdminLayout subtitle="Marketplace" title="Catégories">
+            <AdminLayout title="Product Categories">
                 
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-gray-500">Manage the product taxonomy tree.</p>

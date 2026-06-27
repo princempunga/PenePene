@@ -3,16 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Notification;
-use App\Models\SponsoredProduct;
-use App\Services\AdminDemoDataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\SponsoredProduct;
+use App\Models\Notification;
 
 class AdvertisementController extends Controller
 {
-    use SimulatesData;
-
     public function index(Request $request)
     {
         $status = $request->get('status', 'pending');
@@ -24,16 +21,9 @@ class AdvertisementController extends Controller
 
         $advertisements = $query->latest()->paginate(20)->withQueryString();
 
-        [$advertisements, $usingDemo] = $this->demoPageOr(
-            $advertisements,
-            AdminDemoDataService::advertisements($status),
-            20
-        );
-
         return Inertia::render('Admin/Advertisements/Index', [
             'advertisements' => $advertisements,
             'filters'        => ['status' => $status],
-            'usingDemoData'    => $usingDemo,
         ]);
     }
 

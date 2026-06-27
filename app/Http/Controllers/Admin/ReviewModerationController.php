@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Review;
-use App\Services\AdminDemoDataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Review;
 
 class ReviewModerationController extends Controller
 {
-    use SimulatesData;
-
     public function index(Request $request)
     {
         $reviews = Review::with(['buyer.user', 'seller', 'order'])
@@ -19,22 +16,14 @@ class ReviewModerationController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        [$reviews, $usingDemo] = $this->demoPageOr(
-            $reviews,
-            AdminDemoDataService::reviews(),
-            20
-        );
-
-        return Inertia::render('Admin/Reviews/Index', [
-            'reviews'       => $reviews,
-            'usingDemoData' => $usingDemo,
-        ]);
+        return Inertia::render('Admin/Reviews/Index', ['reviews' => $reviews]);
     }
 
     public function destroy(Review $review)
     {
         $review->delete();
 
+        // Recalculate seller stats
         $seller = $review->seller;
         $avg = Review::where('seller_id', $seller->id)->avg('rating') ?? 0;
         $count = Review::where('seller_id', $seller->id)->count();

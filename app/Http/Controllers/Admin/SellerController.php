@@ -3,16 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Notification;
-use App\Models\Seller;
-use App\Services\AdminDemoDataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Seller;
+use App\Models\Notification;
 
 class SellerController extends Controller
 {
-    use SimulatesData;
-
     public function index(Request $request)
     {
         $query = Seller::with('user')->latest();
@@ -23,23 +20,16 @@ class SellerController extends Controller
 
         $sellers = $query->paginate(15)->withQueryString();
 
-        [$sellers, $usingDemo] = $this->demoPageOr(
-            $sellers,
-            AdminDemoDataService::sellers($request->status),
-            15
-        );
-
         return Inertia::render('Admin/Sellers/Index', [
-            'sellers'       => $sellers,
-            'filters'       => $request->only('status'),
-            'usingDemoData' => $usingDemo,
+            'sellers' => $sellers,
+            'filters' => $request->only('status'),
         ]);
     }
 
     public function show(Seller $seller)
     {
-        $seller->load(['user', 'plan']);
-
+        $seller->load(['user', 'activeSubscription.plan']);
+        
         return Inertia::render('Admin/Sellers/Show', [
             'seller' => $seller,
         ]);

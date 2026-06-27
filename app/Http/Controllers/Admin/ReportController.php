@@ -2,47 +2,33 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\AdminReportExport;
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Seller;
-use App\Models\SponsoredProduct;
-use App\Models\SupportTicket;
-use App\Services\AdminDemoDataService;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Order;
+use App\Models\Seller;
+use App\Models\Product;
+use App\Models\SupportTicket;
+use App\Models\SponsoredProduct;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AdminReportExport;
+use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    use SimulatesData;
-
     public function index()
     {
         $stats = [
-            'total_gmv'      => Order::whereIn('status', ['delivered'])->sum('total'),
-            'total_orders'   => Order::count(),
-            'total_sellers'  => Seller::where('status', 'verified')->count(),
-            'total_products' => Product::where('status', 'active')->count(),
-            'open_tickets'   => SupportTicket::where('status', 'open')->count(),
-            'pending_ads'    => SponsoredProduct::where('status', 'pending')->count(),
+            'total_gmv'       => Order::whereIn('status', ['delivered'])->sum('total'),
+            'total_orders'    => Order::count(),
+            'total_sellers'   => Seller::where('status', 'verified')->count(),
+            'total_products'  => Product::where('status', 'active')->count(),
+            'open_tickets'    => SupportTicket::where('status', 'open')->count(),
+            'pending_ads'     => SponsoredProduct::where('status', 'pending')->count(),
         ];
 
-        $usingDemo = $this->adminDemoEnabled()
-            && ($stats['total_orders'] ?? 0) === 0
-            && ($stats['total_gmv'] ?? 0) == 0;
-
-        if ($usingDemo) {
-            $stats = AdminDemoDataService::reportStats();
-        }
-
-        return Inertia::render('Admin/Reports/Index', [
-            'stats'         => $stats,
-            'usingDemoData' => $usingDemo,
-        ]);
+        return Inertia::render('Admin/Reports/Index', ['stats' => $stats]);
     }
 
     public function generate(Request $request)
@@ -64,7 +50,6 @@ class ReportController extends Controller
             $pdf = Pdf::loadView("reports.admin.{$request->type}", [
                 'data' => $data, 'from' => $from, 'to' => $to,
             ]);
-
             return $pdf->download("{$filename}.pdf");
         }
 
@@ -72,6 +57,7 @@ class ReportController extends Controller
             return Excel::download(new AdminReportExport($data, $request->type), "{$filename}.xlsx");
         }
 
+        // CSV fallback
         $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"{$filename}.csv\""];
         $callback = function () use ($data, $request) {
             $handle = fopen('php://output', 'w');
@@ -93,7 +79,6 @@ class ReportController extends Controller
             }
             fclose($handle);
         };
-
         return response()->stream($callback, 200, $headers);
     }
 

@@ -3,30 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\SubscriptionPlan;
-use App\Services\AdminDemoDataService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Models\SubscriptionPlan;
+use Illuminate\Support\Str;
 
 class SubscriptionPlanController extends Controller
 {
-    use SimulatesData;
-
     public function index()
     {
         $plans = SubscriptionPlan::orderBy('sort_order')->get();
 
-        $usingDemo = $this->adminDemoEnabled() && $plans->isEmpty();
-
-        if ($usingDemo) {
-            $plans = AdminDemoDataService::subscriptionPlans();
-        }
-
-        return Inertia::render('Admin/SubscriptionPlans/Index', [
-            'plans'         => $plans,
-            'usingDemoData' => $usingDemo,
-        ]);
+        return Inertia::render('Admin/SubscriptionPlans/Index', ['plans' => $plans]);
     }
 
     public function store(Request $request)

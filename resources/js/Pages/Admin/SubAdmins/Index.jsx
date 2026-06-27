@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { blockAdminDemoAction } from '@/lib/adminDemo';
 import { Plus, Trash2, Shield, X, ShieldAlert } from 'lucide-react';
 
 export default function SubAdminsIndex({ admins }) {
-    const { flash, errors, usingDemoData } = usePage().props;
+    const { flash, errors } = usePage().props;
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { data, setData, post, delete: destroy, processing, reset, clearErrors } = useForm({
@@ -17,7 +16,6 @@ export default function SubAdminsIndex({ admins }) {
     });
 
     const openModal = () => {
-        if (blockAdminDemoAction(usingDemoData)) return;
         clearErrors();
         reset();
         setIsModalOpen(true);
@@ -30,14 +28,12 @@ export default function SubAdminsIndex({ admins }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (blockAdminDemoAction(usingDemoData)) return;
         post('/admin/admins', {
             onSuccess: () => closeModal(),
         });
     };
 
     const handleDelete = (id) => {
-        if (blockAdminDemoAction(usingDemoData)) return;
         if (confirm('Are you sure you want to remove this administrator? They will lose all access.')) {
             destroy(`/admin/admins/${id}`);
         }
@@ -46,7 +42,7 @@ export default function SubAdminsIndex({ admins }) {
     return (
         <>
             <Head title="Manage Sub-Admins" />
-            <AdminLayout subtitle="Système" title="Sous-admins">
+            <AdminLayout title="Sub-Admin Management">
                 
                 <div className="mb-6 bg-slate-800 text-slate-100 rounded-xl p-5 flex items-start gap-4">
                     <ShieldAlert size={24} className="text-amber-400 shrink-0 mt-1" />

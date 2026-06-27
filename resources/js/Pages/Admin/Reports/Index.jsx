@@ -1,13 +1,9 @@
 import React from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import AdminStatCard from '@/Components/Admin/AdminStatCard';
-import AdminCard from '@/Components/Admin/AdminCard';
-import { blockAdminDemoAction } from '@/lib/adminDemo';
 import { FileDown, DollarSign, ShoppingCart, Users, Package } from 'lucide-react';
 
 export default function AdminReportsIndex({ stats }) {
-    const { usingDemoData } = usePage().props;
     const { data, setData } = useForm({
         type: 'sales',
         format: 'pdf',
@@ -17,7 +13,7 @@ export default function AdminReportsIndex({ stats }) {
 
     const submit = (e) => {
         e.preventDefault();
-        if (blockAdminDemoAction(usingDemoData, 'Export indisponible en mode démo.')) return;
+        
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/admin/reports/generate';
@@ -45,17 +41,54 @@ export default function AdminReportsIndex({ stats }) {
     };
 
     return (
-        <AdminLayout subtitle="Opérations" title="Rapports">
-            <Head title="Rapports" />
+        <AdminLayout>
+            <Head title="Platform Reports" />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <AdminStatCard icon={DollarSign} label="GMV total (TZS)" value={parseFloat(stats.total_gmv || 0).toLocaleString('fr-FR')} tone="emerald" />
-                <AdminStatCard icon={ShoppingCart} label="Commandes totales" value={stats.total_orders} tone="blue" />
-                <AdminStatCard icon={Users} label="Vendeurs vérifiés" value={stats.total_sellers} tone="navy" />
-                <AdminStatCard icon={Package} label="Produits actifs" value={stats.total_products} tone="gold" />
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">Platform Reports</h1>
+                <p className="text-gray-500 mt-1">Export detailed insights across the entire marketplace.</p>
             </div>
 
-            <AdminCard title="Exporter les données" icon={FileDown}>
+            {/* Quick Stats Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mb-3">
+                        <DollarSign size={20} />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{parseFloat(stats.total_gmv || 0).toLocaleString()}</p>
+                    <p className="text-sm text-gray-500 font-medium mt-1">Total GMV (TZS)</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-3">
+                        <ShoppingCart size={20} />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_orders}</p>
+                    <p className="text-sm text-gray-500 font-medium mt-1">Total Orders</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mb-3">
+                        <Users size={20} />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_sellers}</p>
+                    <p className="text-sm text-gray-500 font-medium mt-1">Verified Sellers</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center mb-3">
+                        <Package size={20} />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_products}</p>
+                    <p className="text-sm text-gray-500 font-medium mt-1">Active Products</p>
+                </div>
+            </div>
+
+            {/* Report Generator */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden max-w-4xl">
+                <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center shrink-0">
+                        <FileDown size={20} />
+                    </div>
+                    <h2 className="text-lg font-bold text-gray-900">Export Platform Data</h2>
+                </div>
                 <div className="p-6">
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -114,15 +147,18 @@ export default function AdminReportsIndex({ stats }) {
                             </div>
                         </div>
 
-                        <div className="flex justify-end border-t border-slate-100 pt-6">
-                            <button type="submit" className="admin-btn-primary">
+                        <div className="flex justify-end pt-6 border-t border-gray-100">
+                            <button
+                                type="submit"
+                                className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-primary-700 transition shadow-md shadow-primary-600/20"
+                            >
                                 <FileDown size={18} />
-                                Générer le téléchargement
+                                Generate Download
                             </button>
                         </div>
                     </form>
                 </div>
-            </AdminCard>
+            </div>
         </AdminLayout>
     );
 }
