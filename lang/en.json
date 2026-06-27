@@ -68,6 +68,14 @@
         "remember_me": "Remember me for 30 days",
         "signing_in": "Signing in...",
         "secure_note": "Protected by secure encryption · Verified marketplace",
+        "demo_access": "Instant demo access",
+        "demo_buyer": "Buyer",
+        "demo_seller": "Seller",
+        "demo_admin": "Admin",
+        "demo_hint": "One-click login · password: password",
+        "trust_verified": "Verified sellers",
+        "trust_delivery": "Local delivery",
+        "trust_fast": "Smooth experience",
         "register": "Register",
         "register_title": "Create an account",
         "register_subtitle": "Join PenePene and start buying or selling with confidence.",
@@ -272,6 +280,10 @@
         "messages": "Messages",
         "my_reviews": "My Reviews",
         "support_tickets": "Support Tickets",
+        "my_proposals": "My projects",
+        "my_projects": "My projects",
+        "new_project": "New project",
+        "project_archives": "Public archives",
         "notifications": "Notifications",
         "profile": "Profile",
         "sign_out": "Sign Out",
@@ -522,6 +534,16 @@
         "status_cancelled": "Cancelled"
     },
     "layouts": {
+        "common": {
+            "open_menu": "Open menu",
+            "close_menu": "Close menu"
+        },
+        "demo": {
+            "section": "Demo mode",
+            "seller_panel": "Seller demo panel",
+            "admin_panel": "Admin demo panel",
+            "buyer_panel": "Buyer demo panel"
+        },
         "admin": {
             "dashboard": "Dashboard",
             "products": "Products",
@@ -537,7 +559,14 @@
             "settings": "Settings",
             "sign_out": "Sign Out",
             "admin_badge": "Admin",
-            "view_site": "← View Site"
+            "view_site": "← View Site",
+            "section_overview": "Overview",
+            "section_marketplace": "Marketplace",
+            "section_operations": "Operations",
+            "section_system": "System",
+            "console_label": "Admin Console",
+            "role_admin": "Administrator",
+            "role_super_admin": "Super Admin"
         },
         "seller": {
             "dashboard": "Dashboard",
@@ -556,8 +585,32 @@
             "sign_out": "Sign Out",
             "seller_portal": "Seller Portal",
             "view_site": "View Site",
-            "seller_badge": "Seller"
+            "seller_badge": "Seller",
+            "section_main": "Main",
+            "section_business": "Business",
+            "section_account": "Account",
+            "status_verified": "Verified",
+            "status_pending": "Pending",
+            "status_rejected": "Rejected",
+            "status_suspended": "Suspended"
+        },
+        "buyer": {
+            "buyer_badge": "Buyer",
+            "view_site": "← Shop",
+            "sign_out": "Sign Out",
+            "section_shopping": "Shopping",
+            "section_civic": "Citizen projects",
+            "section_account": "My account"
         }
+    },
+    "government": {
+        "console_label": "RDC Governance",
+        "section_overview": "Project platform",
+        "dashboard": "Dashboard",
+        "proposals": "Citizen proposals",
+        "expert_review": "Expert panel",
+        "tutelage": "Tutelage service",
+        "all_projects": "Public archives"
     },
     "auth_ext": {
         "forgot_title": "Forgot your password?",
@@ -648,6 +701,7 @@
     "demo_panel": {
         "title": "Demo Seller Panel",
         "dev_only": "Testing mode — development only",
+        "description": "Simulate buyer replies and order management in real time.",
         "mark_online": "Mark Online",
         "mark_offline": "Mark Offline",
         "messages": "Buyer Messages",
@@ -657,6 +711,59 @@
         "reply_placeholder": "Reply as demo seller...",
         "orders": "Demo Orders",
         "no_orders": "No orders yet."
+    },
+    "demo_admin": {
+        "title": "Demo Admin Panel",
+        "subtitle": "Supervision console",
+        "dev_only": "Testing mode — development only",
+        "description": "Pilot the platform with simulated actions and a live overview.",
+        "stat_users": "Users",
+        "stat_sellers": "Verified sellers",
+        "stat_pending": "Pending",
+        "stat_orders": "Orders",
+        "stat_revenue": "GMV revenue",
+        "pending_sellers": "Pending sellers",
+        "view_all": "View all",
+        "no_pending": "No pending sellers.",
+        "simulation": "Simulation",
+        "maintenance_hint": "Toggle maintenance mode to test the experience.",
+        "maintenance_on": "Maintenance enabled",
+        "maintenance_off": "Maintenance disabled",
+        "recent_orders": "Recent orders",
+        "col_order": "Order",
+        "col_buyer": "Buyer",
+        "col_seller": "Seller",
+        "col_total": "Total",
+        "col_status": "Status",
+        "no_orders": "No orders yet.",
+        "quick_access": "Quick access",
+        "fake_data": "Fake data",
+        "stat_conversion": "Conversion rate",
+        "sales_chart": "Sales trend",
+        "sales_chart_sub": "Last 7 days · simulation",
+        "traffic_chart": "Traffic sources",
+        "traffic_chart_sub": "Visitor breakdown",
+        "review": "Review",
+        "active_today": "Active today",
+        "top_products": "Top products",
+        "activity": "Recent activity",
+        "col_product": "Product",
+        "regions": "Orders by region"
+    },
+    "demo_buyer": {
+        "title": "Demo Buyer Panel",
+        "subtitle": "Personal space",
+        "dev_only": "Testing mode — development only",
+        "description": "Explore the premium buyer experience",
+        "stat_orders": "Orders",
+        "stat_wishlist": "Wishlist",
+        "stat_pending": "Pending",
+        "stat_delivered": "Delivered",
+        "recent_orders": "Recent orders",
+        "view_all": "View all",
+        "no_orders": "No orders yet.",
+        "browse": "Browse catalog",
+        "quick_access": "Quick access"
     },
     "filters": {
         "price_range": "Price Range",

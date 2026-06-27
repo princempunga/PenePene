@@ -20,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role' => EnsureRole::class,
+            'role'   => EnsureRole::class,
+            'portal' => \App\Http\Middleware\EnsurePortalAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

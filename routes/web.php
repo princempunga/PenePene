@@ -20,7 +20,15 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Generic /dashboard redirect — sends users to their role-specific dashboard
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    if (!$user) return redirect()->route('login');
+    if (! $user) {
+        return redirect()->route('login');
+    }
+
+    $portal = session('active_portal') ?? app(\App\Services\PortalAccessService::class)->detectPortalForUser($user);
+    if ($portal) {
+        return redirect()->to(app(\App\Services\PortalAccessService::class)->redirectFor($portal));
+    }
+
     return match ($user->role) {
         'super_admin', 'admin' => redirect()->route('admin.dashboard'),
         'seller'               => redirect()->route('seller.dashboard'),
@@ -58,12 +66,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/simulate', [CheckoutSimulationController::class, 'show'])->name('checkout.simulate');
     Route::post('/checkout/simulate/pay', [CheckoutSimulationController::class, 'pay'])->name('checkout.simulate.pay');
 
-    Route::prefix('demo')->name('demo.')->group(function () {
+        Route::prefix('demo')->name('demo.')->group(function () {
         Route::get('/seller-panel', [DemoSellerPanelController::class, 'index'])->name('seller-panel');
         Route::post('/seller-panel/online', [DemoSellerPanelController::class, 'toggleOnline'])->name('seller-panel.online');
         Route::get('/seller-panel/conversations/{conversation}/messages', [DemoSellerPanelController::class, 'messages'])->name('seller-panel.messages');
         Route::post('/seller-panel/conversations/{conversation}/reply', [DemoSellerPanelController::class, 'reply'])->name('seller-panel.reply');
         Route::patch('/seller-panel/orders/{order}/status', [DemoSellerPanelController::class, 'updateOrderStatus'])->name('seller-panel.order-status');
+
+        Route::get('/admin-panel', [\App\Http\Controllers\DemoAdminPanelController::class, 'index'])->name('admin-panel');
+        Route::post('/admin-panel/maintenance', [\App\Http\Controllers\DemoAdminPanelController::class, 'toggleMaintenance'])->name('admin-panel.maintenance');
+
+        Route::get('/buyer-panel', [\App\Http\Controllers\DemoBuyerPanelController::class, 'index'])->name('buyer-panel');
     });
 });
 
@@ -94,6 +107,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/buyer/register',     [\App\Http\Controllers\Auth\RegisterController::class, 'store']);
     Route::get('/login',               [\App\Http\Controllers\Auth\LoginController::class, 'create'])->name('login');
     Route::post('/login',              [\App\Http\Controllers\Auth\LoginController::class, 'store']);
+    Route::post('/login/demo',         [\App\Http\Controllers\Auth\LoginController::class, 'demoLogin'])->name('login.demo');
     Route::get('/forgot-password',     [\App\Http\Controllers\Auth\PasswordController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password',    [\App\Http\Controllers\Auth\PasswordController::class, 'sendResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\PasswordController::class, 'resetForm'])->name('password.reset');
@@ -153,6 +167,64 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/orders/{order}/confirmation', [\App\Http\Controllers\Buyer\OrderController::class, 'confirmation'])
         ->name('orders.confirmation');
+
+    // ─── Administrative divisions API ─────────────────────────────────────────
+    Route::get('/api/divisions', [\App\Http\Controllers\AdministrativeDivisionController::class, 'index'])->name('divisions.index');
+    Route::get('/api/divisions/{division}/path', [\App\Http\Controllers\AdministrativeDivisionController::class, 'path'])->name('divisions.path');
+
+    // ─── Citizen Projects ───────────────────────────────────────────────────────
+    Route::middleware('portal')->prefix('projects')->name('projects.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProjectController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\ProjectController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\ProjectController::class, 'store'])->name('store');
+        Route::get('/archive', [\App\Http\Controllers\ProjectArchiveController::class, 'index'])->name('archive');
+        Route::get('/archive/{project}', [\App\Http\Controllers\ProjectArchiveController::class, 'show'])->name('archive.show');
+        Route::post('/archive/{project}/copy', [\App\Http\Controllers\ProjectArchiveController::class, 'copy'])->name('archive.copy');
+        Route::get('/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('show');
+        Route::get('/{project}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
+        Route::put('/{project}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('update');
+        Route::post('/{project}/submit-experts', [\App\Http\Controllers\ProjectController::class, 'submitExperts'])->name('submit-experts');
+        Route::get('/{project}/execution', [\App\Http\Controllers\ProjectController::class, 'executionDashboard'])->name('execution');
+        Route::post('/{project}/final-report', [\App\Http\Controllers\ProjectController::class, 'submitFinalReport'])->name('final-report');
+        Route::post('/{project}/tasks/{task}/report', [\App\Http\Controllers\ProjectTaskController::class, 'submitReport'])->name('tasks.report');
+        Route::post('/{project}/tasks/{task}/delay', [\App\Http\Controllers\ProjectTaskController::class, 'reportDelay'])->name('tasks.delay');
+    });
+
+    Route::redirect('/proposals', '/projects');
+    Route::redirect('/proposals/create', '/projects/create');
+
+    // ─── Citizen Proposals (legacy) ─────────────────────────────────────────────
+    Route::prefix('proposals')->name('proposals.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProposalController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\ProposalController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\ProposalController::class, 'store'])->name('store');
+        Route::get('/{proposal}', [\App\Http\Controllers\ProposalController::class, 'show'])->name('show');
+        Route::post('/{proposal}/submit', [\App\Http\Controllers\ProposalController::class, 'submit'])->name('submit');
+        Route::post('/{proposal}/reply', [\App\Http\Controllers\ProposalController::class, 'reply'])->name('reply');
+    });
+
+    // ─── Government Routes ──────────────────────────────────────────────────────
+    Route::middleware(['role:government', 'portal'])->prefix('government')->name('government.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Government\ProposalController::class, 'dashboard'])->name('dashboard');
+        Route::get('/proposals', [\App\Http\Controllers\Government\ProposalController::class, 'index'])->name('proposals.index');
+        Route::get('/proposals/{proposal}', [\App\Http\Controllers\Government\ProposalController::class, 'show'])->name('proposals.show');
+        Route::post('/proposals/{proposal}/take-charge', [\App\Http\Controllers\Government\ProposalController::class, 'takeCharge'])->name('proposals.take-charge');
+        Route::patch('/proposals/{proposal}/status', [\App\Http\Controllers\Government\ProposalController::class, 'updateStatus'])->name('proposals.status');
+        Route::post('/proposals/{proposal}/comment', [\App\Http\Controllers\Government\ProposalController::class, 'comment'])->name('proposals.comment');
+
+        // Expert group — project review
+        Route::get('/expert/projects', [\App\Http\Controllers\Government\ExpertProjectController::class, 'index'])->name('expert.index');
+        Route::get('/expert/projects/{project}', [\App\Http\Controllers\Government\ExpertProjectController::class, 'show'])->name('expert.show');
+        Route::post('/expert/projects/{project}/review', [\App\Http\Controllers\Government\ExpertProjectController::class, 'review'])->name('expert.review');
+
+        // Tutelage service
+        Route::get('/tutelage/projects', [\App\Http\Controllers\Government\TutelageProjectController::class, 'index'])->name('tutelage.index');
+        Route::get('/tutelage/projects/{project}', [\App\Http\Controllers\Government\TutelageProjectController::class, 'show'])->name('tutelage.show');
+        Route::post('/tutelage/projects/{project}/submit', [\App\Http\Controllers\Government\TutelageProjectController::class, 'submitTutelage'])->name('tutelage.submit');
+        Route::post('/tutelage/projects/{project}/documents', [\App\Http\Controllers\Government\TutelageProjectController::class, 'uploadDocument'])->name('tutelage.documents');
+        Route::post('/tutelage/projects/{project}/execution', [\App\Http\Controllers\Government\TutelageProjectController::class, 'startExecution'])->name('tutelage.execution');
+        Route::patch('/tutelage/projects/{project}/disbursement', [\App\Http\Controllers\Government\TutelageProjectController::class, 'updateDisbursement'])->name('tutelage.disbursement');
+    });
 
     // Favorites / wishlist (buyer)
     Route::middleware('role:buyer')->group(function () {

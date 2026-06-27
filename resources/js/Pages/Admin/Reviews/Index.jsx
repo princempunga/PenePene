@@ -1,90 +1,74 @@
 import React from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import AdminAlert from '@/Components/Admin/AdminAlert';
+import AdminCard from '@/Components/Admin/AdminCard';
+import AdminPagination from '@/Components/Admin/AdminPagination';
+import { blockAdminDemoAction } from '@/lib/adminDemo';
 import { MessageSquare, Trash2, Star } from 'lucide-react';
 
 export default function ReviewsIndex({ reviews }) {
-    const { flash } = usePage().props;
+    const { flash, usingDemoData } = usePage().props;
     const { delete: destroy } = useForm();
 
     const deleteReview = (id) => {
-        if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+        if (blockAdminDemoAction(usingDemoData)) return;
+        if (confirm('Supprimer cet avis ? Action irréversible.')) {
             destroy(`/admin/reviews/${id}`);
         }
     };
 
     return (
-        <AdminLayout>
-            <Head title="Review Moderation" />
+        <AdminLayout subtitle="Marketplace" title="Modération des avis">
+            <Head title="Avis" />
 
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Review Moderation</h1>
-                <p className="text-gray-500 mt-1">Monitor and moderate buyer reviews across the platform.</p>
-            </div>
+            {flash?.success && <AdminAlert>{flash.success}</AdminAlert>}
 
-            {flash?.success && (
-                <div className="mb-6 bg-green-50 text-green-800 p-4 rounded-lg text-sm border border-green-200">
-                    {flash.success}
-                </div>
-            )}
-
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="divide-y divide-gray-100">
-                    {reviews.data.length > 0 ? reviews.data.map(review => (
-                        <div key={review.id} className="p-6 hover:bg-gray-50 transition flex gap-4">
-                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+            <AdminCard title="Avis clients" icon={MessageSquare} noPadding>
+                <div className="divide-y divide-slate-100">
+                    {reviews.data.length > 0 ? reviews.data.map((review) => (
+                        <div key={review.id} className="flex gap-4 p-5 transition hover:bg-slate-50/80 sm:p-6">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#002E5D]/8 text-sm font-bold text-[#002E5D]">
                                 {review.buyer?.user?.name?.charAt(0) || 'U'}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0 flex-1">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
-                                        <h3 className="font-semibold text-gray-900">{review.buyer?.user?.name || 'Unknown Buyer'}</h3>
-                                        <div className="flex items-center gap-1 mt-1 text-amber-400">
+                                        <h3 className="font-semibold text-[#002E5D]">{review.buyer?.user?.name || 'Acheteur inconnu'}</h3>
+                                        <div className="mt-1 flex items-center gap-1 text-amber-400">
                                             {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={14} className={i < review.rating ? 'fill-current' : 'text-gray-300'} />
+                                                <Star key={i} size={14} className={i < review.rating ? 'fill-current' : 'text-slate-300'} />
                                             ))}
-                                            <span className="text-gray-500 text-xs ml-2">to {review.seller?.business_name}</span>
+                                            <span className="ml-2 text-xs text-slate-500">→ {review.seller?.business_name}</span>
                                         </div>
                                     </div>
                                     <button
+                                        type="button"
                                         onClick={() => deleteReview(review.id)}
-                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition"
-                                        title="Delete Review"
+                                        className="rounded-lg p-2 text-red-500 transition hover:bg-red-50 hover:text-red-700"
+                                        title="Supprimer"
                                     >
                                         <Trash2 size={18} />
                                     </button>
                                 </div>
-                                <div className="mt-3 text-gray-700 text-sm whitespace-pre-wrap">
-                                    {review.comment || <span className="italic text-gray-400">No comment provided</span>}
-                                </div>
-                                <div className="mt-3 text-xs text-gray-400">
-                                    Posted on {new Date(review.created_at).toLocaleString()} · Order #{review.order?.order_number}
-                                </div>
+                                <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">
+                                    {review.comment || <span className="italic text-slate-400">Aucun commentaire</span>}
+                                </p>
+                                <p className="mt-3 text-xs text-slate-400">
+                                    {new Date(review.created_at).toLocaleString('fr-FR')} · Commande #{review.order?.order_number}
+                                </p>
                             </div>
                         </div>
                     )) : (
-                        <div className="p-12 text-center text-gray-500">
-                            <MessageSquare size={40} className="mx-auto mb-3 opacity-20" />
-                            <p>No reviews found.</p>
+                        <div className="p-12 text-center text-slate-500">
+                            <MessageSquare size={40} className="mx-auto mb-3 text-slate-300" />
+                            <p>Aucun avis trouvé.</p>
                         </div>
                     )}
                 </div>
-            </div>
+            </AdminCard>
 
-            {/* Pagination */}
-            <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-                <div>Showing {reviews.from || 0} to {reviews.to || 0} of {reviews.total} results</div>
-                <div className="flex gap-1">
-                    {reviews.links.map((link, i) => (
-                        <Link
-                            key={i}
-                            href={link.url || '#'}
-                            className={`px-3 py-1 rounded border ${link.active ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                        />
-                    ))}
-                </div>
-            </div>
+            <AdminPagination paginator={reviews} />
         </AdminLayout>
     );
 }

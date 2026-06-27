@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import { blockAdminDemoAction } from '@/lib/adminDemo';
 import { Settings, Save } from 'lucide-react';
 
 export default function SettingsIndex({ settings }) {
-    const { flash } = usePage().props;
+    const { flash, usingDemoData } = usePage().props;
     
     // settings is a grouped collection from Laravel
     // Convert it to a flat form state
@@ -25,24 +26,22 @@ export default function SettingsIndex({ settings }) {
 
     const submit = (e) => {
         e.preventDefault();
+        if (blockAdminDemoAction(usingDemoData)) return;
         post('/admin/settings');
     };
 
     return (
-        <AdminLayout>
-            <Head title="Platform Settings" />
+        <AdminLayout subtitle="Système" title="Paramètres">
+            <Head title="Paramètres" />
 
             <div className="mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Platform Settings</h1>
-                    <p className="text-gray-500 mt-1">Manage global platform configurations and variables.</p>
-                </div>
+                <div />
                 <button
                     onClick={submit}
                     disabled={processing}
-                    className="flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-primary-700 transition shadow-md shadow-primary-600/20 disabled:opacity-50"
+                    className="admin-btn-primary"
                 >
-                    <Save size={18} /> Save Settings
+                    <Save size={18} /> Enregistrer
                 </button>
             </div>
 

@@ -1,17 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  /* Palette logo PenePene */
+  --color-primary-50: #eef4fb;
+  --color-primary-100: #d9e8f7;
+  --color-primary-200: #b3d1ef;
+  --color-primary-300: #7eb3e3;
+  --color-primary-400: #4a94d9;
+  --color-primary-500: #0066cc;
+  --color-primary-600: #0056b3;
+  --color-primary-700: #004080;
+  --color-primary-800: #003366;
+  --color-primary-900: #002e5d;
+  --color-primary-950: #001a33;
+  --color-brand-navy: #002e5d;
+  --color-brand-blue: #0056b3;
+  --color-brand-royal: #0066cc;
+  --color-brand-gold: #ffb300;
+  --color-brand-amber: #f9a825;
 }
 
 @layer base {
@@ -55,4 +61,338 @@
     background-size: 200% auto;
     animation: heroShimmer 3s linear infinite;
   }
+}
+
+/* Dashboard fluidity */
+@keyframes dashboardPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dashboardFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@layer utilities {
+  .dashboard-page-enter {
+    animation: dashboardPageEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .dashboard-content > * {
+    animation: dashboardFadeIn 0.35s ease-out both;
+  }
+
+  .dashboard-content > *:nth-child(1) { animation-delay: 0.03s; }
+  .dashboard-content > *:nth-child(2) { animation-delay: 0.06s; }
+  .dashboard-content > *:nth-child(3) { animation-delay: 0.09s; }
+  .dashboard-content > *:nth-child(4) { animation-delay: 0.12s; }
+
+  .dashboard-card {
+    @apply bg-white rounded-2xl border border-gray-200/80 shadow-sm transition-all duration-300 ease-out;
+  }
+
+  .dashboard-card:hover {
+    @apply shadow-md border-gray-200;
+  }
+
+  .dashboard-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+  }
+
+  .dashboard-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .dashboard-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.45);
+    border-radius: 999px;
+  }
+
+  .dashboard-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-dark .dashboard-scrollbar {
+    scrollbar-color: rgba(255, 179, 0, 0.25) transparent;
+  }
+
+  .sidebar-dark .dashboard-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 179, 0, 0.22);
+  }
+}
+
+/* ── Admin console premium ── */
+@keyframes adminPageEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-shell {
+  --admin-navy: #002e5d;
+  --admin-blue: #0056b3;
+  --admin-gold: #ffb300;
+}
+
+.admin-header {
+  background: linear-gradient(90deg, rgba(0, 26, 51, 0.97) 0%, rgba(0, 46, 93, 0.95) 55%, rgba(0, 51, 102, 0.95) 100%);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 rgba(255, 179, 0, 0.12), 0 8px 32px -12px rgba(0, 26, 51, 0.45);
+}
+
+.admin-sidebar {
+  background:
+    linear-gradient(180deg, #001428 0%, #002e5d 42%, #001a33 100%);
+  box-shadow: 4px 0 32px -8px rgba(0, 26, 51, 0.35);
+}
+
+.admin-sidebar-light {
+  background: #ffffff;
+}
+
+.admin-sidebar-light .admin-sidebar-nav {
+  scrollbar-color: rgba(0, 86, 179, 0.2) transparent;
+}
+
+.admin-sidebar-light .admin-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(0, 86, 179, 0.2);
+}
+
+.admin-sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.035) 1px, transparent 0);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.admin-sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255, 179, 0, 0.25), transparent);
+  pointer-events: none;
+}
+
+.admin-main {
+  background-color: #e8edf5;
+  background-image: radial-gradient(circle at 20% 10%, rgba(0, 86, 179, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(255, 179, 0, 0.04) 0%, transparent 40%);
+}
+
+.admin-page-enter {
+  animation: adminPageEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-page-enter > * {
+  animation: adminPageEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-page-enter > *:nth-child(1) { animation-delay: 0.04s; }
+.admin-page-enter > *:nth-child(2) { animation-delay: 0.08s; }
+.admin-page-enter > *:nth-child(3) { animation-delay: 0.12s; }
+
+.admin-page-header-accent {
+  height: 2px;
+  background: linear-gradient(90deg, #002e5d 0%, #0056b3 35%, #ffb300 70%, transparent 100%);
+  border-radius: 999px;
+}
+
+.admin-sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 179, 0, 0.22) transparent;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 179, 0, 0.22);
+  border-radius: 999px;
+}
+
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.625rem;
+  background: linear-gradient(135deg, #002e5d 0%, #0056b3 100%);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow: 0 8px 20px -8px rgba(0, 46, 93, 0.45);
+  transition: all 0.25s ease;
+}
+
+.admin-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -8px rgba(0, 86, 179, 0.5);
+}
+
+.admin-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.625rem;
+  border: 1px solid rgba(0, 46, 93, 0.12);
+  background: white;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #002e5d;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-ghost:hover {
+  border-color: rgba(0, 86, 179, 0.25);
+  background: rgba(0, 86, 179, 0.04);
+}
+
+.admin-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+  background-color: rgba(0, 46, 93, 0.025);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-page-enter,
+  .dashboard-content > *,
+  .auth-page-enter,
+  .auth-orb,
+  .admin-page-enter,
+  .admin-page-enter > * {
+    animation: none !important;
+  }
+}
+
+/* ── Auth premium (logo: bleu #1E3A8A + ambre #F59E0B) ── */
+@keyframes authOrbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(12px, -18px) scale(1.05); }
+}
+
+@keyframes authPageEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Auth — couleurs logo: navy #002E5D, royal #0056B3, gold #FFB300 ── */
+@keyframes authOrbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10px, -14px) scale(1.04); }
+}
+
+@keyframes authPageEnter {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-brand-panel {
+  background: linear-gradient(155deg, #002e5d 0%, #003366 45%, #004080 100%);
+}
+
+.auth-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  animation: authOrbFloat 9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.auth-orb-gold {
+  width: 260px;
+  height: 260px;
+  background: rgba(255, 179, 0, 0.22);
+  top: 8%;
+  right: -40px;
+}
+
+.auth-orb-blue {
+  width: 340px;
+  height: 340px;
+  background: rgba(0, 102, 204, 0.18);
+  bottom: 5%;
+  left: -100px;
+  animation-delay: -4s;
+}
+
+.auth-grid-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+.auth-form-card {
+  animation: authPageEnter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-page-enter {
+  animation: authPageEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-submit-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #003366 0%, #0056b3 55%, #0066cc 100%);
+  box-shadow: 0 14px 36px -12px rgba(0, 46, 93, 0.55);
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px -10px rgba(0, 86, 179, 0.5);
+}
+
+.auth-submit-btn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+/* ── Gouvernement RDC (drapeau : #007FFF, #F7D618, #CE1126) ── */
+.rdc-gov-panel {
+  background: linear-gradient(155deg, #003d80 0%, #007fff 42%, #005bb5 100%);
+}
+
+.rdc-flag-stripe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.rdc-flag-stripe-top { top: 0; background: #007fff; }
+.rdc-flag-stripe-mid { top: 6px; background: #f7d618; }
+.rdc-flag-stripe-bot { top: 12px; background: #ce1126; }
+
+.rdc-submit-btn {
+  color: #fff;
+  background: linear-gradient(135deg, #007fff 0%, #005bb5 55%, #003d80 100%);
+  box-shadow: 0 14px 36px -12px rgba(0, 127, 255, 0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.rdc-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px -10px rgba(0, 127, 255, 0.5);
+}
+
+.rdc-admin-header {
+  background: linear-gradient(90deg, #002e5d 0%, #003d80 50%, #007fff 100%);
+}
+
+.rdc-form-card {
+  animation: authPageEnter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

@@ -280,4 +280,198 @@ class DemoSimulationService
             })
             ->all();
     }
+
+    /** @return array<int, array{label: string, href: string, description: string}> */
+    public static function buyerQuickLinks(): array
+    {
+        return [
+            ['label' => 'Catalogue', 'href' => '/products', 'description' => 'Parcourir tous les produits'],
+            ['label' => 'Panier', 'href' => '/cart', 'description' => 'Voir votre panier actuel'],
+            ['label' => 'Favoris', 'href' => '/buyer/wishlist', 'description' => 'Produits sauvegardés'],
+            ['label' => 'Messages', 'href' => '/buyer/messages', 'description' => 'Discuter avec les vendeurs'],
+            ['label' => 'Paiement démo', 'href' => '/checkout/simulate', 'description' => 'Simuler un checkout'],
+            ['label' => 'Support', 'href' => '/buyer/support', 'description' => 'Ouvrir un ticket'],
+        ];
+    }
+
+    /** @return array<int, array{label: string, href: string, description: string}> */
+    public static function adminQuickLinks(): array
+    {
+        return [
+            ['label' => 'Vendeurs', 'href' => '/admin/sellers', 'description' => 'Gérer les inscriptions et vérifications'],
+            ['label' => 'Commandes', 'href' => '/admin/orders', 'description' => 'Suivre les commandes plateforme'],
+            ['label' => 'Produits', 'href' => '/admin/products', 'description' => 'Modération du catalogue'],
+            ['label' => 'Support', 'href' => '/admin/support', 'description' => 'Tickets et assistance'],
+            ['label' => 'Rapports', 'href' => '/admin/reports', 'description' => 'Analyses et exports'],
+            ['label' => 'Paramètres', 'href' => '/admin/settings', 'description' => 'Configuration globale'],
+        ];
+    }
+
+    /** Données fictives pour le panneau admin démo (aucune requête DB). */
+    public static function demoAdminPanelData(): array
+    {
+        return [
+            'stats' => [
+                'totalUsers'      => 12847,
+                'totalSellers'    => 892,
+                'pendingSellers'  => 14,
+                'totalOrders'     => 3456,
+                'totalRevenue'    => 284750000,
+                'conversionRate'  => 4.82,
+                'activeToday'     => 2341,
+                'growthRevenue'   => '+12.4%',
+                'growthUsers'     => '+8.1%',
+            ],
+            'salesChart' => [
+                'labels' => ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                'values' => [4200000, 5100000, 4800000, 6200000, 5900000, 7100000, 6800000],
+            ],
+            'trafficSources' => [
+                ['label' => 'Organique', 'value' => 42, 'color' => '#0056B3'],
+                ['label' => 'Réseaux sociaux', 'value' => 28, 'color' => '#FFB300'],
+                ['label' => 'Email', 'value' => 18, 'color' => '#10B981'],
+                ['label' => 'Direct', 'value' => 12, 'color' => '#8B5CF6'],
+            ],
+            'pendingSellers' => [
+                [
+                    'id'            => 'demo-s-1',
+                    'business_name' => 'Kivu Electronics Hub',
+                    'owner_name'    => 'Patrick Mbayo',
+                    'city'          => 'Goma',
+                    'country'       => 'RDC',
+                    'category'      => 'Électronique',
+                    'avatar'        => 'https://i.pravatar.cc/120?img=12',
+                    'cover'         => '/images/demo-products/tv.jpg',
+                    'created_at'    => now()->subHours(6)->toISOString(),
+                ],
+                [
+                    'id'            => 'demo-s-2',
+                    'business_name' => 'Dar es Salaam Fashion',
+                    'owner_name'    => 'Amina Hassan',
+                    'city'          => 'Dar es Salaam',
+                    'country'       => 'Tanzanie',
+                    'category'      => 'Mode',
+                    'avatar'        => 'https://i.pravatar.cc/120?img=47',
+                    'cover'         => '/images/demo-products/tecno.jpg',
+                    'created_at'    => now()->subHours(14)->toISOString(),
+                ],
+                [
+                    'id'            => 'demo-s-3',
+                    'business_name' => 'Nairobi Fresh Market',
+                    'owner_name'    => 'James Ochieng',
+                    'city'          => 'Nairobi',
+                    'country'       => 'Kenya',
+                    'category'      => 'Alimentation',
+                    'avatar'        => 'https://i.pravatar.cc/120?img=33',
+                    'cover'         => '/images/demo-products/tv.jpg',
+                    'created_at'    => now()->subDay()->toISOString(),
+                ],
+                [
+                    'id'            => 'demo-s-4',
+                    'business_name' => 'Lubumbashi Auto Parts',
+                    'owner_name'    => 'Grace Mutombo',
+                    'city'          => 'Lubumbashi',
+                    'country'       => 'RDC',
+                    'category'      => 'Automobile',
+                    'avatar'        => 'https://i.pravatar.cc/120?img=25',
+                    'cover'         => '/images/demo-products/tecno.jpg',
+                    'created_at'    => now()->subDays(2)->toISOString(),
+                ],
+            ],
+            'recentOrders' => [
+                [
+                    'id'           => 'demo-o-1',
+                    'order_number' => 'PP-2026-88421',
+                    'buyer_name'   => 'Fatou Diallo',
+                    'buyer_avatar' => 'https://i.pravatar.cc/80?img=5',
+                    'seller_name'  => 'Kivu Electronics Hub',
+                    'product_name' => 'Smart TV Samsung 55"',
+                    'product_image'=> '/images/demo-products/tv.jpg',
+                    'total'        => 1850000,
+                    'status'       => 'delivered',
+                    'created_at'   => now()->subMinutes(12)->toISOString(),
+                ],
+                [
+                    'id'           => 'demo-o-2',
+                    'order_number' => 'PP-2026-88420',
+                    'buyer_name'   => 'Jean Mukendi',
+                    'buyer_avatar' => 'https://i.pravatar.cc/80?img=15',
+                    'seller_name'  => 'Dar es Salaam Fashion',
+                    'product_name' => 'Tecno Spark 20 Pro',
+                    'product_image'=> '/images/demo-products/tecno.jpg',
+                    'total'        => 420000,
+                    'status'       => 'confirmed',
+                    'created_at'   => now()->subHours(2)->toISOString(),
+                ],
+                [
+                    'id'           => 'demo-o-3',
+                    'order_number' => 'PP-2026-88419',
+                    'buyer_name'   => 'Paul Mwangi',
+                    'buyer_avatar' => 'https://i.pravatar.cc/80?img=8',
+                    'seller_name'  => 'Nairobi Fresh Market',
+                    'product_name' => 'Panier bio premium',
+                    'product_image'=> '/images/demo-products/tv.jpg',
+                    'total'        => 95000,
+                    'status'       => 'shipped',
+                    'created_at'   => now()->subHours(5)->toISOString(),
+                ],
+                [
+                    'id'           => 'demo-o-4',
+                    'order_number' => 'PP-2026-88418',
+                    'buyer_name'   => 'Marie Kabila',
+                    'buyer_avatar' => 'https://i.pravatar.cc/80?img=32',
+                    'seller_name'  => 'Lubumbashi Auto Parts',
+                    'product_name' => 'Kit freinage complet',
+                    'product_image'=> '/images/demo-products/tecno.jpg',
+                    'total'        => 340000,
+                    'status'       => 'pending',
+                    'created_at'   => now()->subHours(8)->toISOString(),
+                ],
+                [
+                    'id'           => 'demo-o-5',
+                    'order_number' => 'PP-2026-88417',
+                    'buyer_name'   => 'David Okonkwo',
+                    'buyer_avatar' => 'https://i.pravatar.cc/80?img=51',
+                    'seller_name'  => 'Kivu Electronics Hub',
+                    'product_name' => 'Smart TV Samsung 55"',
+                    'product_image'=> '/images/demo-products/tv.jpg',
+                    'total'        => 1850000,
+                    'status'       => 'delivered',
+                    'created_at'   => now()->subDay()->toISOString(),
+                ],
+                [
+                    'id'           => 'demo-o-6',
+                    'order_number' => 'PP-2026-88416',
+                    'buyer_name'   => 'Sarah Nsimba',
+                    'buyer_avatar' => 'https://i.pravatar.cc/80?img=44',
+                    'seller_name'  => 'Dar es Salaam Fashion',
+                    'product_name' => 'Tecno Spark 20 Pro',
+                    'product_image'=> '/images/demo-products/tecno.jpg',
+                    'total'        => 420000,
+                    'status'       => 'cancelled',
+                    'created_at'   => now()->subDays(2)->toISOString(),
+                ],
+            ],
+            'topProducts' => [
+                ['name' => 'Smart TV Samsung 55"', 'image' => '/images/demo-products/tv.jpg', 'sales' => 142, 'revenue' => 262700000, 'seller' => 'Kivu Electronics Hub'],
+                ['name' => 'Tecno Spark 20 Pro', 'image' => '/images/demo-products/tecno.jpg', 'sales' => 98, 'revenue' => 41160000, 'seller' => 'Dar es Salaam Fashion'],
+                ['name' => 'Kit freinage complet', 'image' => '/images/demo-products/tecno.jpg', 'sales' => 76, 'revenue' => 25840000, 'seller' => 'Lubumbashi Auto Parts'],
+                ['name' => 'Panier bio premium', 'image' => '/images/demo-products/tv.jpg', 'sales' => 54, 'revenue' => 5130000, 'seller' => 'Nairobi Fresh Market'],
+            ],
+            'activityFeed' => [
+                ['type' => 'seller', 'text' => 'Nouvelle inscription : Kivu Electronics Hub', 'time' => 'Il y a 6 min', 'avatar' => 'https://i.pravatar.cc/80?img=12'],
+                ['type' => 'order', 'text' => 'Commande PP-2026-88421 livrée à Fatou Diallo', 'time' => 'Il y a 12 min', 'avatar' => 'https://i.pravatar.cc/80?img=5'],
+                ['type' => 'review', 'text' => 'Nouvel avis 5★ sur Tecno Spark 20 Pro', 'time' => 'Il y a 34 min', 'avatar' => 'https://i.pravatar.cc/80?img=47'],
+                ['type' => 'payment', 'text' => 'Paiement TZS 1 850 000 confirmé', 'time' => 'Il y a 1 h', 'avatar' => null],
+                ['type' => 'support', 'text' => 'Ticket #1042 résolu par le support', 'time' => 'Il y a 2 h', 'avatar' => 'https://i.pravatar.cc/80?img=33'],
+            ],
+            'regions' => [
+                ['name' => 'Kinshasa', 'orders' => 842, 'pct' => 34],
+                ['name' => 'Dar es Salaam', 'orders' => 621, 'pct' => 25],
+                ['name' => 'Nairobi', 'orders' => 498, 'pct' => 20],
+                ['name' => 'Lubumbashi', 'orders' => 312, 'pct' => 13],
+                ['name' => 'Autres', 'orders' => 183, 'pct' => 8],
+            ],
+        ];
+    }
 }

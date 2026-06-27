@@ -3,20 +3,30 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\User;
+use App\Services\AdminDemoDataService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
 
 class SubAdminController extends Controller
 {
+    use SimulatesData;
+
     public function index()
     {
         $admins = User::where('role', 'admin')->latest()->get();
 
+        $usingDemo = $this->adminDemoEnabled() && $admins->isEmpty();
+
+        if ($usingDemo) {
+            $admins = AdminDemoDataService::subAdmins();
+        }
+
         return Inertia::render('Admin/SubAdmins/Index', [
-            'admins' => $admins,
+            'admins'        => $admins,
+            'usingDemoData' => $usingDemo,
         ]);
     }
 

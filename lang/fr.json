@@ -68,6 +68,14 @@
         "remember_me": "Se souvenir de moi pendant 30 jours",
         "signing_in": "Connexion en cours...",
         "secure_note": "Protégé par chiffrement sécurisé · Marketplace vérifiée",
+        "demo_access": "Accès démo instantané",
+        "demo_buyer": "Acheteur",
+        "demo_seller": "Vendeur",
+        "demo_admin": "Admin",
+        "demo_hint": "Connexion en 1 clic · mot de passe : password",
+        "trust_verified": "Vendeurs vérifiés",
+        "trust_delivery": "Livraison locale",
+        "trust_fast": "Expérience fluide",
         "register": "S'inscrire",
         "register_title": "Créer un compte",
         "register_subtitle": "Rejoignez PenePene et commencez à acheter ou vendre en toute confiance.",
@@ -272,6 +280,10 @@
         "messages": "Messages",
         "my_reviews": "Mes avis",
         "support_tickets": "Tickets support",
+        "my_proposals": "Mes projets",
+        "my_projects": "Mes projets",
+        "new_project": "Nouveau projet",
+        "project_archives": "Archives publiques",
         "notifications": "Notifications",
         "profile": "Profil",
         "sign_out": "Déconnexion",
@@ -522,6 +534,16 @@
         "status_cancelled": "Annulée"
     },
     "layouts": {
+        "common": {
+            "open_menu": "Ouvrir le menu",
+            "close_menu": "Fermer le menu"
+        },
+        "demo": {
+            "section": "Mode démo",
+            "seller_panel": "Panneau vendeur démo",
+            "admin_panel": "Panneau admin démo",
+            "buyer_panel": "Panneau acheteur démo"
+        },
         "admin": {
             "dashboard": "Tableau de bord",
             "products": "Produits",
@@ -537,7 +559,14 @@
             "settings": "Paramètres",
             "sign_out": "Déconnexion",
             "admin_badge": "Admin",
-            "view_site": "← Voir le site"
+            "view_site": "← Voir le site",
+            "section_overview": "Vue d'ensemble",
+            "section_marketplace": "Marketplace",
+            "section_operations": "Opérations",
+            "section_system": "Système",
+            "console_label": "Console Admin",
+            "role_admin": "Administrateur",
+            "role_super_admin": "Super Admin"
         },
         "seller": {
             "dashboard": "Tableau de bord",
@@ -556,8 +585,32 @@
             "sign_out": "Déconnexion",
             "seller_portal": "Portail vendeur",
             "view_site": "Voir le site",
-            "seller_badge": "Vendeur"
+            "seller_badge": "Vendeur",
+            "section_main": "Principal",
+            "section_business": "Activité",
+            "section_account": "Compte",
+            "status_verified": "Vérifié",
+            "status_pending": "En attente",
+            "status_rejected": "Rejeté",
+            "status_suspended": "Suspendu"
+        },
+        "buyer": {
+            "buyer_badge": "Acheteur",
+            "view_site": "← Boutique",
+            "sign_out": "Déconnexion",
+            "section_shopping": "Achats",
+            "section_civic": "Projets citoyens",
+            "section_account": "Mon compte"
         }
+    },
+    "government": {
+        "console_label": "Gouvernance RDC",
+        "section_overview": "Plateforme projets",
+        "dashboard": "Tableau de bord",
+        "proposals": "Propositions citoyennes",
+        "expert_review": "Groupe d'experts",
+        "tutelage": "Service de tutelle",
+        "all_projects": "Archives publiques"
     },
     "auth_ext": {
         "forgot_title": "Mot de passe oublié ?",
@@ -648,6 +701,7 @@
     "demo_panel": {
         "title": "Panneau vendeur démo",
         "dev_only": "Mode test — développement uniquement",
+        "description": "Simulez les réponses acheteurs et la gestion des commandes en temps réel.",
         "mark_online": "Marquer en ligne",
         "mark_offline": "Marquer hors ligne",
         "messages": "Messages acheteurs",
@@ -657,6 +711,59 @@
         "reply_placeholder": "Répondre en tant que vendeur démo...",
         "orders": "Commandes démo",
         "no_orders": "Aucune commande pour le moment."
+    },
+    "demo_admin": {
+        "title": "Panneau admin démo",
+        "subtitle": "Console de supervision",
+        "dev_only": "Mode test — développement uniquement",
+        "description": "Pilotez la plateforme avec des actions simulées et un aperçu temps réel.",
+        "stat_users": "Utilisateurs",
+        "stat_sellers": "Vendeurs vérifiés",
+        "stat_pending": "En attente",
+        "stat_orders": "Commandes",
+        "stat_revenue": "Revenu GMV",
+        "pending_sellers": "Vendeurs en attente",
+        "view_all": "Tout voir",
+        "no_pending": "Aucun vendeur en attente.",
+        "simulation": "Simulation",
+        "maintenance_hint": "Active ou désactive le mode maintenance pour tester l'expérience.",
+        "maintenance_on": "Maintenance activée",
+        "maintenance_off": "Maintenance désactivée",
+        "recent_orders": "Commandes récentes",
+        "col_order": "Commande",
+        "col_buyer": "Acheteur",
+        "col_seller": "Vendeur",
+        "col_total": "Total",
+        "col_status": "Statut",
+        "no_orders": "Aucune commande pour le moment.",
+        "quick_access": "Accès rapide",
+        "fake_data": "Données fictives",
+        "stat_conversion": "Taux de conversion",
+        "sales_chart": "Évolution des ventes",
+        "sales_chart_sub": "7 derniers jours · simulation",
+        "traffic_chart": "Sources de trafic",
+        "traffic_chart_sub": "Répartition des visiteurs",
+        "review": "Examiner",
+        "active_today": "Actifs aujourd'hui",
+        "top_products": "Produits populaires",
+        "activity": "Activité récente",
+        "col_product": "Produit",
+        "regions": "Commandes par région"
+    },
+    "demo_buyer": {
+        "title": "Panneau acheteur démo",
+        "subtitle": "Espace personnel",
+        "dev_only": "Mode test — développement uniquement",
+        "description": "Explorez l'expérience acheteur premium",
+        "stat_orders": "Commandes",
+        "stat_wishlist": "Favoris",
+        "stat_pending": "En attente",
+        "stat_delivered": "Livrées",
+        "recent_orders": "Commandes récentes",
+        "view_all": "Tout voir",
+        "no_orders": "Aucune commande pour le moment.",
+        "browse": "Parcourir le catalogue",
+        "quick_access": "Accès rapide"
     },
     "filters": {
         "price_range": "Fourchette de prix",

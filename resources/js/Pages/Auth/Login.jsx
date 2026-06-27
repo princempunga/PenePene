@@ -6,7 +6,7 @@ import AuthInput from '@/Components/Auth/AuthInput';
 import useTranslation from '@/hooks/useTranslation';
 
 export default function Login() {
-    const { flash, redirect: redirectTo } = usePage().props;
+    const { flash, redirect: redirectTo, errors: pageErrors } = usePage().props;
     const { t } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         email: '',
@@ -17,14 +17,17 @@ export default function Login() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/login');
+        post('/login', {
+            onError: (errors) => {
+                console.log('Login errors:', errors);
+            },
+        });
     };
 
     return (
         <>
             <Head title={t('auth.sign_in')} />
             <AuthLayout
-                accent="blue"
                 title={t('auth.sign_in_title')}
                 subtitle={t('auth.sign_in_subtitle')}
                 headline={t('auth.sign_in_headline')}
@@ -34,16 +37,22 @@ export default function Login() {
                     t('auth.sign_in_benefit_3'),
                 ]}
                 footer={
-                    <p className="text-center text-sm text-gray-500">
+                    <p className="text-sm text-gray-500">
                         {t('auth.no_account')}{' '}
-                        <Link href="/register" className="text-blue-600 font-semibold hover:text-blue-800 transition-colors">
+                        <Link href="/register" className="font-semibold text-blue-600 hover:text-blue-700">
                             {t('auth.create_one')}
                         </Link>
                     </p>
                 }
             >
+                {(flash?.error || pageErrors?.email) && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200/80 text-red-800 rounded-xl text-sm font-medium">
+                        {flash?.error || pageErrors?.email || 'Une erreur est survenue'}
+                    </div>
+                )}
+
                 {flash?.status && (
-                    <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl text-sm font-medium">
+                    <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200/80 text-emerald-800 rounded-xl text-sm font-medium">
                         {flash.status}
                     </div>
                 )}
@@ -57,15 +66,14 @@ export default function Login() {
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         error={errors.email}
-                        placeholder="you@example.com"
-                        autoComplete="email"
+                        placeholder={t('auth.email_placeholder')}
                         required
                     />
 
                     <div>
                         <div className="flex justify-between items-center mb-1.5">
-                            <span className="text-sm font-semibold text-gray-700">{t('auth.password')}</span>
-                            <Link href="/forgot-password" className="text-sm text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                            <span className="text-sm font-semibold text-gray-900">{t('auth.password')}</span>
+                            <Link href="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-700">
                                 {t('auth.forgot_password')}
                             </Link>
                         </div>

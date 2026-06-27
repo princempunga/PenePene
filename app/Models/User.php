@@ -48,10 +48,14 @@ class User extends Authenticatable
     public function isAdmin(): bool      { return in_array($this->role, ['admin', 'super_admin']); }
     public function isSeller(): bool     { return $this->role === 'seller'; }
     public function isBuyer(): bool      { return $this->role === 'buyer'; }
+    public function isGovernment(): bool { return $this->role === 'government'; }
 
     // Relationships
     public function seller() { return $this->hasOne(Seller::class); }
     public function buyer()  { return $this->hasOne(Buyer::class); }
+    public function governmentProfile() { return $this->hasOne(GovernmentProfile::class); }
+    public function projects() { return $this->hasMany(Project::class); }
+    public function managedProjects() { return $this->hasMany(Project::class, 'project_manager_id'); }
 
     public function sentMessages()
     {

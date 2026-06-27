@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\Notification;
+use App\Services\DemoSimulationService;
 use App\Support\Translations;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -64,6 +65,13 @@ class HandleInertiaRequests extends Middleware
                         ]);
                     }
 
+                    if ($user->isGovernment() && $user->governmentProfile) {
+                        $data['government_profile'] = $user->governmentProfile->load('division')->only([
+                            'officer_level', 'title', 'department', 'division_id', 'is_active',
+                        ]);
+                        $data['government_profile']['division'] = $user->governmentProfile->division?->only(['id', 'name', 'level']);
+                    }
+
                     return $data;
                 })() : null,
             ],
@@ -98,8 +106,12 @@ class HandleInertiaRequests extends Middleware
                 'status'        => $request->user()->seller->status,
                 'logo'          => $request->user()->seller->logo,
             ] : null,
-            'locale'   => 'fr',
+            'demo_enabled' => DemoSimulationService::enabled(),
             'currency' => 'CDF',
+            'active_portal' => session('active_portal'),
+            'active_portal_label' => session('active_portal')
+                ? app(\App\Services\PortalAccessService::class)->label(session('active_portal'))
+                : null,
         ]);
     }
 }

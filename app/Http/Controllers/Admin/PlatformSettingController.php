@@ -3,17 +3,29 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PlatformSetting;
+use App\Services\AdminDemoDataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\PlatformSetting;
 
 class PlatformSettingController extends Controller
 {
+    use SimulatesData;
+
     public function index()
     {
         $settings = PlatformSetting::all()->groupBy('group');
 
-        return Inertia::render('Admin/Settings/Index', ['settings' => $settings]);
+        $usingDemo = $this->adminDemoEnabled() && $settings->isEmpty();
+
+        if ($usingDemo) {
+            $settings = AdminDemoDataService::platformSettings();
+        }
+
+        return Inertia::render('Admin/Settings/Index', [
+            'settings'      => $settings,
+            'usingDemoData' => $usingDemo,
+        ]);
     }
 
     public function update(Request $request)

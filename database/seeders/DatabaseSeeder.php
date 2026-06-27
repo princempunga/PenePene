@@ -196,5 +196,13 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  Admin:       admin@penepene.co.tz       / password');
         $this->command->info('  Buyer:       buyer@penepene.co.tz       / password');
         $this->command->info('  Seller:      seller@penepene.co.tz      / password');
+        $this->command->info('');
+
+        $this->call(GovernmentUserSeeder::class);
+
+        $this->command->info('  Government (Commune):  commune@rdc.gov.cd   / password');
+        $this->command->info('  Government (Ville):    ville@rdc.gov.cd     / password');
+        $this->command->info('  Government (Province): province@rdc.gov.cd  / password');
+        $this->command->info('  Government (National): national@rdc.gov.cd  / password');
     }
 }

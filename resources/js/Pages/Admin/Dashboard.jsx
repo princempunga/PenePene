@@ -1,119 +1,127 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Users, Store, ShoppingBag, DollarSign, Clock } from 'lucide-react';
+import AdminStatCard from '@/Components/Admin/AdminStatCard';
+import AdminCard from '@/Components/Admin/AdminCard';
+import AdminBadge from '@/Components/Admin/AdminBadge';
+import { formatCurrency } from '@/lib/formatCurrency';
+import { blockAdminDemoAction } from '@/lib/adminDemo';
+import {
+    Users, Store, ShoppingBag, DollarSign, Clock, ArrowRight, Activity,
+} from 'lucide-react';
 
 export default function Dashboard({ stats, pendingSellers, recentOrders }) {
+    const { usingDemoData } = usePage().props;
+
+    const handleDemoClick = (e) => {
+        if (blockAdminDemoAction(usingDemoData)) {
+            e.preventDefault();
+        }
+    };
     return (
         <>
             <Head title="Admin Dashboard" />
-            <AdminLayout title="Platform Overview">
-                
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shrink-0">
-                            <Users size={24} />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Total Buyers</p>
-                            <p className="text-2xl font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 shrink-0">
-                            <Store size={24} />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Verified Sellers</p>
-                            <p className="text-2xl font-bold text-gray-900">{stats.totalSellers.toLocaleString()}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 shrink-0">
-                            <ShoppingBag size={24} />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Total Orders</p>
-                            <p className="text-2xl font-bold text-gray-900">{stats.totalOrders.toLocaleString()}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 shrink-0">
-                            <DollarSign size={24} />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Platform GMV</p>
-                            <p className="text-2xl font-bold text-gray-900">
-                                TZS {parseFloat(stats.totalRevenue).toLocaleString()}
-                            </p>
-                        </div>
-                    </div>
+            <AdminLayout
+                subtitle="Console d'administration"
+                title="Vue d'ensemble plateforme"
+            >
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <AdminStatCard
+                        icon={Users}
+                        label="Total acheteurs"
+                        value={stats.totalUsers.toLocaleString()}
+                        tone="blue"
+                    />
+                    <AdminStatCard
+                        icon={Store}
+                        label="Vendeurs vérifiés"
+                        value={stats.totalSellers.toLocaleString()}
+                        tone="gold"
+                    />
+                    <AdminStatCard
+                        icon={ShoppingBag}
+                        label="Commandes totales"
+                        value={stats.totalOrders.toLocaleString()}
+                        tone="navy"
+                    />
+                    <AdminStatCard
+                        icon={DollarSign}
+                        label="GMV plateforme"
+                        value={formatCurrency(stats.totalRevenue, { symbol: 'TZS' })}
+                        tone="emerald"
+                    />
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {/* Pending Sellers */}
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <Clock className="text-amber-500" size={20} />
-                                <h2 className="font-bold text-gray-900">Pending Seller Approvals</h2>
-                            </div>
-                            <Link href="/admin/sellers?status=pending" className="text-sm text-primary-600 font-medium hover:text-primary-700">View All</Link>
-                        </div>
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <AdminCard
+                        title="Approbations vendeurs en attente"
+                        icon={Clock}
+                        actionLabel="Voir tout"
+                        actionHref="/admin/sellers?status=pending"
+                    >
                         {pendingSellers.length > 0 ? (
-                            <div className="divide-y divide-gray-100">
-                                {pendingSellers.map(seller => (
-                                    <div key={seller.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
-                                        <div>
-                                            <p className="font-semibold text-gray-900">{seller.business_name}</p>
-                                            <p className="text-sm text-gray-500">{seller.user?.email}</p>
+                            <div className="divide-y divide-slate-100">
+                                {pendingSellers.map((seller) => (
+                                    <div
+                                        key={seller.id}
+                                        className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-slate-50/80"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="truncate font-semibold text-[#002E5D]">{seller.business_name}</p>
+                                            <p className="mt-0.5 truncate text-sm text-slate-500">{seller.user?.email}</p>
                                         </div>
-                                        <Link 
+                                        <Link
                                             href={`/admin/sellers/${seller.id}`}
-                                            className="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium rounded-lg transition-colors"
+                                            onClick={handleDemoClick}
+                                            className="admin-btn-primary shrink-0"
                                         >
-                                            Review
+                                            Examiner
+                                            <ArrowRight size={14} />
                                         </Link>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="p-8 text-center text-gray-500">No pending approvals.</div>
+                            <div className="px-5 py-12 text-center text-sm text-slate-500">
+                                Aucune approbation en attente.
+                            </div>
                         )}
-                    </div>
+                    </AdminCard>
 
-                    {/* Recent Orders Overview */}
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="p-5 border-b border-gray-100">
-                            <h2 className="font-bold text-gray-900">Recent Platform Orders</h2>
-                        </div>
+                    <AdminCard title="Commandes récentes" icon={Activity}>
                         {recentOrders.length > 0 ? (
-                            <div className="divide-y divide-gray-100">
-                                {recentOrders.map(order => (
-                                    <div key={order.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
-                                        <div>
-                                            <p className="font-semibold text-gray-900">{order.order_number}</p>
-                                            <p className="text-xs text-gray-500">
-                                                By {order.buyer?.user?.name} • From {order.seller?.business_name}
+                            <div className="divide-y divide-slate-100">
+                                {recentOrders.map((order) => (
+                                    <Link
+                                        key={order.id}
+                                        href={`/admin/orders/${order.id}`}
+                                        onClick={handleDemoClick}
+                                        className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-slate-50/80"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-[#002E5D]">{order.order_number}</p>
+                                            <p className="mt-0.5 truncate text-xs text-slate-500">
+                                                {order.buyer?.user?.name} · {order.seller?.business_name}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-gray-900">TZS {parseFloat(order.total_amount).toLocaleString()}</p>
-                                            <span className="text-xs capitalize text-gray-500">{order.status}</span>
+                                        <div className="shrink-0 text-right">
+                                            <p className="font-bold text-[#002E5D]">
+                                                {formatCurrency(order.total_amount, { symbol: 'TZS' })}
+                                            </p>
+                                            <AdminBadge variant={order.status} className="mt-1.5">
+                                                {order.status}
+                                            </AdminBadge>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         ) : (
-                            <div className="p-8 text-center text-gray-500">No recent orders.</div>
+                            <div className="px-5 py-12 text-center text-sm text-slate-500">
+                                Aucune commande récente.
+                            </div>
                         )}
-                    </div>
+                    </AdminCard>
                 </div>
-
             </AdminLayout>
         </>
     );

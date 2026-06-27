@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Services\AdminDemoDataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Order;
 
 class OrderController extends Controller
 {
+    use SimulatesData;
+
     public function index(Request $request)
     {
         $query = Order::with(['buyer.user', 'seller']);
@@ -19,9 +22,16 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(20)->withQueryString();
 
+        [$orders, $usingDemo] = $this->demoPageOr(
+            $orders,
+            AdminDemoDataService::orders($request->status),
+            20
+        );
+
         return Inertia::render('Admin/Orders/Index', [
-            'orders'  => $orders,
-            'filters' => $request->only('status'),
+            'orders'        => $orders,
+            'filters'       => $request->only('status'),
+            'usingDemoData' => $usingDemo,
         ]);
     }
 

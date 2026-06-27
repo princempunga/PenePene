@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\SupportTicket;
 use App\Models\User;
+use App\Services\AdminDemoDataService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class SupportController extends Controller
 {
+    use SimulatesData;
+
     public function index(Request $request)
     {
         $query = SupportTicket::with(['user', 'assignedTo']);
@@ -26,10 +29,21 @@ class SupportController extends Controller
         $tickets = $query->latest()->paginate(20)->withQueryString();
         $admins  = User::whereIn('role', ['admin', 'super_admin'])->get(['id', 'name']);
 
+        [$tickets, $usingDemo] = $this->demoPageOr(
+            $tickets,
+            AdminDemoDataService::supportTickets($request->status, $request->priority),
+            20
+        );
+
+        if ($usingDemo && $admins->isEmpty()) {
+            $admins = collect(AdminDemoDataService::supportAdmins());
+        }
+
         return Inertia::render('Admin/Support/Index', [
-            'tickets' => $tickets,
-            'admins'  => $admins,
-            'filters' => $request->only('status', 'priority'),
+            'tickets'       => $tickets,
+            'admins'        => $admins,
+            'filters'       => $request->only('status', 'priority'),
+            'usingDemoData' => $usingDemo,
         ]);
     }
 

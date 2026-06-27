@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use App\Models\Product;
+use App\Services\AdminDemoDataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Product;
-use App\Models\Notification;
 
 class ProductModerationController extends Controller
 {
+    use SimulatesData;
+
     public function index(Request $request)
     {
         $query = Product::with(['seller', 'category'])->withTrashed(false);
@@ -21,9 +24,16 @@ class ProductModerationController extends Controller
 
         $products = $query->latest()->paginate(20)->withQueryString();
 
+        [$products, $usingDemo] = $this->demoPageOr(
+            $products,
+            AdminDemoDataService::products($status),
+            20
+        );
+
         return Inertia::render('Admin/Products/Index', [
-            'products' => $products,
-            'filters'  => ['status' => $status],
+            'products'      => $products,
+            'filters'       => ['status' => $status],
+            'usingDemoData' => $usingDemo,
         ]);
     }
 

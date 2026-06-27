@@ -19,9 +19,10 @@ export default function AuthInput({
     const isPassword = type === 'password';
     const inputType = isPassword && showPassword ? 'text' : type;
 
-    const ringClass = accent === 'amber'
-        ? 'focus:ring-amber-500 focus:border-amber-500'
-        : 'focus:ring-blue-600 focus:border-blue-600';
+    const ringClass =
+        accent === 'brand' || accent === 'amber'
+            ? 'focus:ring-[#0056B3] focus:border-[#0056B3]'
+            : 'focus:ring-blue-600 focus:border-blue-600';
 
     return (
         <div>

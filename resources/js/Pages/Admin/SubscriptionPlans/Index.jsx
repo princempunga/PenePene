@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import { blockAdminDemoAction } from '@/lib/adminDemo';
 import { Shield, Plus, Edit, Trash2, Check, X } from 'lucide-react';
 
 export default function SubscriptionPlansIndex({ plans }) {
-    const { flash } = usePage().props;
+    const { flash, usingDemoData } = usePage().props;
     const [editingPlan, setEditingPlan] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -21,6 +22,7 @@ export default function SubscriptionPlansIndex({ plans }) {
     });
 
     const openModal = (plan = null) => {
+        if (blockAdminDemoAction(usingDemoData)) return;
         if (plan) {
             setEditingPlan(plan);
             setData({
@@ -43,6 +45,7 @@ export default function SubscriptionPlansIndex({ plans }) {
 
     const submit = (e) => {
         e.preventDefault();
+        if (blockAdminDemoAction(usingDemoData)) return;
         const payload = {
             ...data,
             features: data.features.split('\n').map(f => f.trim()).filter(f => f)
@@ -62,20 +65,17 @@ export default function SubscriptionPlansIndex({ plans }) {
     };
 
     const deletePlan = (slug) => {
+        if (blockAdminDemoAction(usingDemoData)) return;
         if (confirm('Are you sure you want to delete this plan?')) {
             destroy(`/admin/plans/${slug}`);
         }
     };
 
     return (
-        <AdminLayout>
-            <Head title="Subscription Plans" />
+        <AdminLayout subtitle="Système" title="Abonnements">
+            <Head title="Abonnements" />
 
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Subscription Plans</h1>
-                    <p className="text-gray-500 mt-1">Manage seller subscription tiers and pricing.</p>
-                </div>
+            <div className="mb-6 flex items-center justify-end">
                 <button
                     onClick={() => openModal()}
                     className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition"

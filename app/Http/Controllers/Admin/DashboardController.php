@@ -3,19 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\User;
-use App\Models\Seller;
 use App\Models\Order;
-use App\Models\Product;
-use Carbon\Carbon;
+use App\Models\Seller;
+use App\Models\User;
+use App\Services\AdminDemoDataService;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    use SimulatesData;
+
     public function index()
     {
-        // Global Platform Stats
         $stats = [
             'totalUsers'   => User::whereIn('role', ['buyer', 'seller'])->count(),
             'totalSellers' => Seller::where('status', 'verified')->count(),
@@ -23,22 +22,29 @@ class DashboardController extends Controller
             'totalRevenue' => Order::whereIn('status', ['delivered'])->sum('total'),
         ];
 
-        // Pending verifications
         $pendingSellers = Seller::with('user')
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        // Recent Activity
         $recentOrders = Order::with(['buyer.user', 'seller'])
             ->latest()
             ->take(5)
             ->get();
 
+        $usingDemo = $this->adminDemoEnabled() && Order::count() === 0;
+
+        if ($usingDemo) {
+            $stats          = AdminDemoDataService::dashboardStats();
+            $pendingSellers = AdminDemoDataService::pendingSellers();
+            $recentOrders   = AdminDemoDataService::recentOrders();
+        }
+
         return Inertia::render('Admin/Dashboard', [
             'stats'          => $stats,
             'pendingSellers' => $pendingSellers,
             'recentOrders'   => $recentOrders,
+            'usingDemoData'  => $usingDemo,
         ]);
     }
 }
