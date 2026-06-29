@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Users, UserCheck, Shield,
     ListTree, LogOut, ChevronRight, Package, ShoppingCart,
-    Megaphone, Ticket, FileDown, Settings, Star, Menu, X, Bell, Gem
+    Megaphone, Ticket, FileDown, Settings, Star, Menu, X, Bell, Gem, BarChart3
 } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import PageTransition from '@/Components/UI/PageTransition';
@@ -19,13 +19,14 @@ export default function AdminLayout({ children, title }) {
 
     const navItems = [
         { key: 'layouts.admin.dashboard',           href: '/admin/dashboard',       icon: LayoutDashboard, roles: ['super_admin', 'admin'] },
+        { key: 'Statistiques',                      href: '/admin/statistics',      icon: BarChart3,       roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.products',            href: '/admin/products',        icon: Package,         roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.orders',              href: '/admin/orders',          icon: ShoppingCart,    roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.sellers',             href: '/admin/sellers',         icon: UserCheck,       roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.categories',          href: '/admin/categories',      icon: ListTree,        roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.reviews',             href: '/admin/reviews',         icon: Star,            roles: ['super_admin', 'admin'] },
         { key: 'Homepage Promotions',               href: '/admin/promotions',      icon: Megaphone,       roles: ['super_admin', 'admin'] },
-        { key: 'layouts.admin.sponsored_ads',       href: '/admin/advertisements',  icon: Megaphone,       roles: ['super_admin', 'admin'] },
+        { key: 'Demandes rapports',                 href: '/admin/stats-requests',  icon: FileDown,        roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.support_desk',        href: '/admin/support',         icon: Ticket,          roles: ['super_admin', 'admin'] },
         { key: 'Trust & Safety',                    href: '/admin/trust-center',    icon: Shield,          roles: ['super_admin', 'admin'] },
         { key: 'layouts.admin.reports',             href: '/admin/reports',         icon: FileDown,        roles: ['super_admin', 'admin'] },

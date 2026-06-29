@@ -17,7 +17,7 @@ class Product extends Model
         'price', 'sale_price', 'currency', 'unit',
         'initial_stock', 'confirmed_sales', 'low_stock_threshold',
         'city', 'province', 'country', 'latitude', 'longitude',
-        'status', 'is_featured', 'allow_contact',
+        'status', 'is_featured', 'priority_position', 'sponsored_until', 'promotion_status', 'allow_contact',
         'meta_title', 'meta_description',
         'view_count', 'average_rating', 'total_reviews',
     ];
@@ -28,8 +28,9 @@ class Product extends Model
             'price'          => 'decimal:2',
             'sale_price'     => 'decimal:2',
             'average_rating' => 'decimal:2',
-            'is_featured'    => 'boolean',
-            'allow_contact'  => 'boolean',
+            'is_featured'       => 'boolean',
+            'sponsored_until'   => 'datetime',
+            'allow_contact'     => 'boolean',
             'latitude'       => 'decimal:8',
             'longitude'      => 'decimal:8',
         ];
@@ -51,6 +52,16 @@ class Product extends Model
     public function scopeActive($q)    { return $q->where('status', 'active'); }
     public function scopeFeatured($q)  { return $q->where('is_featured', true); }
     public function scopeInStock($q)   { return $q->whereRaw('(initial_stock - confirmed_sales) > 0'); }
+
+    /** Produits mis en avant actifs (priorité sous-catégorie). */
+    public function scopePromoted($q)
+    {
+        return $q->where('promotion_status', 'active')
+            ->where(function ($q2) {
+                $q2->whereNull('sponsored_until')
+                   ->orWhere('sponsored_until', '>', now());
+            });
+    }
 
     public function scopeNearby($q, $lat, $lng, $radiusKm = 50)
     {

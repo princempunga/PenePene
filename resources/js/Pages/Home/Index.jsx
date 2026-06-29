@@ -3,39 +3,32 @@ import AppLayout from '@/Layouts/AppLayout';
 import HeroSection from '@/Components/Home/HeroSection';
 import TrustIndicators from '@/Components/Home/TrustIndicators';
 import PopularCategories from '@/Components/Home/PopularCategories';
-import FlashDeals from '@/Components/Home/FlashDeals';
-import TrendingProducts from '@/Components/Home/TrendingProducts';
-import FeaturedProducts from '@/Components/Home/FeaturedProducts';
-import SponsoredProducts from '@/Components/Home/SponsoredProducts';
-import NearbyProducts from '@/Components/Home/NearbyProducts';
-import TopSellers from '@/Components/Home/TopSellers';
+import ProductSlider from '@/Components/Home/ProductSlider';
 import HowItWorks from '@/Components/Home/HowItWorks';
 import SellerBanner from '@/Components/Home/SellerBanner';
 import Testimonials from '@/Components/Home/Testimonials';
 
-export default function Index({ 
+export default function Index({
     heroProducts,
-    featuredProducts, 
-    popularCategories, 
-    topSellers, 
-    sponsoredProducts, 
-    nearbyProducts, 
-    trendingProducts, 
-    flashDeals,
-    featuredPromotions
+    popularCategories,
+    productSliders = [],
+    featuredPromotions,
 }) {
     return (
         <AppLayout>
             <HeroSection heroProducts={heroProducts} featuredPromotions={featuredPromotions} />
             <TrustIndicators />
             <PopularCategories categories={popularCategories} />
-            <FlashDeals products={flashDeals} />
-            <TrendingProducts products={trendingProducts} />
-            <FeaturedProducts products={featuredProducts} />
-            <SponsoredProducts products={sponsoredProducts} />
-            <NearbyProducts products={nearbyProducts} />
+
+            {productSliders.map((products, index) => (
+                <ProductSlider
+                    key={index}
+                    products={products}
+                    index={index}
+                />
+            ))}
+
             <HowItWorks />
-            <TopSellers sellers={topSellers} />
             <SellerBanner />
             <Testimonials />
         </AppLayout>

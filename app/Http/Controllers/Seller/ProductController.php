@@ -9,10 +9,14 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Category;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    /** Taille max par image : 1 Go (Laravel `max` = kilo-octets). */
+    private const MAX_IMAGE_SIZE_KB = 1048576;
+
     private function productValidationMessages(): array
     {
         return [
@@ -33,10 +37,33 @@ class ProductController extends Controller
             'status.required'         => 'Le statut est obligatoire.',
             'status.in'               => 'Le statut sélectionné est invalide.',
             'images.*.image'          => 'Chaque fichier doit être une image.',
-            'images.*.max'            => 'Chaque image ne peut pas dépasser 20 Mo.',
+            'images.*.max'            => 'Chaque image ne peut pas dépasser 1 Go.',
+            'images.required'         => 'Au moins une image est obligatoire.',
+            'images.min'              => 'Ajoutez au moins une image du produit.',
             'image.required'          => 'L\'image est obligatoire.',
             'image.image'             => 'Le fichier doit être une image.',
-            'image.max'               => 'L\'image ne peut pas dépasser 20 Mo.',
+            'image.max'               => 'L\'image ne peut pas dépasser 1 Go.',
+            'products.required'       => 'Ajoutez au moins un produit.',
+            'products.min'            => 'Ajoutez au moins un produit.',
+            'products.max'            => 'Vous ne pouvez pas publier plus de 50 produits à la fois.',
+            'products.*.image.required' => 'Chaque produit doit avoir une image.',
+            'products.*.image.image'  => 'Le fichier doit être une image.',
+            'products.*.image.max'    => 'Chaque image ne peut pas dépasser 1 Go.',
+        ];
+    }
+
+    private function bulkValidationRules(): array
+    {
+        return [
+            'products'                  => 'required|array|min:1|max:50',
+            'products.*.image'          => 'required|image|max:' . self::MAX_IMAGE_SIZE_KB,
+            'products.*.name'           => 'required|string|max:255',
+            'products.*.description'    => 'required|string',
+            'products.*.category_id'    => 'required|exists:categories,id',
+            'products.*.subcategory_id' => 'nullable|exists:subcategories,id',
+            'products.*.price'          => 'required|numeric|min:0',
+            'products.*.sale_price'     => 'nullable|numeric|min:0',
+            'products.*.initial_stock'  => 'required|integer|min:1',
         ];
     }
 
@@ -88,7 +115,8 @@ class ProductController extends Controller
             'price'          => 'required|numeric|min:0',
             'sale_price'     => 'nullable|numeric|min:0|lt:price',
             'initial_stock'  => 'required|integer|min:1',
-            'images.*'       => 'nullable|image|max:20480',
+            'images'         => 'required|array|min:1',
+            'images.*'       => 'required|image|max:' . self::MAX_IMAGE_SIZE_KB,
         ], array_merge($this->productValidationMessages(), [
             'initial_stock.min' => 'Le stock initial doit être d\'au moins 1.',
         ]));
@@ -121,6 +149,74 @@ class ProductController extends Controller
 
         return redirect()->route('seller.products.show', $product->id)
             ->with('success', 'Produit créé avec succès et publié sur la boutique.');
+    }
+
+    /**
+     * Publication multiple : chaque entrée = 1 produit avec 1 image.
+     */
+    public function storeBulk(Request $request)
+    {
+        $seller = $request->user()->seller;
+
+        $validated = $request->validate(
+            $this->bulkValidationRules(),
+            array_merge($this->productValidationMessages(), [
+                'products.*.initial_stock.min' => 'Le stock doit être d\'au moins 1.',
+            ])
+        );
+
+        foreach ($validated['products'] as $index => $item) {
+            if (! empty($item['sale_price']) && (float) $item['sale_price'] >= (float) $item['price']) {
+                return back()->withErrors([
+                    "products.{$index}.sale_price" => 'Le prix promotionnel doit être inférieur au prix normal.',
+                ]);
+            }
+
+            $category = Category::with('subcategories')->find($item['category_id']);
+            if ($category && $category->subcategories->isNotEmpty() && empty($item['subcategory_id'])) {
+                return back()->withErrors([
+                    "products.{$index}.subcategory_id" => 'La sous-catégorie est obligatoire pour cette catégorie.',
+                ]);
+            }
+        }
+
+        $count = DB::transaction(function () use ($request, $seller, $validated) {
+            $created = 0;
+
+            foreach ($validated['products'] as $index => $item) {
+                $product = Product::create([
+                    'seller_id'       => $seller->id,
+                    'category_id'     => $item['category_id'],
+                    'subcategory_id'  => $item['subcategory_id'] ?? null,
+                    'name'            => $item['name'],
+                    'slug'            => Str::slug($item['name']) . '-' . uniqid(),
+                    'description'     => $item['description'],
+                    'price'           => $item['price'],
+                    'sale_price'      => $item['sale_price'] ?? null,
+                    'initial_stock'   => $item['initial_stock'],
+                    'confirmed_sales' => 0,
+                    'currency'        => 'CDF',
+                    'status'          => 'active',
+                ]);
+
+                $image = $request->file("products.{$index}.image");
+                if ($image) {
+                    $path = $image->store('products', 'public');
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                        'is_primary' => true,
+                    ]);
+                }
+
+                $created++;
+            }
+
+            return $created;
+        });
+
+        return redirect()->route('seller.products.index')
+            ->with('success', "{$count} produit(s) publié(s) avec succès.");
     }
 
     public function show(Request $request, Product $product)
@@ -221,20 +317,38 @@ class ProductController extends Controller
         }
 
         $request->validate([
-            'image' => 'required|image|max:20480',
+            'image'   => 'nullable|image|max:' . self::MAX_IMAGE_SIZE_KB,
+            'images'  => 'nullable|array',
+            'images.*'=> 'image|max:' . self::MAX_IMAGE_SIZE_KB,
         ], $this->productValidationMessages());
+
+        $files = $request->hasFile('images')
+            ? $request->file('images')
+            : ($request->hasFile('image') ? [$request->file('image')] : []);
+
+        if (empty($files)) {
+            return back()->withErrors(['image' => 'Aucune image sélectionnée.']);
+        }
 
         $hasPrimary = ProductImage::where('product_id', $product->id)->where('is_primary', true)->exists();
 
-        $path = $request->file('image')->store('products', 'public');
+        foreach ($files as $index => $file) {
+            $path = $file->store('products', 'public');
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_path' => $path,
+                'is_primary' => ! $hasPrimary && $index === 0,
+            ]);
+            if (! $hasPrimary && $index === 0) {
+                $hasPrimary = true;
+            }
+        }
 
-        ProductImage::create([
-            'product_id' => $product->id,
-            'image_path' => $path,
-            'is_primary' => ! $hasPrimary,
-        ]);
+        $count = count($files);
 
-        return back()->with('success', 'Image téléchargée avec succès.');
+        return back()->with('success', $count > 1
+            ? "{$count} images téléchargées avec succès."
+            : 'Image téléchargée avec succès.');
     }
 
     public function deleteImage(Request $request, ProductImage $image)

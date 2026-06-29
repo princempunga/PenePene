@@ -5,7 +5,7 @@ import { Megaphone, Save, Trash2, AlertCircle, PlusCircle } from 'lucide-react';
 import axios from 'axios';
 
 export default function PromotionsIndex({ promotions = [], sellers = [] }) {
-    const slots = [1, 2, 3];
+    const slots = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const [localPromotions, setLocalPromotions] = useState([]);
     const [sellerProducts, setSellerProducts] = useState({}); // { seller_id: [products] }
     const [loadingProducts, setLoadingProducts] = useState({}); // { slot: true/false }
@@ -18,6 +18,8 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
                 promotion_order: slot,
                 seller_id: '',
                 product_id: '',
+                custom_image_url: '',
+                headline: '',
                 is_active: true,
                 starts_at: '',
                 ends_at: ''
@@ -63,6 +65,8 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
         const payload = {
             seller_id: promo.seller_id,
             product_id: promo.product_id,
+            custom_image_url: promo.custom_image_url || null,
+            headline: promo.headline || null,
             promotion_order: promo.promotion_order,
             is_active: promo.is_active,
             starts_at: promo.starts_at || null,
@@ -95,15 +99,15 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
                 <div className="mb-6 bg-blue-50 border border-blue-200 p-4 rounded-xl flex gap-3 text-blue-800">
                     <AlertCircle className="shrink-0 text-blue-500" />
                     <div>
-                        <h3 className="font-semibold">Featured Sellers Promotion Slots</h3>
+                        <h3 className="font-semibold">Homepage Promotions Carousel</h3>
                         <p className="text-sm mt-1">
-                            Select up to 3 sellers and products to feature on the homepage hero section. 
-                            If a slot is inactive or expired, it will be skipped. If no slots are active, the homepage will show random featured products.
+                            Configure up to 10 promotional slides for the homepage hero carousel. 
+                            Each slide displays for 2.5 seconds with automatic rotation. Slides transition from right to left.
                         </p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {localPromotions.map((promo) => {
                         const isExisting = !!promo.id;
                         const products = sellerProducts[promo.seller_id] || [];
@@ -163,6 +167,32 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
                                                 <option key={p.id} value={p.id}>{p.name} - {p.price} {p.currency}</option>
                                             ))}
                                         </select>
+                                    </div>
+
+                                    {/* Custom Image URL */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Custom Image URL (Opt)</label>
+                                        <input 
+                                            type="url"
+                                            placeholder="https://example.com/image.jpg"
+                                            value={promo.custom_image_url || ''}
+                                            onChange={(e) => handleUpdate(promo.promotion_order, 'custom_image_url', e.target.value)}
+                                            className="w-full rounded-lg border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Overrides product image in hero carousel</p>
+                                    </div>
+
+                                    {/* Headline */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Promotional Headline (Opt)</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="e.g., Super Sale -50%!"
+                                            maxLength="100"
+                                            value={promo.headline || ''}
+                                            onChange={(e) => handleUpdate(promo.promotion_order, 'headline', e.target.value)}
+                                            className="w-full rounded-lg border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+                                        />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">

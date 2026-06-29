@@ -3,16 +3,18 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\StatsDownloadRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SellerSalesExport;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class ReportController extends Controller
 {
@@ -92,39 +94,102 @@ class ReportController extends Controller
             ->take(8)
             ->get();
 
+        $downloadRequests = StatsDownloadRequest::where('seller_id', $seller->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
         return Inertia::render('Seller/Reports/Index', [
-            'stats'        => $stats,
-            'revenueTrend' => $revenueTrend,
-            'topProducts'  => $topProducts,
-            'recentOrders' => $recentOrders,
-            'filters'      => [
+            'stats'            => $stats,
+            'revenueTrend'     => $revenueTrend,
+            'topProducts'      => $topProducts,
+            'recentOrders'     => $recentOrders,
+            'downloadRequests' => $downloadRequests,
+            'filters'          => [
                 'from' => $from->format('Y-m-d'),
                 'to'   => $to->format('Y-m-d'),
             ],
         ]);
     }
 
-    public function generate(Request $request)
+    /**
+     * Le vendeur demande le téléchargement — approbation admin requise.
+     */
+    public function requestDownload(Request $request)
     {
         $request->validate([
-            'type'     => 'required|in:sales,products,stock',
-            'format'   => 'required|in:pdf,excel,csv',
-            'from'     => 'required|date',
-            'to'       => 'required|date|after_or_equal:from',
+            'type'   => 'required|in:sales,products,stock',
+            'format' => 'required|in:pdf,excel,csv',
+            'from'   => 'required|date',
+            'to'     => 'required|date|after_or_equal:from',
         ]);
 
         $seller = $this->seller();
-        $from   = Carbon::parse($request->from)->startOfDay();
-        $to     = Carbon::parse($request->to)->endOfDay();
 
-        switch ($request->format) {
-            case 'pdf':
-                return $this->generatePdf($seller, $request->type, $from, $to);
-            case 'excel':
-                return $this->generateExcel($seller, $request->type, $from, $to);
-            case 'csv':
-                return $this->generateCsv($seller, $request->type, $from, $to);
+        $existing = StatsDownloadRequest::where('seller_id', $seller->id)
+            ->where('status', StatsDownloadRequest::STATUS_PENDING)
+            ->where('report_type', $request->type)
+            ->where('format', $request->format)
+            ->where('date_from', $request->from)
+            ->where('date_to', $request->to)
+            ->exists();
+
+        if ($existing) {
+            return back()->withErrors(['request' => 'Une demande identique est déjà en attente.']);
         }
+
+        StatsDownloadRequest::create([
+            'seller_id'   => $seller->id,
+            'report_type' => $request->type,
+            'format'      => $request->format,
+            'date_from'   => $request->from,
+            'date_to'     => $request->to,
+            'status'      => StatsDownloadRequest::STATUS_PENDING,
+        ]);
+
+        \App\Models\User::whereIn('role', ['admin', 'super_admin'])->each(function ($admin) use ($seller, $request) {
+            Notification::create([
+                'user_id'    => $admin->id,
+                'type'       => 'report_request',
+                'title'      => 'Nouvelle demande de rapport',
+                'body'       => "{$seller->business_name} demande le téléchargement de statistiques ({$request->type}).",
+                'action_url' => '/admin/stats-requests',
+            ]);
+        });
+
+        return back()->with('success', 'Votre demande a été envoyée à l\'administrateur.');
+    }
+
+    /**
+     * Téléchargement autorisé uniquement si la demande a été approuvée.
+     */
+    public function download(Request $request, StatsDownloadRequest $statsRequest)
+    {
+        $seller = $this->seller();
+
+        if ($statsRequest->seller_id !== $seller->id) {
+            abort(403);
+        }
+
+        if (! $statsRequest->canDownload()) {
+            return back()->withErrors(['download' => 'Cette demande n\'est pas encore approuvée.']);
+        }
+
+        if ($request->query('token') !== $statsRequest->download_token) {
+            abort(403);
+        }
+
+        $from = Carbon::parse($statsRequest->date_from)->startOfDay();
+        $to   = Carbon::parse($statsRequest->date_to)->endOfDay();
+
+        $statsRequest->update(['downloaded_at' => now()]);
+
+        return match ($statsRequest->format) {
+            'pdf'   => $this->generatePdf($seller, $statsRequest->report_type, $from, $to),
+            'excel' => $this->generateExcel($seller, $statsRequest->report_type, $from, $to),
+            'csv'   => $this->generateCsv($seller, $statsRequest->report_type, $from, $to),
+            default => abort(400),
+        };
     }
 
     private function generatePdf($seller, string $type, $from, $to)
@@ -226,10 +291,5 @@ class ReportController extends Controller
         }
 
         return collect();
-    }
-
-    public function download(int $report)
-    {
-        abort(404);
     }
 }

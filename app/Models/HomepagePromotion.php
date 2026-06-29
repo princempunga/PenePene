@@ -9,6 +9,8 @@ class HomepagePromotion extends Model
     protected $fillable = [
         'seller_id',
         'product_id',
+        'custom_image_url',
+        'headline',
         'promotion_order',
         'is_active',
         'starts_at',

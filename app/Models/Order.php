@@ -11,7 +11,7 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'order_number', 'buyer_id', 'seller_id', 'status',
+        'order_number', 'buyer_id', 'seller_id', 'conversation_id', 'status',
         'payment_status', 'payment_method', 'paid_at',
         'subtotal', 'total', 'currency',
         'delivery_address', 'delivery_city', 'delivery_province', 'delivery_country',
@@ -67,6 +67,7 @@ class Order extends Model
     // Relationships
     public function buyer()     { return $this->belongsTo(Buyer::class); }
     public function seller()    { return $this->belongsTo(Seller::class); }
-    public function items()     { return $this->hasMany(OrderItem::class); }
-    public function review()    { return $this->hasOne(Review::class); }
+    public function items()         { return $this->hasMany(OrderItem::class); }
+    public function conversation()  { return $this->belongsTo(Conversation::class); }
+    public function review()        { return $this->hasOne(Review::class); }
 }

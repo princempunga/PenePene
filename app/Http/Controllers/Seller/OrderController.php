@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
-use App\Notifications\OrderStatusUpdated;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -34,8 +34,7 @@ class OrderController extends Controller
     {
         $seller = $request->user()->seller;
 
-        $query = Order::with(['buyer.user'])
-            ->withCount('items')
+        $query = Order::with(['buyer.user', 'items.product', 'conversation'])
             ->where('seller_id', $seller->id)
             ->latest();
 
@@ -67,7 +66,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load(['items.product.images', 'buyer.user']);
+        $order->load(['items.product.images', 'buyer.user', 'conversation']);
 
         return Inertia::render('Seller/Orders/Show', [
             'order' => $order,
@@ -113,15 +112,15 @@ class OrderController extends Controller
 
         if ($oldStatus !== $newStatus) {
             $order->load('buyer.user');
-            
+
             $statusLabel = self::STATUS_LABELS_FR[$newStatus] ?? $newStatus;
-            
-            \App\Models\Notification::create([
+
+            Notification::create([
                 'user_id'    => $order->buyer->user->id,
                 'type'       => 'order',
                 'title'      => 'Mise à jour de votre commande',
                 'body'       => "Votre commande {$order->order_number} est maintenant {$statusLabel}.",
-                'action_url' => "/buyer/orders/{$order->id}"
+                'action_url' => "/buyer/orders/{$order->id}",
             ]);
         }
 

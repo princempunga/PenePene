@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Package, ShoppingCart, MessageCircle, Bell,
-    Star, User, LogOut, ChevronRight, Store, CreditCard, FileDown,
-    Wallet, FileText, Settings, Menu, X,
+    User, LogOut, ChevronRight, Store, FileDown, Menu, X,
+    Star, FileText, CreditCard, Settings,
 } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import PageTransition from '@/Components/UI/PageTransition';
@@ -16,7 +16,6 @@ const navItems = [
     { key: 'layouts.seller.messages',       href: '/seller/messages',         icon: MessageCircle,   badge: 'messages' },
     { key: 'layouts.seller.notifications',  href: '/seller/notifications',    icon: Bell,            badge: 'notifications' },
     { key: 'layouts.seller.reviews',        href: '/seller/reviews',          icon: Star,            badge: null },
-    { key: 'layouts.seller.payouts',        href: '/seller/payouts',          icon: Wallet,          badge: null },
     { key: 'layouts.seller.documents',      href: '/seller/documents',        icon: FileText,        badge: null },
     { key: 'layouts.seller.reports',        href: '/seller/reports',          icon: FileDown,        badge: null },
     { key: 'layouts.seller.store_settings', href: '/seller/store/settings',   icon: Settings,        badge: null },
@@ -120,15 +119,15 @@ export default function SellerLayout({ children, title }) {
             <nav className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col flex-1 overflow-hidden">
                 <div className="flex-1 overflow-y-auto py-2">
                     {navItems.map((item) => (
-                    <NavLink
-                        key={item.href}
-                        item={item}
-                        currentPath={currentPath}
-                        badges={badges}
-                        onNavigate={closeSidebar}
-                        t={t}
-                    />
-                ))}
+                        <NavLink
+                            key={item.href}
+                            item={item}
+                            currentPath={currentPath}
+                            badges={badges}
+                            onNavigate={closeSidebar}
+                            t={t}
+                        />
+                    ))}
                 </div>
 
                 <Link
@@ -167,7 +166,6 @@ export default function SellerLayout({ children, title }) {
 
             <div className="flex-1 flex flex-col min-w-0 min-h-screen">
                 <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4 gap-4">
-                    {/* Hamburger hidden on mobile since it's now in bottom nav */}
                     <button
                         type="button"
                         onClick={() => setSidebarOpen(!sidebarOpen)}

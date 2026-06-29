@@ -84,6 +84,41 @@ export default function OrderShow({ order }) {
                     </div>
                 )}
 
+                {/* Accès rapide : conversation, produit, détails */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                    {order.conversation_id && (
+                        <Link
+                            href={`/seller/messages/${order.conversation_id}`}
+                            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-primary-300 transition-colors"
+                        >
+                            <MessageCircle size={20} className="text-primary-600 shrink-0" />
+                            <div>
+                                <p className="font-semibold text-gray-900 text-sm">Conversation</p>
+                                <p className="text-xs text-gray-500">Échanger avec le client</p>
+                            </div>
+                        </Link>
+                    )}
+                    {order.items?.[0]?.product?.slug && (
+                        <Link
+                            href={`/seller/products/${order.items[0].product.id}`}
+                            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-primary-300 transition-colors"
+                        >
+                            <Package size={20} className="text-primary-600 shrink-0" />
+                            <div>
+                                <p className="font-semibold text-gray-900 text-sm">Produit</p>
+                                <p className="text-xs text-gray-500 truncate">{order.items[0].product_name}</p>
+                            </div>
+                        </Link>
+                    )}
+                    <div className="flex items-center gap-3 p-4 bg-primary-50 rounded-xl border border-primary-200">
+                        <Check size={20} className="text-primary-600 shrink-0" />
+                        <div>
+                            <p className="font-semibold text-gray-900 text-sm">Détails commande</p>
+                            <p className="text-xs text-gray-500">{formatCurrency(order.total_amount)}</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Chronologie du statut */}
                 {!isTerminal && (
                     <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 mb-6 shadow-sm">
@@ -333,13 +368,13 @@ export default function OrderShow({ order }) {
                                 </p>
                             </div>
 
-                            {order.buyer?.user?.name && (
+                            {order.buyer?.user?.name && order.conversation_id && (
                                 <Link
-                                    href={`/seller/messages?search=${encodeURIComponent(order.buyer.user.name)}`}
-                                    className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-800 py-2.5 rounded-lg transition-colors"
+                                    href={`/seller/messages/${order.conversation_id}`}
+                                    className="w-full flex items-center justify-center gap-2 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white py-2.5 rounded-lg transition-colors"
                                 >
                                     <MessageCircle size={16} />
-                                    Contacter le client
+                                    Ouvrir la conversation
                                 </Link>
                             )}
                         </div>

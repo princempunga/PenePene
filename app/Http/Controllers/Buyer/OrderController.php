@@ -12,6 +12,7 @@ use App\Models\Message;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\OrderConversationService;
 
 class OrderController extends Controller
 {
@@ -151,6 +152,8 @@ class OrderController extends Controller
         ]);
 
         $product->increment('confirmed_sales', $request->quantity);
+
+        app(OrderConversationService::class)->createForOrder($order, $request->user());
 
         return redirect()->route('buyer.orders.show', $order)
             ->with('success', 'Order placed successfully!');

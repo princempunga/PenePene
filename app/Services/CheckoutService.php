@@ -71,8 +71,9 @@ class CheckoutService
                     $product->increment('confirmed_sales', $quantity);
                 }
 
+                app(OrderConversationService::class)->createForOrder($order, $user);
                 $this->notifySeller($order);
-                $orders[] = $order->fresh(['items.product.images', 'seller']);
+                $orders[] = $order->fresh(['items.product.images', 'seller', 'conversation']);
             }
 
             return $orders;

@@ -39,7 +39,6 @@ Route::get('/dashboard', function () {
 
 // Products
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/flash-deals', fn () => redirect()->route('products.index', ['filter' => 'sale']))->name('flash-deals');
 Route::get('/products/{slug}', [ProductController::class, 'show'])
     ->where('slug', '[^/]+')
     ->name('products.show');
@@ -287,6 +286,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/products',                      [\App\Http\Controllers\Seller\ProductController::class, 'index'])->name('products.index');
         Route::get('/products/create',               [\App\Http\Controllers\Seller\ProductController::class, 'create'])->name('products.create');
         Route::post('/products',                     [\App\Http\Controllers\Seller\ProductController::class, 'store'])->name('products.store');
+        Route::post('/products/bulk',                [\App\Http\Controllers\Seller\ProductController::class, 'storeBulk'])->name('products.store-bulk');
         Route::get('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'show'])->name('products.show');
         Route::get('/products/{product:id}/edit',    [\App\Http\Controllers\Seller\ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'update'])->name('products.update');
@@ -319,12 +319,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/store/settings',  [\App\Http\Controllers\Seller\StoreSettingsController::class, 'edit'])->name('store.settings');
         Route::post('/store/settings', [\App\Http\Controllers\Seller\StoreSettingsController::class, 'update'])->name('store.settings.update');
 
-        // Sponsored Products
-        Route::get('/sponsored',         [\App\Http\Controllers\Seller\SponsoredProductController::class, 'index'])->name('sponsored.index');
-        Route::get('/sponsored/create',  [\App\Http\Controllers\Seller\SponsoredProductController::class, 'create'])->name('sponsored.create');
-        Route::post('/sponsored',        [\App\Http\Controllers\Seller\SponsoredProductController::class, 'store'])->name('sponsored.store');
-        Route::delete('/sponsored/{sponsored}', [\App\Http\Controllers\Seller\SponsoredProductController::class, 'destroy'])->name('sponsored.destroy');
-
         // Subscriptions
         Route::get('/subscriptions',     [\App\Http\Controllers\Seller\SubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::post('/subscriptions/{plan}/subscribe', [\App\Http\Controllers\Seller\SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
@@ -338,14 +332,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/documents',                   [\App\Http\Controllers\Seller\DocumentController::class, 'store'])->name('documents.store');
         Route::delete('/documents/{document}',      [\App\Http\Controllers\Seller\DocumentController::class, 'destroy'])->name('documents.destroy');
 
-        // Payouts
-        Route::get('/payouts',     [\App\Http\Controllers\Seller\PayoutController::class, 'index'])->name('payouts.index');
-        Route::post('/payouts',    [\App\Http\Controllers\Seller\PayoutController::class, 'store'])->name('payouts.store');
-
-        // Reports
         Route::get('/reports',           [\App\Http\Controllers\Seller\ReportController::class, 'index'])->name('reports.index');
-        Route::post('/reports/generate', [\App\Http\Controllers\Seller\ReportController::class, 'generate'])->name('reports.generate');
-        Route::get('/reports/{report}/download', [\App\Http\Controllers\Seller\ReportController::class, 'download'])->name('reports.download');
+        Route::post('/reports/request',  [\App\Http\Controllers\Seller\ReportController::class, 'requestDownload'])->name('reports.request');
+        Route::get('/reports/download/{statsRequest}', [\App\Http\Controllers\Seller\ReportController::class, 'download'])->name('reports.download');
 
         // Support Tickets (Seller)
         Route::get('/support',                     [\App\Http\Controllers\Buyer\SupportController::class, 'index'])->name('support.index');
@@ -358,6 +347,12 @@ Route::middleware('auth')->group(function () {
     // ─── Admin Routes ─────────────────────────────────────────────────────────
     Route::middleware('role:super_admin,admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/statistics', [\App\Http\Controllers\Admin\StatisticsController::class, 'index'])->name('statistics.index');
+
+        // Demandes de téléchargement statistiques vendeur
+        Route::get('/stats-requests', [\App\Http\Controllers\Admin\StatsDownloadRequestController::class, 'index'])->name('stats-requests.index');
+        Route::patch('/stats-requests/{statsRequest}/approve', [\App\Http\Controllers\Admin\StatsDownloadRequestController::class, 'approve'])->name('stats-requests.approve');
+        Route::patch('/stats-requests/{statsRequest}/reject', [\App\Http\Controllers\Admin\StatsDownloadRequestController::class, 'reject'])->name('stats-requests.reject');
 
         // Sellers (Verification & Management)
         Route::get('/sellers',                      [\App\Http\Controllers\Admin\SellerController::class, 'index'])->name('sellers.index');
@@ -381,12 +376,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/reviews',              [\App\Http\Controllers\Admin\ReviewModerationController::class, 'index'])->name('reviews.index');
         Route::delete('/reviews/{review}',  [\App\Http\Controllers\Admin\ReviewModerationController::class, 'destroy'])->name('reviews.destroy');
 
-        // Advertisement (Sponsored Products) Management
-        Route::get('/advertisements',                       [\App\Http\Controllers\Admin\AdvertisementController::class, 'index'])->name('advertisements.index');
-        Route::patch('/advertisements/{sponsored}/approve', [\App\Http\Controllers\Admin\AdvertisementController::class, 'approve'])->name('advertisements.approve');
-        Route::patch('/advertisements/{sponsored}/reject',  [\App\Http\Controllers\Admin\AdvertisementController::class, 'reject'])->name('advertisements.reject');
-
-        // Homepage Promotions (Featured Sellers)
+        // Homepage Promotions (admin-managed carousel)
         Route::get('/promotions',                           [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'index'])->name('promotions.index');
         Route::post('/promotions',                          [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'store'])->name('promotions.store');
         Route::put('/promotions/{promotion}',               [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'update'])->name('promotions.update');

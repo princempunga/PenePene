@@ -42,17 +42,18 @@ export default function ProductEdit({ product, categories }) {
     };
 
     const handleImageUpload = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            router.post(`/seller/products/${product.id}/images`, {
-                image: e.target.files[0],
-            }, {
-                forceFormData: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                },
-            });
-        }
+        if (!e.target.files?.length) return;
+
+        const files = Array.from(e.target.files);
+        router.post(`/seller/products/${product.id}/images`, {
+            images: files,
+        }, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            },
+        });
     };
 
     const handleDeleteImage = (imageId) => {
@@ -114,19 +115,23 @@ export default function ProductEdit({ product, categories }) {
 
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
                             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                                <h2 className="font-bold text-gray-900">Images</h2>
+                                <div>
+                                    <h2 className="font-bold text-gray-900">Images</h2>
+                                    <p className="text-xs text-gray-500 mt-0.5">Nombre illimité — 1 Go max par image</p>
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
                                     className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1.5 px-3 rounded-lg flex items-center gap-1.5 font-medium transition-colors"
                                 >
-                                    <Upload size={14} /> Ajouter une image
+                                    <Upload size={14} /> Ajouter des images
                                 </button>
                                 <input
                                     type="file"
                                     ref={fileInputRef}
                                     className="hidden"
                                     accept="image/*"
+                                    multiple
                                     onChange={handleImageUpload}
                                 />
                             </div>

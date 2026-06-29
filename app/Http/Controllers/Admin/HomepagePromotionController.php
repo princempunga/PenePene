@@ -64,7 +64,9 @@ class HomepagePromotionController extends Controller
         $data = $request->validate([
             'seller_id'        => 'required|exists:sellers,id',
             'product_id'       => 'required|exists:products,id',
-            'promotion_order'  => 'required|integer|between:1,3',
+            'custom_image_url' => 'nullable|url',
+            'headline'         => 'nullable|string|max:100',
+            'promotion_order'  => 'required|integer|between:1,10',
             'is_active'        => 'boolean',
             'starts_at'        => 'nullable|date',
             'ends_at'          => 'nullable|date|after_or_equal:starts_at',
@@ -83,7 +85,9 @@ class HomepagePromotionController extends Controller
         $data = $request->validate([
             'seller_id'        => 'sometimes|exists:sellers,id',
             'product_id'       => 'sometimes|exists:products,id',
-            'promotion_order'  => 'sometimes|integer|between:1,3',
+            'custom_image_url' => 'nullable|url',
+            'headline'         => 'nullable|string|max:100',
+            'promotion_order'  => 'sometimes|integer|between:1,10',
             'is_active'        => 'boolean',
             'starts_at'        => 'nullable|date',
             'ends_at'          => 'nullable|date|after_or_equal:starts_at',

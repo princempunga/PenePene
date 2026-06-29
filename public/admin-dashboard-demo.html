@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PenePene — Console Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { navy: '#002E5D', blue: '#0056B3', gold: '#FFB300' },
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    * { scrollbar-width: thin; scrollbar-color: rgba(0,86,179,.25) transparent; }
+    *::-webkit-scrollbar { width: 6px; height: 6px; }
+    *::-webkit-scrollbar-thumb { background: rgba(0,86,179,.25); border-radius: 999px; }
+    .dark * { scrollbar-color: rgba(255,179,0,.2) transparent; }
+    .dark *::-webkit-scrollbar-thumb { background: rgba(255,179,0,.2); }
+
+    .nav-link.active {
+      background: rgba(0,46,93,.07);
+      color: #002E5D;
+      box-shadow: inset 3px 0 0 #FFB300;
+    }
+    .dark .nav-link.active {
+      background: rgba(255,179,0,.1);
+      color: #fff;
+    }
+    .nav-link.active .nav-icon {
+      background: #002E5D;
+      color: #FFB300;
+    }
+    .dark .nav-link.active .nav-icon {
+      background: rgba(255,179,0,.2);
+      color: #FFB300;
+    }
+
+    .card { transition: transform .2s ease, box-shadow .2s ease; }
+    .card:hover { transform: translateY(-2px); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(0,86,179,.15);
+      border-top-color: #0056B3;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .dark .loader { border-color: rgba(255,179,0,.15); border-top-color: #FFB300; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .page-enter { animation: fadeUp .35s ease both; }
+
+    .badge-paid { @apply bg-emerald-100 text-emerald-800 ring-emerald-200; }
+    .badge-pending { @apply bg-amber-100 text-amber-800 ring-amber-200; }
+    .badge-shipped { @apply bg-blue-100 text-blue-800 ring-blue-200; }
+    .badge-refunded { @apply bg-red-100 text-red-800 ring-red-200; }
+    .dark .badge-paid { @apply bg-emerald-900/40 text-emerald-300 ring-emerald-800; }
+    .dark .badge-pending { @apply bg-amber-900/40 text-amber-300 ring-amber-800; }
+    .dark .badge-shipped { @apply bg-blue-900/40 text-blue-300 ring-blue-800; }
+    .dark .badge-refunded { @apply bg-red-900/40 text-red-300 ring-red-800; }
+  </style>
+</head>
+<body class="h-full bg-slate-100 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
+
+<div id="app" class="flex h-dvh overflow-hidden">
+
+  <!-- Overlay mobile -->
+  <div id="overlay" class="fixed inset-0 z-40 hidden bg-black/50 backdrop-blur-sm lg:hidden" aria-hidden="true"></div>
+
+  <!-- Sidebar fixe -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-gray-200/80 bg-white shadow-lg transition-transform duration-300 dark:border-slate-800 dark:bg-slate-900 lg:translate-x-0">
+    <div class="flex items-center gap-3 border-b border-gray-100 px-5 py-4 dark:border-slate-800">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gold text-lg font-black text-brand-navy">P</div>
+      <div>
+        <p class="text-sm font-bold text-brand-navy dark:text-white">PenePene</p>
+        <p class="text-[11px] text-gray-400">Console Admin</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 space-y-1 overflow-y-auto p-3" id="sidebarNav">
+      <p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-brand-navy/40 dark:text-slate-500">Menu</p>
+      <button type="button" data-page="dashboard" class="nav-link active flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-brand-navy/5 dark:text-slate-400 dark:hover:bg-white/5">
+        <span class="nav-icon flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-brand-blue dark:bg-slate-800"><i class="fa-solid fa-gauge-high"></i></span>
+        Dashboard
+      </button>
+      <button type="button" data-page="users" class="nav-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-brand-navy/5 dark:text-slate-400 dark:hover:bg-white/5">
+        <span class="nav-icon flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-brand-blue dark:bg-slate-800"><i class="fa-solid fa-users"></i></span>
+        Utilisateurs
+      </button>
+      <button type="button" data-page="orders" class="nav-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-brand-navy/5 dark:text-slate-400 dark:hover:bg-white/5">
+        <span class="nav-icon flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-brand-blue dark:bg-slate-800"><i class="fa-solid fa-cart-shopping"></i></span>
+        Commandes
+      </button>
+      <button type="button" data-page="analytics" class="nav-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-brand-navy/5 dark:text-slate-400 dark:hover:bg-white/5">
+        <span class="nav-icon flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-brand-blue dark:bg-slate-800"><i class="fa-solid fa-chart-pie"></i></span>
+        Analytics
+      </button>
+    </nav>
+
+    <div class="border-t border-gray-100 p-3 dark:border-slate-800">
+      <p class="px-2 text-[10px] text-gray-400">PenePene Admin · v2.0</p>
+    </div>
+  </aside>
+
+  <!-- Zone principale scrollable -->
+  <div class="flex min-h-0 min-w-0 flex-1 flex-col lg:ml-72">
+
+    <header class="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 lg:left-72">
+      <button id="menuBtn" type="button" class="rounded-xl p-2 text-slate-500 hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800" aria-label="Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="min-w-0 flex-1">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-brand-blue dark:text-brand-gold">Administration</p>
+        <h1 id="pageTitle" class="truncate text-lg font-bold text-brand-navy dark:text-white">Dashboard</h1>
+      </div>
+
+      <span class="hidden items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-800 ring-1 ring-amber-200 sm:inline-flex dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-800">
+        <i class="fa-solid fa-flask"></i> Données factices
+      </span>
+
+      <button id="themeBtn" type="button" class="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800" aria-label="Thème">
+        <i id="themeIcon" class="fa-solid fa-moon"></i>
+      </button>
+
+      <div class="flex items-center gap-2 rounded-xl border border-slate-200 py-1 pl-2 pr-3 dark:border-slate-700">
+        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-gold to-amber-500 text-sm font-bold text-brand-navy">A</div>
+        <div class="hidden sm:block">
+          <p class="text-sm font-semibold dark:text-white">Admin User</p>
+          <p class="text-[11px] text-slate-500">admin@penepene.co.tz</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-16 p-4 sm:p-6 lg:p-8">
+
+      <!-- Loader -->
+      <div id="loader" class="flex flex-col items-center justify-center py-32">
+        <div class="loader"></div>
+        <p class="mt-4 text-sm text-slate-500">Chargement…</p>
+      </div>
+
+      <!-- Contenu (masqué au départ) -->
+      <div id="content" class="hidden">
+
+        <!-- ═══ DASHBOARD ═══ -->
+        <section id="page-dashboard" class="page page-enter space-y-6">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="card rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30"><i class="fa-solid fa-coins"></i></div>
+              <p id="kpiRevenue" class="text-2xl font-bold text-brand-navy dark:text-white">—</p>
+              <p class="mt-1 text-sm text-slate-500">Chiffre d'affaires total</p>
+            </div>
+            <div class="card rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-brand-blue dark:bg-blue-900/30"><i class="fa-solid fa-users"></i></div>
+              <p id="kpiUsers" class="text-2xl font-bold text-brand-navy dark:text-white">—</p>
+              <p class="mt-1 text-sm text-slate-500">Utilisateurs actifs</p>
+            </div>
+            <div class="card rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30"><i class="fa-solid fa-bag-shopping"></i></div>
+              <p id="kpiOrders" class="text-2xl font-bold text-brand-navy dark:text-white">—</p>
+              <p class="mt-1 text-sm text-slate-500">Commandes ce mois</p>
+            </div>
+            <div class="card rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-900/30"><i class="fa-solid fa-chart-line"></i></div>
+              <p id="kpiConversion" class="text-2xl font-bold text-brand-navy dark:text-white">—</p>
+              <p class="mt-1 text-sm text-slate-500">Taux de conversion</p>
+            </div>
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-3">
+            <div class="card rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm lg:col-span-2 dark:border-slate-800 dark:bg-slate-900">
+              <h2 class="font-bold text-brand-navy dark:text-white">Ventes — 12 mois</h2>
+              <p class="mb-4 text-sm text-slate-500">Évolution mensuelle (TZS)</p>
+              <div class="relative h-64 sm:h-72"><canvas id="salesChart"></canvas></div>
+            </div>
+            <div class="card rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h2 class="font-bold text-brand-navy dark:text-white">Sources visiteurs</h2>
+              <p class="mb-4 text-sm text-slate-500">Répartition du trafic</p>
+              <div class="relative mx-auto h-52 w-full max-w-[220px]"><canvas id="trafficChart"></canvas></div>
+              <ul id="trafficLegend" class="mt-4 space-y-2 text-sm"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ UTILISATEURS ═══ -->
+        <section id="page-users" class="page hidden space-y-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <input id="userSearch" type="search" placeholder="Rechercher nom ou email…" class="w-full max-w-md rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900" />
+            <button type="button" id="addUserBtn" class="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-blue dark:bg-brand-blue">
+              <i class="fa-solid fa-plus"></i> Ajouter
+            </button>
+          </div>
+          <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[640px] text-left text-sm">
+                <thead class="border-b border-slate-100 bg-slate-50 text-xs font-bold uppercase tracking-wide text-brand-navy/60 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+                  <tr>
+                    <th class="px-5 py-3">Nom</th>
+                    <th class="px-5 py-3">Email</th>
+                    <th class="px-5 py-3">Rôle</th>
+                    <th class="px-5 py-3">Statut</th>
+                    <th class="px-5 py-3">Inscription</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ COMMANDES ═══ -->
+        <section id="page-orders" class="page hidden space-y-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <input id="orderSearch" type="search" placeholder="Rechercher ID ou client…" class="w-full max-w-md rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900" />
+            <select id="orderFilter" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900">
+              <option value="all">Tous les statuts</option>
+              <option value="Payé">Payé</option>
+              <option value="En attente">En attente</option>
+              <option value="Expédié">Expédié</option>
+              <option value="Remboursé">Remboursé</option>
+            </select>
+          </div>
+          <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[640px] text-left text-sm">
+                <thead class="border-b border-slate-100 bg-slate-50 text-xs font-bold uppercase tracking-wide text-brand-navy/60 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+                  <tr>
+                    <th class="px-5 py-3">ID</th>
+                    <th class="px-5 py-3">Client</th>
+                    <th class="px-5 py-3">Montant</th>
+                    <th class="px-5 py-3">Statut</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══ ANALYTICS ═══ -->
+        <section id="page-analytics" class="page hidden">
+          <div class="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900">
+            <i class="fa-solid fa-chart-column mb-4 text-4xl text-slate-300"></i>
+            <h2 class="text-xl font-bold text-brand-navy dark:text-white">Analytics avancés</h2>
+            <p class="mt-2 max-w-md text-slate-500">Données démo — graphiques supplémentaires disponibles dans la version production.</p>
+            <span class="mt-4 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">Placeholder démo</span>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DONNÉES FACTICES (mock interne)
+═══════════════════════════════════════════ */
+const MOCK = {
+  kpis: {
+    revenue: 487650000,
+    users: 8420,
+    ordersMonth: 1247,
+    conversion: 4.37,
+  },
+  sales12Months: {
+    labels: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
+    values: [28000000,32000000,31000000,35000000,38000000,42000000,41000000,45000000,47000000,44000000,48000000,52000000],
+  },
+  traffic: [
+    { label: 'Organique', value: 38, color: '#0056B3' },
+    { label: 'Réseaux sociaux', value: 27, color: '#FFB300' },
+    { label: 'Email', value: 20, color: '#10B981' },
+    { label: 'Direct', value: 15, color: '#8B5CF6' },
+  ],
+  users: [
+    { name: 'Amina Hassan', email: 'amina.hassan@mail.co.tz', role: 'Acheteur', status: 'Actif', joined: '2025-11-12' },
+    { name: 'Jean Mukendi', email: 'jean.mukendi@exemple.cd', role: 'Vendeur', status: 'Actif', joined: '2025-10-03' },
+    { name: 'Fatou Diallo', email: 'fatou.d@demo.io', role: 'Acheteur', status: 'Actif', joined: '2026-01-08' },
+    { name: 'Patrick Mbayo', email: 'patrick.m@shop.cd', role: 'Vendeur', status: 'En attente', joined: '2026-02-14' },
+    { name: 'Grace Mutombo', email: 'grace.m@penepene.co.tz', role: 'Admin', status: 'Actif', joined: '2024-06-01' },
+    { name: 'Paul Mwangi', email: 'paul.mwangi@ke.demo', role: 'Acheteur', status: 'Suspendu', joined: '2025-08-22' },
+    { name: 'Sarah Nsimba', email: 'sarah.nsimba@demo.cd', role: 'Vendeur', status: 'Actif', joined: '2025-12-01' },
+    { name: 'David Okonkwo', email: 'david.o@demo.ng', role: 'Acheteur', status: 'Actif', joined: '2026-03-02' },
+  ],
+  orders: [
+    { id: 'CMD-1001', client: 'Amina Hassan', amount: 185000, status: 'Payé' },
+    { id: 'CMD-1002', client: 'Jean Mukendi', amount: 92000, status: 'En attente' },
+    { id: 'CMD-1003', client: 'Fatou Diallo', amount: 340000, status: 'Expédié' },
+    { id: 'CMD-1004', client: 'Paul Mwangi', amount: 67500, status: 'Payé' },
+    { id: 'CMD-1005', client: 'Grace Mutombo', amount: 210000, status: 'Remboursé' },
+    { id: 'CMD-1006', client: 'David Okonkwo', amount: 156000, status: 'Expédié' },
+    { id: 'CMD-1007', client: 'Sarah Nsimba', amount: 420000, status: 'Payé' },
+    { id: 'CMD-1008', client: 'Patrick Mbayo', amount: 89000, status: 'En attente' },
+    { id: 'CMD-1009', client: 'Marie Kabila', amount: 520000, status: 'Payé' },
+    { id: 'CMD-1010', client: 'James Ochieng', amount: 134000, status: 'Expédié' },
+  ],
+};
+
+const PAGE_TITLES = {
+  dashboard: 'Dashboard',
+  users: 'Utilisateurs',
+  orders: 'Commandes',
+  analytics: 'Analytics',
+};
+
+let salesChart = null;
+let trafficChart = null;
+let currentPage = 'dashboard';
+
+const fmtMoney = (n) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'TZS', maximumFractionDigits: 0 }).format(n);
+
+function statusBadge(status) {
+  const map = {
+    'Payé': 'badge-paid',
+    'En attente': 'badge-pending',
+    'Expédié': 'badge-shipped',
+    'Remboursé': 'badge-refunded',
+    'Actif': 'badge-paid',
+    'Suspendu': 'badge-refunded',
+  };
+  const cls = map[status] || 'badge-pending';
+  return `<span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ${cls}">${status}</span>`;
+}
+
+function chartColors() {
+  const dark = document.documentElement.classList.contains('dark');
+  return {
+    grid: dark ? 'rgba(148,163,184,.12)' : 'rgba(148,163,184,.25)',
+    text: dark ? '#94a3b8' : '#64748b',
+    tooltipBg: dark ? '#1e293b' : '#fff',
+    tooltipText: dark ? '#f1f5f9' : '#1e293b',
+  };
+}
+
+function renderKPIs() {
+  document.getElementById('kpiRevenue').textContent = fmtMoney(MOCK.kpis.revenue);
+  document.getElementById('kpiUsers').textContent = MOCK.kpis.users.toLocaleString('fr-FR');
+  document.getElementById('kpiOrders').textContent = MOCK.kpis.ordersMonth.toLocaleString('fr-FR');
+  document.getElementById('kpiConversion').textContent = MOCK.kpis.conversion + ' %';
+}
+
+function buildCharts() {
+  const c = chartColors();
+  if (salesChart) salesChart.destroy();
+  if (trafficChart) trafficChart.destroy();
+
+  salesChart = new Chart(document.getElementById('salesChart'), {
+    type: 'line',
+    data: {
+      labels: MOCK.sales12Months.labels,
+      datasets: [{
+        data: MOCK.sales12Months.values,
+        borderColor: '#0056B3',
+        backgroundColor: 'rgba(0,86,179,.12)',
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: '#FFB300',
+        pointBorderColor: '#002E5D',
+        pointRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: c.tooltipBg,
+          titleColor: c.tooltipText,
+          bodyColor: c.tooltipText,
+          callbacks: { label: (ctx) => ' ' + fmtMoney(ctx.parsed.y) },
+        },
+      },
+      scales: {
+        x: { grid: { color: c.grid }, ticks: { color: c.text } },
+        y: {
+          grid: { color: c.grid },
+          ticks: { color: c.text, callback: (v) => (v / 1e6).toFixed(0) + 'M' },
+        },
+      },
+    },
+  });
+
+  trafficChart = new Chart(document.getElementById('trafficChart'), {
+    type: 'doughnut',
+    data: {
+      labels: MOCK.traffic.map((t) => t.label),
+      datasets: [{
+        data: MOCK.traffic.map((t) => t.value),
+        backgroundColor: MOCK.traffic.map((t) => t.color),
+        borderWidth: 2,
+        borderColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: { legend: { display: false } },
+    },
+  });
+
+  document.getElementById('trafficLegend').innerHTML = MOCK.traffic.map((t) => `
+    <li class="flex justify-between">
+      <span><span class="mr-2 inline-block h-2.5 w-2.5 rounded-full" style="background:${t.color}"></span>${t.label}</span>
+      <strong>${t.value}%</strong>
+    </li>`).join('');
+}
+
+function renderUsers(filter = '') {
+  const q = filter.toLowerCase();
+  const rows = MOCK.users.filter((u) =>
+    !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+  );
+  document.getElementById('usersTableBody').innerHTML = rows.length
+    ? rows.map((u) => `
+      <tr class="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
+        <td class="px-5 py-3 font-semibold text-brand-navy dark:text-white">${u.name}</td>
+        <td class="px-5 py-3 text-slate-500">${u.email}</td>
+        <td class="px-5 py-3">${u.role}</td>
+        <td class="px-5 py-3">${statusBadge(u.status)}</td>
+        <td class="px-5 py-3 text-slate-500">${new Date(u.joined).toLocaleDateString('fr-FR')}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="5" class="px-5 py-10 text-center text-slate-500">Aucun résultat</td></tr>`;
+}
+
+function renderOrders(search = '', statusFilter = 'all') {
+  const q = search.toLowerCase();
+  const rows = MOCK.orders.filter((o) => {
+    const matchQ = !q || o.id.toLowerCase().includes(q) || o.client.toLowerCase().includes(q);
+    const matchS = statusFilter === 'all' || o.status === statusFilter;
+    return matchQ && matchS;
+  });
+  document.getElementById('ordersTableBody').innerHTML = rows.length
+    ? rows.map((o) => `
+      <tr class="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
+        <td class="px-5 py-3 font-mono font-semibold text-brand-navy dark:text-white">${o.id}</td>
+        <td class="px-5 py-3">${o.client}</td>
+        <td class="px-5 py-3 font-semibold">${fmtMoney(o.amount)}</td>
+        <td class="px-5 py-3">${statusBadge(o.status)}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" class="px-5 py-10 text-center text-slate-500">Aucun résultat</td></tr>`;
+}
+
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-link').forEach((el) => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+  document.querySelectorAll('.page').forEach((el) => {
+    el.classList.toggle('hidden', el.id !== 'page-' + page);
+  });
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[page] || 'Dashboard';
+  closeSidebar();
+  if (page === 'dashboard') setTimeout(() => buildCharts(), 50);
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.remove('-translate-x-full');
+  document.getElementById('overlay').classList.remove('hidden');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.add('-translate-x-full');
+  document.getElementById('overlay').classList.add('hidden');
+}
+
+function applyTheme(dark) {
+  document.documentElement.classList.toggle('dark', dark);
+  localStorage.setItem('admin-theme', dark ? 'dark' : 'light');
+  document.getElementById('themeIcon').className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  if (currentPage === 'dashboard' && !document.getElementById('content').classList.contains('hidden')) {
+    buildCharts();
+  }
+}
+
+function init() {
+  const saved = localStorage.getItem('admin-theme');
+  applyTheme(saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches));
+
+  document.getElementById('menuBtn').addEventListener('click', openSidebar);
+  document.getElementById('overlay').addEventListener('click', closeSidebar);
+  document.getElementById('themeBtn').addEventListener('click', () => applyTheme(!document.documentElement.classList.contains('dark')));
+
+  document.querySelectorAll('.nav-link').forEach((btn) => {
+    btn.addEventListener('click', () => navigate(btn.dataset.page));
+  });
+
+  document.getElementById('userSearch').addEventListener('input', (e) => renderUsers(e.target.value));
+  document.getElementById('orderSearch').addEventListener('input', (e) => renderOrders(e.target.value, document.getElementById('orderFilter').value));
+  document.getElementById('orderFilter').addEventListener('change', (e) => renderOrders(document.getElementById('orderSearch').value, e.target.value));
+  document.getElementById('addUserBtn').addEventListener('click', () => alert('Fonctionnalité démo — ajout simulé uniquement.'));
+
+  setTimeout(() => {
+    renderKPIs();
+    renderUsers();
+    renderOrders();
+    buildCharts();
+    document.getElementById('loader').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+  }, 500);
+
+  window.addEventListener('resize', () => {
+    salesChart?.resize();
+    trafficChart?.resize();
+  });
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,9 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
-import { Search, MapPin, TrendingUp, Users, ShoppingBag, Star, ShieldCheck, ArrowRight } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { Search, MapPin, TrendingUp, Users, ShoppingBag, Star, ShieldCheck, ArrowRight, ChevronLeft, ChevronRight, Store } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import useTranslation from '@/hooks/useTranslation';
-import FeaturedSellersSection from './FeaturedSellersSection';
 
 const DEFAULT_HERO_IMAGE = '/images/demo-products/default.jpg';
 
@@ -75,12 +74,42 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
     const [searchQuery, setSearchQuery] = useState('');
     const [location, setLocation] = useState('');
     const heroRef = useRef(null);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
     // Parallax scroll effect
     const { scrollY } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
     const bgY = useTransform(scrollY, [0, 600], [0, 120]);
     const contentY = useTransform(scrollY, [0, 600], [0, 60]);
     const contentOpacity = useTransform(scrollY, [0, 400], [1, 0.3]);
+
+    // Auto-play carousel: 2.5 seconds per slide
+    useEffect(() => {
+        if (!isAutoPlaying || !featuredPromotions || featuredPromotions.length === 0) return;
+
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % featuredPromotions.length);
+        }, 2500); // 2.5 seconds
+
+        return () => clearInterval(interval);
+    }, [isAutoPlaying, featuredPromotions.length]);
+
+    const goToSlide = (index) => {
+        setCurrentIndex(index);
+        setIsAutoPlaying(false);
+        // Resume auto-play after 10 seconds of inactivity
+        setTimeout(() => setIsAutoPlaying(true), 10000);
+    };
+
+    const goToPrevious = () => {
+        const newIndex = currentIndex === 0 ? featuredPromotions.length - 1 : currentIndex - 1;
+        goToSlide(newIndex);
+    };
+
+    const goToNext = () => {
+        const newIndex = (currentIndex + 1) % featuredPromotions.length;
+        goToSlide(newIndex);
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -93,6 +122,9 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
         const price = product.sale_price || product.price;
         return `${product.currency || 'USD'} ${parseFloat(price).toLocaleString()}`;
     };
+
+    // Get current promotion
+    const currentPromo = featuredPromotions[currentIndex];
 
     // Stats strip
     const stats = [
@@ -223,9 +255,139 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
                         </div>
                     </motion.div>
 
-                    {/* ── Right Side: Dynamic Product Cards ── */}
-                    <div className="w-full lg:col-span-5 relative h-[380px] sm:h-[460px] mt-12 lg:mt-0 flex justify-center items-center">
-                        <FeaturedSellersSection promotions={featuredPromotions} />
+                    {/* ── Right Side: Hero Carousel ── */}
+                    <div className="w-full lg:col-span-5 relative h-[380px] sm:h-[460px] mt-12 lg:mt-0">
+                        {featuredPromotions && featuredPromotions.length > 0 ? (
+                            <div className="relative w-full h-full">
+                                {/* Carousel Slides */}
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={currentIndex}
+                                        initial={{ opacity: 0, x: 100 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -100 }}
+                                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                                        className="absolute inset-0"
+                                    >
+                                        <div className="relative w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/20">
+                                            {/* Product Image */}
+                                            <div className="h-3/5 relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
+                                                <img
+                                                    src={currentPromo?.custom_image_url || currentPromo?.product_image || '/images/demo-products/default.jpg'}
+                                                    alt={currentPromo?.product_name || 'Promotion'}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
+                                                />
+                                                {/* Overlay gradient */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                                                
+                                                {/* Headline */}
+                                                {currentPromo?.headline && (
+                                                    <div className="absolute top-4 left-4 right-4">
+                                                        <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg shadow-lg">
+                                                            <p className="text-sm font-bold">{currentPromo.headline}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Seller Info */}
+                                                <div className="absolute bottom-4 left-4 right-4">
+                                                    <div className="bg-black/60 backdrop-blur-md rounded-lg px-3 py-2 flex items-center gap-2">
+                                                        <Store size={14} className="text-amber-400 shrink-0" />
+                                                        <span className="text-white text-xs font-semibold truncate">
+                                                            {currentPromo?.seller_name || 'Vendeur'}
+                                                        </span>
+                                                        {currentPromo?.seller_verified && (
+                                                            <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Hot Badge */}
+                                                <div className="absolute top-4 right-4">
+                                                    <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                                                        {t('home.hot_deal', 'Offre Chaude')}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Product Details */}
+                                            <div className="h-2/5 p-5 flex flex-col justify-between">
+                                                <div>
+                                                    <Link href={`/products/${currentPromo?.product_slug}`} className="block hover:opacity-80 transition-opacity">
+                                                        <h3 className="font-bold text-lg text-gray-900 leading-tight mb-2 line-clamp-2">
+                                                            {currentPromo?.product_name}
+                                                        </h3>
+                                                    </Link>
+                                                    {currentPromo?.category_name && (
+                                                        <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                                                            {currentPromo.category_name}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center justify-between mt-3">
+                                                    <span className="text-2xl font-extrabold text-primary-600">
+                                                        {currentPromo?.product_currency || 'CDF'} {parseFloat(currentPromo?.product_price || 0).toLocaleString()}
+                                                    </span>
+                                                    <div className="flex items-center gap-1 text-gray-500 text-xs">
+                                                        <MapPin size={12} />
+                                                        <span>{currentPromo?.seller_city || 'Local'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
+
+                                {/* Navigation Arrows */}
+                                {featuredPromotions.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={goToPrevious}
+                                            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-2 shadow-lg transition-all hover:scale-110"
+                                            aria-label="Previous slide"
+                                        >
+                                            <ChevronLeft size={20} className="text-gray-700" />
+                                        </button>
+                                        <button
+                                            onClick={goToNext}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-2 shadow-lg transition-all hover:scale-110"
+                                            aria-label="Next slide"
+                                        >
+                                            <ChevronRight size={20} className="text-gray-700" />
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Dots Indicator */}
+                                {featuredPromotions.length > 1 && (
+                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                                        {featuredPromotions.map((_, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => goToSlide(index)}
+                                                className={`transition-all duration-300 rounded-full ${
+                                                    index === currentIndex
+                                                        ? 'w-8 h-2 bg-primary-600'
+                                                        : 'w-2 h-2 bg-white/50 hover:bg-white/80'
+                                                }`}
+                                                aria-label={`Go to slide ${index + 1}`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Slide Counter */}
+                                <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
+                                    {currentIndex + 1} / {featuredPromotions.length}
+                                </div>
+                            </div>
+                        ) : (
+                            /* Fallback: No promotions */
+                            <div className="flex items-center justify-center h-full bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                                <p className="text-white/80 text-center">{t('home.no_promotions', 'Aucune promotion disponible')}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </motion.div>

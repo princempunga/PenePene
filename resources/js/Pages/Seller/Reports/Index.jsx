@@ -36,13 +36,13 @@ function StatCard({ icon: Icon, label, value, sub, color }) {
     );
 }
 
-export default function ReportsIndex({ stats, revenueTrend, topProducts, recentOrders, filters }) {
+export default function ReportsIndex({ stats, revenueTrend, topProducts, recentOrders, downloadRequests = [], filters }) {
     const filterForm = useForm({
         from: filters.from,
         to: filters.to,
     });
 
-    const exportForm = useForm({
+    const requestForm = useForm({
         type: 'sales',
         format: 'pdf',
         from: filters.from,
@@ -57,39 +57,15 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
         }, { preserveState: true });
     };
 
-    const downloadReport = (e) => {
+    const submitRequest = (e) => {
         e.preventDefault();
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/seller/reports/generate';
-
-        const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content;
-        if (csrfToken) {
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = csrfToken;
-            form.appendChild(csrfInput);
-        }
-
-        const payload = {
-            ...exportForm.data,
+        requestForm.transform(data => ({
+            ...data,
             from: filterForm.data.from,
             to: filterForm.data.to,
-        };
-
-        Object.keys(payload).forEach(key => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = payload[key];
-            form.appendChild(input);
+        })).post('/seller/reports/request', {
+            preserveScroll: true,
         });
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
     };
 
     const maxRevenue = Math.max(...revenueTrend.map(d => d.amount), 1);
@@ -286,19 +262,19 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                 </div>
             </div>
 
-            {/* Export Panel */}
+            {/* Demande de téléchargement */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center shrink-0">
                         <Download size={20} />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900">Exporter le rapport</h2>
-                        <p className="text-sm text-gray-500">Téléchargez en PDF, Excel ou CSV selon la période ci-dessus</p>
+                        <h2 className="text-lg font-bold text-gray-900">Demander le téléchargement</h2>
+                        <p className="text-sm text-gray-500">Votre demande sera envoyée à l&apos;administrateur pour approbation</p>
                     </div>
                 </div>
                 <div className="p-6">
-                    <form onSubmit={downloadReport} className="space-y-6">
+                    <form onSubmit={submitRequest} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Type de rapport</label>
@@ -311,7 +287,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                         <label
                                             key={opt.value}
                                             className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition ${
-                                                exportForm.data.type === opt.value
+                                                requestForm.data.type === opt.value
                                                     ? 'border-primary-500 bg-primary-50 text-primary-700'
                                                     : 'border-gray-200 hover:bg-gray-50'
                                             }`}
@@ -320,8 +296,8 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                                 type="radio"
                                                 name="type"
                                                 value={opt.value}
-                                                checked={exportForm.data.type === opt.value}
-                                                onChange={e => exportForm.setData('type', e.target.value)}
+                                                checked={requestForm.data.type === opt.value}
+                                                onChange={e => requestForm.setData('type', e.target.value)}
                                                 className="text-primary-600"
                                             />
                                             <span className="font-medium flex items-center gap-2">
@@ -344,7 +320,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                         <label
                                             key={fmt.value}
                                             className={`flex-1 flex items-center justify-center p-3 rounded-lg border cursor-pointer transition ${
-                                                exportForm.data.format === fmt.value
+                                                requestForm.data.format === fmt.value
                                                     ? fmt.active
                                                     : 'border-gray-200 hover:bg-gray-50'
                                             }`}
@@ -353,8 +329,8 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                                                 type="radio"
                                                 name="format"
                                                 value={fmt.value}
-                                                checked={exportForm.data.format === fmt.value}
-                                                onChange={e => exportForm.setData('format', e.target.value)}
+                                                checked={requestForm.data.format === fmt.value}
+                                                onChange={e => requestForm.setData('format', e.target.value)}
                                                 className="sr-only"
                                             />
                                             <span className="font-bold">{fmt.label}</span>
@@ -370,15 +346,54 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                         <div className="flex justify-end pt-4 border-t border-gray-100">
                             <button
                                 type="submit"
-                                className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-primary-700 transition shadow-md shadow-primary-600/20"
+                                disabled={requestForm.processing}
+                                className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-primary-700 transition shadow-md shadow-primary-600/20 disabled:opacity-50"
                             >
                                 <FileDown size={18} />
-                                Télécharger le rapport
+                                {requestForm.processing ? 'Envoi…' : 'Demander le téléchargement'}
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            {/* Demandes récentes */}
+            {downloadRequests.length > 0 && (
+                <div className="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100">
+                        <h2 className="font-bold text-gray-900">Mes demandes de téléchargement</h2>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                        {downloadRequests.map((req) => (
+                            <div key={req.id} className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <p className="font-medium text-gray-900 capitalize">{req.report_type} · {req.format.toUpperCase()}</p>
+                                    <p className="text-xs text-gray-500">{req.date_from} → {req.date_to}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-xs font-bold px-2 py-1 rounded ${
+                                        req.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                        req.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                        'bg-amber-100 text-amber-700'
+                                    }`}>
+                                        {req.status === 'approved' ? 'Approuvé' :
+                                         req.status === 'rejected' ? 'Refusé' : 'En attente'}
+                                    </span>
+                                    {req.status === 'approved' && req.download_token && (
+                                        <a
+                                            href={`/seller/reports/download/${req.id}?token=${req.download_token}`}
+                                            className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                                        >
+                                            <Download size={14} />
+                                            Télécharger
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </SellerLayout>
     );
 }

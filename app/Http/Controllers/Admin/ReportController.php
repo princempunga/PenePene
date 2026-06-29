@@ -9,7 +9,6 @@ use App\Models\Order;
 use App\Models\Seller;
 use App\Models\Product;
 use App\Models\SupportTicket;
-use App\Models\SponsoredProduct;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AdminReportExport;
@@ -25,7 +24,6 @@ class ReportController extends Controller
             'total_sellers'   => Seller::where('status', 'verified')->count(),
             'total_products'  => Product::where('status', 'active')->count(),
             'open_tickets'    => SupportTicket::where('status', 'open')->count(),
-            'pending_ads'     => SponsoredProduct::where('status', 'pending')->count(),
         ];
 
         return Inertia::render('Admin/Reports/Index', ['stats' => $stats]);
