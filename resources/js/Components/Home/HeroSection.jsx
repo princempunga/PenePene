@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
 import { Search, MapPin, TrendingUp, Users, ShoppingBag, ShieldCheck, ArrowRight, ChevronLeft, ChevronRight, Store } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import useTranslation from '@/hooks/useTranslation';
 import { EASE_OUT_EXPO } from '@/lib/motion';
 import { DURATION } from '@/lib/premiumMotion';
@@ -102,15 +102,27 @@ function HeroCarouselSlide({ promo, isActive, t }) {
                     )}
 
                     <div className="absolute bottom-4 left-4 right-4">
-                        <div className="bg-black/70 rounded-lg px-3 py-2 flex items-center gap-2">
-                            <Store size={14} className="text-amber-400 shrink-0" />
-                            <span className="text-white text-xs font-semibold truncate">
-                                {promo?.seller_name || 'Vendeur'}
-                            </span>
-                            {promo?.seller_verified && (
-                                <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
-                            )}
-                        </div>
+                        {promo?.seller_slug ? (
+                            <Link href={`/sellers/${promo.seller_slug}`} className="bg-black/70 hover:bg-black/90 rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200" title={`Visiter la boutique de ${promo?.seller_name}`}>
+                                <Store size={14} className="text-amber-400 shrink-0" />
+                                <span className="text-white text-xs font-semibold truncate hover:underline underline-offset-2">
+                                    {promo?.seller_name || 'Vendeur'}
+                                </span>
+                                {promo?.seller_verified && (
+                                    <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
+                                )}
+                            </Link>
+                        ) : (
+                            <div className="bg-black/70 rounded-lg px-3 py-2 flex items-center gap-2">
+                                <Store size={14} className="text-amber-400 shrink-0" />
+                                <span className="text-white text-xs font-semibold truncate">
+                                    {promo?.seller_name || 'Vendeur'}
+                                </span>
+                                {promo?.seller_verified && (
+                                    <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="absolute top-4 right-4">
@@ -156,6 +168,7 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slideWidth, setSlideWidth] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const [direction, setDirection] = useState(0);
     const prefersReducedMotion = useReducedMotion();
 
     const slides = featuredPromotions.slice(0, 4);
@@ -194,6 +207,7 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
         if (!isAutoPlaying || slides.length <= 1) return;
 
         const interval = setInterval(() => {
+            setDirection(1);
             setCurrentIndex((prev) => (prev + 1) % slides.length);
         }, HERO_AUTOPLAY_MS);
 
@@ -201,31 +215,53 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
     }, [isAutoPlaying, slides.length]);
 
     const goToSlide = (index) => {
-        setCurrentIndex(index);
-        setIsAutoPlaying(false);
-        // Resume auto-play after 10 seconds of inactivity
-        setTimeout(() => setIsAutoPlaying(true), 10000);
-    };
-
-    const goToPrevious = () => {
-        const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
-        goToSlide(newIndex);
-    };
-
-    const goToNext = () => {
-        const newIndex = (currentIndex + 1) % slides.length;
-        goToSlide(newIndex);
-    };
+            setDirection(index > currentIndex ? 1 : -1);
+            setCurrentIndex(index);
+            setIsAutoPlaying(false);
+            // Resume auto-play after 10 seconds of inactivity
+            setTimeout(() => setIsAutoPlaying(true), 10000);
+        };
+    
+        const goToPrevious = () => {
+            setDirection(-1);
+            const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
+            goToSlide(newIndex);
+        };
+    
+        const goToNext = () => {
+            setDirection(1);
+            const newIndex = (currentIndex + 1) % slides.length;
+            goToSlide(newIndex);
+        };
 
     const handleSearch = (e) => {
         e.preventDefault();
         router.get('/search', { q: searchQuery, location: location });
     };
 
-    const translateX = slideWidth > 0 ? -currentIndex * slideWidth : 0;
-    const carouselTransition = prefersReducedMotion
-        ? { duration: 0.25, ease: EASE_OUT_EXPO }
-        : { duration: DURATION.normal, ease: EASE_OUT_EXPO };
+    const slideVariants = {
+            enter: (dir) => ({
+                x: dir > 0 ? '20%' : '-20%',
+                opacity: 0,
+                scale: 0.9,
+                rotateY: dir > 0 ? 10 : -10,
+                zIndex: 0,
+            }),
+            center: {
+                x: 0,
+                opacity: 1,
+                scale: 1,
+                rotateY: 0,
+                zIndex: 1,
+            },
+            exit: (dir) => ({
+                x: dir > 0 ? '-20%' : '20%',
+                opacity: 0,
+                scale: 0.9,
+                rotateY: dir > 0 ? -10 : 10,
+                zIndex: 0,
+            }),
+        };
 
     // Stats strip
     const stats = [
@@ -354,77 +390,33 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
                         className="w-full lg:col-span-5 relative h-[380px] sm:h-[460px] mt-12 lg:mt-0"
                     >
                         {slides.length > 0 ? (
-                            <div className="relative w-full h-full hero-carousel">
-                                <div
-                                    ref={carouselViewportRef}
-                                    className="w-full h-full overflow-hidden rounded-2xl"
-                                >
-                                    <motion.div
-                                        className="flex h-full hero-carousel-track"
-                                        initial={false}
-                                        animate={{ x: translateX }}
-                                        transition={carouselTransition}
-                                    >
-                                        {slides.map((promo, index) => (
-                                            <div
-                                                key={promo.id ?? promo.product_id ?? index}
-                                                className="h-full flex-shrink-0"
-                                                style={{ width: slideWidth > 0 ? slideWidth : '100%' }}
-                                            >
-                                                <HeroCarouselSlide
-                                                    promo={promo}
-                                                    isActive={index === currentIndex}
-                                                    t={t}
-                                                />
+                            <div className="grid h-full grid-cols-2 gap-3">
+                                {slides.slice(0, 4).map((promo, index) => {
+                                    const shopHref = promo?.seller_slug ? `/sellers/${promo.seller_slug}` : `/products/${promo?.product_slug}`;
+
+                                    return (
+                                        <Link
+                                            key={promo.id ?? promo.product_id ?? index}
+                                            href={shopHref}
+                                            className="group relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-2xl"
+                                        >
+                                            <img
+                                                src={promo?.custom_image_url || promo?.product_image || '/images/demo-products/default.jpg'}
+                                                alt={promo?.product_name || 'Promotion'}
+                                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                loading="lazy"
+                                                decoding="async"
+                                                onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                                            <div className="absolute bottom-3 left-3 right-3">
+                                                <p className="text-sm font-semibold text-white line-clamp-2">
+                                                    {promo?.product_name || 'Produit en vedette'}
+                                                </p>
                                             </div>
-                                        ))}
-                                    </motion.div>
-                                </div>
-
-                                {slides.length > 1 && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={goToPrevious}
-                                            className="web-slider-btn absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-transform hover:scale-105"
-                                            aria-label="Précédent"
-                                        >
-                                            <ChevronLeft size={20} className="text-gray-700" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={goToNext}
-                                            className="web-slider-btn absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-transform hover:scale-105"
-                                            aria-label="Suivant"
-                                        >
-                                            <ChevronRight size={20} className="text-gray-700" />
-                                        </button>
-                                    </>
-                                )}
-
-                                {slides.length > 1 && (
-                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-                                        {slides.map((_, index) => (
-                                            <button
-                                                key={index}
-                                                type="button"
-                                                onClick={() => goToSlide(index)}
-                                                className="p-1"
-                                                aria-label={`Slide ${index + 1}`}
-                                            >
-                                                <span
-                                                    className="block h-1.5 rounded-full transition-all duration-300"
-                                                    style={{
-                                                        width: index === currentIndex ? 28 : 8,
-                                                        backgroundColor: index === currentIndex
-                                                            ? 'rgb(0 86 179)'
-                                                            : 'rgba(255,255,255,0.45)',
-                                                    }}
-                                                />
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+                                        </Link>
+                                    );
+                                })}
                             </div>
                         ) : (
                             /* Fallback: No promotions */

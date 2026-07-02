@@ -110,8 +110,8 @@ export default function Store({ seller, products, reviews }) {
                 <div className="max-w-7xl mx-auto px-4 relative pb-8">
                     <div className="flex flex-col md:flex-row gap-6 items-start md:items-end -mt-16 md:-mt-20">
                         <div className="w-32 h-32 md:w-40 md:h-40 rounded-xl border-4 border-white bg-white shadow-md overflow-hidden shrink-0 flex items-center justify-center relative z-10">
-                            {seller.logo ? (
-                                <img src={`/storage/${seller.logo}`} alt={seller.business_name} className="w-full h-full object-cover" />
+                            {seller.logo || seller.user?.avatar ? (
+                                <img src={`/storage/${seller.logo || seller.user?.avatar}`} alt={seller.business_name} className="w-full h-full object-cover" />
                             ) : (
                                 <span className="text-5xl font-bold text-primary-300">{seller.business_name.charAt(0)}</span>
                             )}

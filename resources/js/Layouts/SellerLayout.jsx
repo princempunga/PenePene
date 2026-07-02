@@ -208,7 +208,7 @@ export default function SellerLayout({ children, title }) {
                     </div>
                 </header>
 
-                <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 max-w-7xl flex flex-col">
+                <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 flex flex-col">
                     {title && (
                         <h1 className="text-2xl font-bold text-gray-900 mb-6">{title}</h1>
                     )}

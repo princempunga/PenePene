@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import ProductFormCard from '@/Components/Seller/ProductFormCard';
-import { Upload, X, ChevronRight, ChevronLeft, ImageIcon, Check, Package } from 'lucide-react';
+import { Upload, X, ChevronRight, ChevronLeft, ImageIcon, Check, Package, Send } from 'lucide-react';
 
 function productFromFile(file) {
     return {
@@ -68,7 +68,6 @@ export default function ProductCreate({ categories }) {
     const { errors: pageErrors } = usePage().props;
     const [step, setStep] = useState(1);
     const [products, setProducts] = useState([]);
-    const [publishingIndex, setPublishingIndex] = useState(null);
     const [publishingAll, setPublishingAll] = useState(false);
 
     const errors = pageErrors || {};
@@ -95,25 +94,6 @@ export default function ProductCreate({ categories }) {
         setProducts((prev) => prev.map((p, i) => (i === index ? updated : p)));
     };
 
-    const markPublished = (index) => {
-        setProducts((prev) => prev.map((p, i) => (i === index ? { ...p, published: true } : p)));
-    };
-
-    const handlePublishOne = (index) => {
-        const product = products[index];
-        setPublishingIndex(index);
-
-        router.post(
-            '/seller/products',
-            buildSingleProductFormData(product, csrf),
-            {
-                forceFormData: true,
-                preserveState: true,
-                onSuccess: () => markPublished(index),
-                onFinish: () => setPublishingIndex(null),
-            }
-        );
-    };
 
     const handlePublishAll = (e) => {
         e.preventDefault();
@@ -226,7 +206,7 @@ export default function ProductCreate({ categories }) {
                 )}
 
                 {step === 2 && (
-                    <div className="max-w-2xl space-y-6">
+                    <div className="max-w-5xl space-y-6">
                         <div className="flex flex-wrap items-center justify-between gap-3 bg-primary-50 border border-primary-200 rounded-xl px-4 py-3">
                             <span className="inline-flex items-center gap-2 text-sm font-medium text-primary-800">
                                 <Package size={16} />
@@ -242,34 +222,47 @@ export default function ProductCreate({ categories }) {
                         </div>
 
                         <p className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                            Pour chaque produit, remplissez dans l&apos;ordre :{' '}
-                            <strong>Image → Nom → Description → Catégorie → Sous-catégorie → Prix → Prix promotionnel → Stock → Publier</strong>
+                            Pour chaque produit, remplissez :{' '}
+                            <strong>Nom → Description → Catégorie → Sous-catégorie → Prix → Prix promotionnel → Stock</strong>.
+                            Ensuite cliquez sur <strong>Publier</strong> en bas pour tout envoyer d&apos;un coup.
                         </p>
 
-                        {products.map((product, index) => (
-                            <ProductFormCard
-                                key={product.id}
-                                index={index}
-                                product={product}
-                                categories={categories}
-                                errors={errors}
-                                onChange={updateProduct}
-                                onPublish={handlePublishOne}
-                                publishing={publishingIndex === index}
-                                published={product.published}
-                            />
-                        ))}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {products.map((product, index) => (
+                                <ProductFormCard
+                                    key={product.id}
+                                    index={index}
+                                    product={product}
+                                    categories={categories}
+                                    errors={errors}
+                                    onChange={updateProduct}
+                                    published={product.published}
+                                />
+                            ))}
+                        </div>
 
-                        {pendingProducts.length > 1 && (
+                        {pendingProducts.length > 0 && (
                             <form onSubmit={handlePublishAll}>
                                 <button
                                     type="submit"
-                                    disabled={publishingAll || pendingProducts.length === 0}
-                                    className="w-full flex items-center justify-center gap-2 border-2 border-primary-600 text-primary-700 hover:bg-primary-50 disabled:opacity-50 font-bold py-3.5 px-4 rounded-xl transition-colors"
+                                    id="btn-publier-tout"
+                                    disabled={publishingAll}
+                                    className="w-full flex items-center justify-center gap-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg shadow-primary-200 transition-all duration-200 hover:shadow-xl hover:shadow-primary-300 hover:-translate-y-0.5"
                                 >
-                                    {publishingAll
-                                        ? 'Publication en cours…'
-                                        : `Publier les ${pendingProducts.length} produits restants`}
+                                    {publishingAll ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                            </svg>
+                                            Publication en cours…
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send size={22} />
+                                            Publier {pendingProducts.length > 1 ? `les ${pendingProducts.length} produits` : 'le produit'}
+                                        </>
+                                    )}
                                 </button>
                             </form>
                         )}

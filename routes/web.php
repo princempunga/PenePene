@@ -379,9 +379,9 @@ Route::middleware('auth')->group(function () {
         // Homepage Promotions (admin-managed carousel)
         Route::get('/promotions',                           [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'index'])->name('promotions.index');
         Route::post('/promotions',                          [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'store'])->name('promotions.store');
+        Route::get('/promotions/sellers/{seller}/products', [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'sellerProducts'])->name('promotions.seller-products');
         Route::put('/promotions/{promotion}',               [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'update'])->name('promotions.update');
         Route::delete('/promotions/{promotion}',            [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'destroy'])->name('promotions.destroy');
-        Route::get('/promotions/sellers/{seller}/products', [\App\Http\Controllers\Admin\HomepagePromotionController::class, 'sellerProducts'])->name('promotions.seller-products');
 
         // Categories
         Route::get('/categories',              [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');

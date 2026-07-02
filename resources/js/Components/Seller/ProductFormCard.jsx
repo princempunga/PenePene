@@ -17,8 +17,6 @@ export default function ProductFormCard({
     categories,
     errors = {},
     onChange,
-    onPublish,
-    publishing = false,
     published = false,
 }) {
     const selectedCategory = categories.find((cat) => String(cat.id) === String(product.category_id));
@@ -220,17 +218,7 @@ export default function ProductFormCard({
                     )}
                 </div>
 
-                {/* 9. Publier */}
-                <div className="pt-2 border-t border-gray-100">
-                    <button
-                        type="button"
-                        onClick={() => onPublish(index)}
-                        disabled={publishing}
-                        className="w-full sm:w-auto min-w-[200px] flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-xl transition-colors"
-                    >
-                        {publishing ? 'Publication…' : 'Publier'}
-                    </button>
-                </div>
+
             </div>
         </div>
     );

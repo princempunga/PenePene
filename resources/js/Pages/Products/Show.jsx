@@ -340,8 +340,8 @@ export default function Show({
                                     href={isDemo ? '/products' : `/sellers/${seller.slug}`}
                                     className="w-16 h-16 bg-gray-100 rounded-full border border-gray-200 overflow-hidden shrink-0"
                                 >
-                                    {seller.logo ? (
-                                        <img src={`/storage/${seller.logo}`} alt="" className="w-full h-full object-cover" />
+                                    {seller.logo || seller.user?.avatar ? (
+                                        <img src={`/storage/${seller.logo || seller.user?.avatar}`} alt="" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-primary-400 font-bold text-2xl">
                                             {seller.business_name?.charAt(0)}

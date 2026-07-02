@@ -33,9 +33,25 @@ class HomepagePromotionController extends Controller
                 'user_name'     => $s->user?->name,
             ]);
 
+        $allProducts = Product::where('status', 'active')
+            ->with('images')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('seller_id')
+            ->map(function ($products) {
+                return $products->map(fn ($p) => [
+                    'id'        => $p->id,
+                    'name'      => $p->name,
+                    'price'     => $p->sale_price ?? $p->price,
+                    'currency'  => $p->currency,
+                    'image_url' => $this->productImageUrl($p),
+                ]);
+            });
+
         return Inertia::render('Admin/Promotions/Index', [
             'promotions' => $promotions,
             'sellers'    => $sellers,
+            'allProductsBySeller' => $allProducts,
         ]);
     }
 

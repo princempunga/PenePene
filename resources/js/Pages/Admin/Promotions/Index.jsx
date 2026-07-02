@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Megaphone, Save, Trash2, AlertCircle, ImagePlus, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Megaphone, Save, Trash2, AlertCircle, ChevronLeft, ChevronRight, Eye, ShoppingBag, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 const HERO_SLOTS = [1, 2, 3, 4];
@@ -137,21 +137,78 @@ function HeroPreview({ slides }) {
     );
 }
 
+function ProductPicker({ products, loading, selectedId, onSelect }) {
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center gap-2 py-6 text-primary-500">
+                <Loader2 size={20} className="animate-spin" />
+                <span className="text-sm font-medium">Chargement des produits...</span>
+            </div>
+        );
+    }
+    if (products.length === 0) {
+        return (
+            <div className="py-6 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">
+                <ShoppingBag size={24} className="mx-auto mb-2 opacity-40" />
+                Aucun produit actif pour ce vendeur
+            </div>
+        );
+    }
+    return (
+        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
+            {products.map((p) => {
+                const isSelected = String(p.id) === String(selectedId);
+                return (
+                    <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => onSelect(p.id)}
+                        className={`relative flex flex-col rounded-xl border-2 overflow-hidden text-left transition-all duration-200 hover:shadow-md ${
+                            isSelected
+                                ? 'border-primary-500 ring-2 ring-primary-200 shadow-md'
+                                : 'border-gray-200 hover:border-primary-300'
+                        }`}
+                    >
+                        <div className="w-full h-24 bg-gray-100">
+                            {p.image_url ? (
+                                <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                    <ShoppingBag size={28} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-2">
+                            <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight">{p.name}</p>
+                            <p className="text-xs text-primary-600 font-bold mt-0.5">{parseFloat(p.price).toLocaleString()} {p.currency}</p>
+                        </div>
+                        {isSelected && (
+                            <div className="absolute top-1 right-1 w-5 h-5 bg-primary-600 rounded-full flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        )}
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
 function PromotionSlotCard({
     promo,
     sellers,
     sellerProducts,
-    loadingProducts,
     isHeroSlot,
     onUpdate,
     onSave,
     onDelete,
-    onImageSelect,
-    onClearImage,
 }) {
     const isExisting = !!promo.id;
     const products = sellerProducts[promo.seller_id] || [];
-    const previewImage = getPreviewImage(promo, products);
+    const selectedProduct = products.find((p) => String(p.id) === String(promo.product_id));
+    const previewImage = selectedProduct?.image_url || promo.hero_image_url || null;
 
     return (
         <div className={`bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col ${
@@ -183,52 +240,11 @@ function PromotionSlotCard({
             </div>
 
             <div className="p-5 flex-1 flex flex-col gap-4">
-                {/* Image hero */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Photo du carrousel {isHeroSlot && <span className="text-primary-600">(obligatoire pour l'affichage)</span>}
-                    </label>
-                    <div className="flex gap-4 items-start">
-                        <div className="w-28 h-28 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
-                            {previewImage ? (
-                                <img src={previewImage} alt="Aperçu" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-1">
-                                    <ImagePlus size={20} />
-                                    <span className="text-[10px]">Aucune</span>
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex-1 space-y-2">
-                            <label className="flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-400 hover:bg-primary-50/50 transition-colors text-sm font-medium text-gray-700">
-                                <ImagePlus size={16} />
-                                Téléverser une image
-                                <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/jpg"
-                                    className="sr-only"
-                                    onChange={(e) => onImageSelect(promo.promotion_order, e.target.files?.[0] || null)}
-                                />
-                            </label>
-                            {(previewImage || promo.custom_image_url) && (
-                                <button
-                                    type="button"
-                                    onClick={() => onClearImage(promo.promotion_order)}
-                                    className="text-xs text-red-600 hover:text-red-700"
-                                >
-                                    Retirer l'image personnalisée
-                                </button>
-                            )}
-                            <input
-                                type="text"
-                                placeholder="Ou URL : /storage/... ou https://..."
-                                value={promo.custom_image_url || ''}
-                                onChange={(e) => onUpdate(promo.promotion_order, 'custom_image_url', e.target.value)}
-                                className="w-full rounded-lg border-gray-300 text-xs focus:border-primary-500 focus:ring-primary-500"
-                            />
-                        </div>
+                {previewImage && (
+                    <div className="w-full h-40 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                        <img src={previewImage} alt="Aperçu du produit" className="w-full h-full object-cover" />
                     </div>
-                </div>
+                )}
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Vendeur</label>
@@ -244,24 +260,19 @@ function PromotionSlotCard({
                     </select>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Produit {loadingProducts[promo.promotion_order] && (
-                            <span className="text-primary-500 text-xs ml-2 animate-pulse">Chargement...</span>
-                        )}
-                    </label>
-                    <select
-                        value={promo.product_id}
-                        onChange={(e) => onUpdate(promo.promotion_order, 'product_id', e.target.value)}
-                        disabled={!promo.seller_id}
-                        className="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 disabled:text-gray-500"
-                    >
-                        <option value="">— Sélectionner —</option>
-                        {products.map((p) => (
-                            <option key={p.id} value={p.id}>{p.name} — {p.price} {p.currency}</option>
-                        ))}
-                    </select>
-                </div>
+                {promo.seller_id && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Choisir un produit
+                        </label>
+                        <ProductPicker
+                            products={products}
+                            loading={false}
+                            selectedId={promo.product_id}
+                            onSelect={(id) => onUpdate(promo.promotion_order, 'product_id', id)}
+                        />
+                    </div>
+                )}
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Accroche promo (opt.)</label>
@@ -322,53 +333,33 @@ function PromotionSlotCard({
     );
 }
 
-export default function PromotionsIndex({ promotions = [], sellers = [] }) {
+function buildInitialPromotions(promotions = []) {
     const allSlots = [...HERO_SLOTS, ...EXTRA_SLOTS];
-    const [localPromotions, setLocalPromotions] = useState([]);
-    const [sellerProducts, setSellerProducts] = useState({});
-    const [loadingProducts, setLoadingProducts] = useState({});
-
-    useEffect(() => {
-        const initial = allSlots.map((slot) => {
-            const existing = promotions.find((p) => p.promotion_order === slot);
-            return existing
-                ? {
-                    ...existing,
-                    custom_image_file: null,
-                    custom_image_preview: null,
-                    seller_id: existing.seller_id || '',
-                    product_id: existing.product_id || '',
-                }
-                : emptySlot(slot);
-        });
-        setLocalPromotions(initial);
-
-        initial.forEach((promo) => {
-            if (promo.seller_id) {
-                fetchProducts(promo.seller_id, promo.promotion_order);
+    return allSlots.map((slot) => {
+        const existing = promotions.find((p) => p.promotion_order === slot);
+        return existing
+            ? {
+                ...existing,
+                custom_image_file: null,
+                custom_image_preview: null,
+                seller_id: existing.seller_id || '',
+                product_id: existing.product_id || '',
             }
-        });
-    }, [promotions]);
+            : emptySlot(slot);
+    });
+}
+
+export default function HomepagePromotionsAdmin({ promotions = [], sellers = [], allProductsBySeller = {} }) {
+    const initialPromotions = useMemo(() => buildInitialPromotions(promotions), [promotions]);
+    const [localPromotions, setLocalPromotions] = useState(initialPromotions);
 
     const heroPromotions = useMemo(
-        () => localPromotions
-            .filter((p) => HERO_SLOTS.includes(p.promotion_order))
-            .map((p) => ({ ...p, _products: sellerProducts[p.seller_id] || [] })),
-        [localPromotions, sellerProducts],
+        () =>
+            localPromotions
+                .filter((p) => HERO_SLOTS.includes(p.promotion_order))
+                .map((p) => ({ ...p, _products: allProductsBySeller[p.seller_id] || [] })),
+        [localPromotions, allProductsBySeller],
     );
-
-    const fetchProducts = async (sellerId, slotIndex) => {
-        if (!sellerId) return;
-        setLoadingProducts((prev) => ({ ...prev, [slotIndex]: true }));
-        try {
-            const res = await axios.get(`/admin/promotions/sellers/${sellerId}/products`);
-            setSellerProducts((prev) => ({ ...prev, [sellerId]: res.data.products }));
-        } catch (error) {
-            console.error('Failed to load products for seller', error);
-        } finally {
-            setLoadingProducts((prev) => ({ ...prev, [slotIndex]: false }));
-        }
-    };
 
     const handleUpdate = (slotIndex, field, value) => {
         setLocalPromotions((prev) => {
@@ -380,7 +371,6 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
 
             if (field === 'seller_id') {
                 updated[index].product_id = '';
-                fetchProducts(value, slotIndex);
             }
 
             return updated;
@@ -476,10 +466,10 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
                 <div className="mb-6 bg-primary-50 border border-primary-200 p-4 rounded-xl flex gap-3 text-primary-900">
                     <AlertCircle className="shrink-0 text-primary-600" />
                     <div>
-                        <h3 className="font-semibold">Carrousel Hero — 4 photos</h3>
+                        <h3 className="font-semibold">Carrousel Hero — 4 emplacements</h3>
                         <p className="text-sm mt-1 text-primary-800">
                             Les emplacements <strong>1 à 4</strong> alimentent le défilement hero de la page d'accueil.
-                            Téléversez une image pour chaque emplacement (dont la <strong>4ᵉ photo</strong>) puis enregistrez.
+                            Sélectionnez un vendeur puis choisissez un de ses produits — l'image du produit sera utilisée automatiquement.
                             Rotation automatique toutes les 4 secondes.
                         </p>
                     </div>
@@ -502,14 +492,11 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
                                 key={promo.promotion_order}
                                 promo={promo}
                                 sellers={sellers}
-                                sellerProducts={sellerProducts}
-                                loadingProducts={loadingProducts}
+                                sellerProducts={allProductsBySeller}
                                 isHeroSlot
                                 onUpdate={handleUpdate}
                                 onSave={handleSave}
                                 onDelete={handleDelete}
-                                onImageSelect={handleImageSelect}
-                                onClearImage={handleClearImage}
                             />
                         ))}
                 </div>
@@ -526,14 +513,11 @@ export default function PromotionsIndex({ promotions = [], sellers = [] }) {
                                 key={promo.promotion_order}
                                 promo={promo}
                                 sellers={sellers}
-                                sellerProducts={sellerProducts}
-                                loadingProducts={loadingProducts}
+                                sellerProducts={allProductsBySeller}
                                 isHeroSlot={false}
                                 onUpdate={handleUpdate}
                                 onSave={handleSave}
                                 onDelete={handleDelete}
-                                onImageSelect={handleImageSelect}
-                                onClearImage={handleClearImage}
                             />
                         ))}
                 </div>
