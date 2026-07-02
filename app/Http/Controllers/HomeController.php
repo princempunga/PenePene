@@ -51,13 +51,23 @@ class HomeController extends Controller
                 'product.category',
             ])
             ->orderBy('promotion_order')
-            ->take(10)
+            ->take(4)
             ->get()
             ->map(function ($promo) {
                 $product = $promo->product;
                 $seller  = $promo->seller;
                 $image   = $product?->images?->where('is_primary', true)->first()
                         ?? $product?->images?->first();
+
+                $productImage = $image ? (
+                    str_starts_with($image->image_path, 'images/')
+                        ? '/' . $image->image_path
+                        : '/storage/' . $image->image_path
+                ) : null;
+
+                $customImage = $promo->custom_image_url
+                    ? $this->normalizeHeroImageUrl($promo->custom_image_url)
+                    : null;
 
                 return [
                     'id'               => $promo->id,
@@ -67,13 +77,9 @@ class HomeController extends Controller
                     'product_price'    => $product?->sale_price ?? $product?->price,
                     'product_currency' => $product?->currency ?? 'CDF',
                     'product_slug'     => $product?->slug,
-                    'custom_image_url' => $promo->custom_image_url,
+                    'custom_image_url' => $customImage,
                     'headline'         => $promo->headline,
-                    'product_image'    => $image ? (
-                        str_starts_with($image->image_path, 'images/')
-                            ? '/' . $image->image_path
-                            : '/storage/' . $image->image_path
-                    ) : null,
+                    'product_image'    => $productImage,
                     'category_name'    => $product?->category?->name,
                     'seller_id'        => $seller?->id,
                     'seller_name'      => $seller?->business_name,
@@ -82,10 +88,11 @@ class HomeController extends Controller
                     'seller_rating'    => $seller?->average_rating,
                     'seller_verified'  => $seller?->is_verified,
                 ];
-            });
+            })
+            ->values();
 
         if ($featuredPromotions->isEmpty()) {
-            $fallback = (clone $baseProductQuery)->latest()->take(10)->get();
+            $fallback = (clone $baseProductQuery)->latest()->take(4)->get();
             $featuredPromotions = $fallback->map(function ($product) use ($fallback) {
                 $seller = $product->seller;
                 $image  = $product->images?->where('is_primary', true)->first()
@@ -120,5 +127,18 @@ class HomeController extends Controller
             'productSliders'     => $productSliders,
             'featuredPromotions' => $featuredPromotions,
         ]);
+    }
+
+    private function normalizeHeroImageUrl(string $path): string
+    {
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        if (str_starts_with($path, 'images/')) {
+            return '/' . $path;
+        }
+
+        return '/storage/' . ltrim($path, '/');
     }
 }

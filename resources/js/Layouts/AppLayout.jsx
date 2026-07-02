@@ -6,12 +6,14 @@ import Footer from '@/Components/Layout/Footer';
 import MobileMenu from '@/Components/Layout/MobileMenu';
 import Toast from '@/Components/UI/Toast';
 import PageTransition from '@/Components/UI/PageTransition';
+import WebMotionProvider from '@/Components/UI/WebMotionProvider';
 
 export default function AppLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50 pb-[60px] md:pb-0">
+        <WebMotionProvider>
+        <div className="min-h-screen flex flex-col bg-gray-50 pb-[60px] md:pb-0 web-page">
             <Toast />
             <Navbar onMenuClick={() => setIsMobileMenuOpen(true)} />
             <MobileNavbar />
@@ -32,5 +34,6 @@ export default function AppLayout({ children }) {
                 <Footer />
             </div>
         </div>
+        </WebMotionProvider>
     );
 }

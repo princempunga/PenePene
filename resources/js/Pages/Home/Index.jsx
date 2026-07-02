@@ -21,16 +21,23 @@ export default function Index({
             <PopularCategories categories={popularCategories} />
 
             {productSliders.map((products, index) => (
-                <ProductSlider
-                    key={index}
-                    products={products}
-                    index={index}
-                />
+                <div key={index} className="perf-section">
+                    <ProductSlider
+                        products={products}
+                        index={index}
+                    />
+                </div>
             ))}
 
-            <HowItWorks />
-            <SellerBanner />
-            <Testimonials />
+            <div className="perf-section">
+                <HowItWorks />
+            </div>
+            <div className="perf-section">
+                <SellerBanner />
+            </div>
+            <div className="perf-section">
+                <Testimonials />
+            </div>
         </AppLayout>
     );
 }

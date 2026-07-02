@@ -199,6 +199,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('');
 
         $this->call(GovernmentUserSeeder::class);
+        $this->call(HomepagePromotionSeeder::class);
 
         $this->command->info('  Government (Commune):  commune@rdc.gov.cd   / password');
         $this->command->info('  Government (Ville):    ville@rdc.gov.cd     / password');

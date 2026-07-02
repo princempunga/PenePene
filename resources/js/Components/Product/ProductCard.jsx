@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { MapPin, Heart, ShieldCheck, ShoppingCart, Eye } from 'lucide-react';
-import { motion } from 'framer-motion';
 import RatingStars from '../UI/RatingStars';
 import { dispatchToast } from '@/Components/UI/Toast';
 import useTranslation from '@/hooks/useTranslation';
@@ -153,11 +152,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
     };
 
     return (
-        <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-            className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col h-full group relative min-w-0"
-        >
+        <div className="web-card premium-card bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col h-full group relative min-w-0 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
             <button
                 type="button"
                 onClick={handleToggleWishlist}
@@ -167,7 +162,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
                 } ${
                     isFavorited
                         ? 'bg-red-50 text-red-500 hover:bg-red-100'
-                        : 'bg-white/90 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-white'
+                        : 'bg-white text-gray-400 hover:text-red-500 hover:bg-gray-50'
                 }`}
                 aria-label={isFavorited ? t('product.remove_from_wishlist') : t('product.add_to_wishlist')}
             >
@@ -189,7 +184,9 @@ export default function ProductCard({ product, badge, showActions = true, compac
                 <img
                     src={imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-contain p-2 md:object-cover md:p-0 transition-transform duration-500 ease-out md:group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                    className="web-image-zoom w-full h-full object-contain p-2 md:object-cover md:p-0"
                     onError={(e) => { e.target.src = DEFAULT_PRODUCT_IMAGE; }}
                 />
             </Link>
@@ -246,7 +243,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
                                 type="button"
                                 onClick={handleAddToCart}
                                 disabled={outOfStock || adding}
-                                className="flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors cursor-pointer text-[11px] md:text-xs py-2 px-2 md:py-2.5"
+                                className="web-btn flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors cursor-pointer text-[11px] md:text-xs py-2 px-2 md:py-2.5"
                             >
                                 <ShoppingCart size={14} className="shrink-0" />
                                 <span className="truncate">
@@ -255,7 +252,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
                             </button>
                             <Link
                                 href={productUrl}
-                                className="flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 border border-gray-200 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 text-gray-700 font-semibold rounded-lg transition-colors cursor-pointer text-[11px] md:text-xs py-2 px-2 md:py-2.5"
+                                className="web-btn flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 border border-gray-200 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 text-gray-700 font-semibold rounded-lg transition-colors cursor-pointer text-[11px] md:text-xs py-2 px-2 md:py-2.5"
                             >
                                 <Eye size={14} className="shrink-0" />
                                 <span className="truncate">
@@ -266,6 +263,6 @@ export default function ProductCard({ product, badge, showActions = true, compac
                     )}
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 }

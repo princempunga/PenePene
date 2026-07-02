@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, MapPin, MessageCircle, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import SectionReveal from '../UI/SectionReveal';
+import StaggerChildren, { StaggerItem } from '../UI/StaggerChildren';
 import useTranslation from '@/hooks/useTranslation';
 
 export default function TrustIndicators() {
@@ -30,29 +31,24 @@ export default function TrustIndicators() {
     ];
 
     return (
-        <section className="py-10 bg-white border-b border-gray-100">
+        <SectionReveal className="py-10 bg-white border-b border-gray-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" stagger={0.1}>
                     {indicators.map((item, index) => (
-                        <motion.div 
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1, duration: 0.5 }}
-                            className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors"
-                        >
-                            <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center">
-                                {item.icon}
+                        <StaggerItem key={index}>
+                            <div className="web-card flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 border border-transparent hover:border-primary-100">
+                                <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center web-pulse">
+                                    {item.icon}
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-900">{item.title}</h3>
+                                    <p className="text-sm text-gray-500 mt-1 leading-relaxed">{item.description}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-900">{item.title}</h3>
-                                <p className="text-sm text-gray-500 mt-1 leading-relaxed">{item.description}</p>
-                            </div>
-                        </motion.div>
+                        </StaggerItem>
                     ))}
-                </div>
+                </StaggerChildren>
             </div>
-        </section>
+        </SectionReveal>
     );
 }

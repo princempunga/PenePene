@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
-import { Search, MapPin, TrendingUp, Users, ShoppingBag, Star, ShieldCheck, ArrowRight, ChevronLeft, ChevronRight, Store } from 'lucide-react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { Search, MapPin, TrendingUp, Users, ShoppingBag, ShieldCheck, ArrowRight, ChevronLeft, ChevronRight, Store } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
 import useTranslation from '@/hooks/useTranslation';
+import { EASE_OUT_EXPO } from '@/lib/motion';
+import { DURATION } from '@/lib/premiumMotion';
+import { RevealAfterSplash } from '@/Components/UI/RevealAfterSplash';
+
+const HERO_AUTOPLAY_MS = 4500;
 
 const DEFAULT_HERO_IMAGE = '/images/demo-products/default.jpg';
 
@@ -69,30 +74,131 @@ function handleHeroImageError(event, product) {
     event.currentTarget.src = DEFAULT_HERO_IMAGE;
 }
 
+function HeroCarouselSlide({ promo, isActive, t }) {
+    return (
+        <div className="relative w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/20">
+                <div className="h-3/5 relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
+                    <img
+                        src={promo?.custom_image_url || promo?.product_image || '/images/demo-products/default.jpg'}
+                        alt={promo?.product_name || 'Promotion'}
+                        className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isActive ? 'scale-105' : 'scale-100'}`}
+                        loading={isActive ? 'eager' : 'lazy'}
+                        decoding="async"
+                        onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                    {promo?.headline && (
+                        <motion.div
+                            initial={false}
+                            animate={{ opacity: isActive ? 1 : 0.7, y: isActive ? 0 : 6 }}
+                            transition={{ duration: 0.5, ease: EASE_OUT_EXPO }}
+                            className="absolute top-4 left-4 right-4"
+                        >
+                            <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg shadow-lg">
+                                <p className="text-sm font-bold">{promo.headline}</p>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    <div className="absolute bottom-4 left-4 right-4">
+                        <div className="bg-black/70 rounded-lg px-3 py-2 flex items-center gap-2">
+                            <Store size={14} className="text-amber-400 shrink-0" />
+                            <span className="text-white text-xs font-semibold truncate">
+                                {promo?.seller_name || 'Vendeur'}
+                            </span>
+                            {promo?.seller_verified && (
+                                <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="absolute top-4 right-4">
+                        <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                            {t('home.hot_deal', 'Offre Chaude')}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="h-2/5 p-5 flex flex-col justify-between">
+                    <div>
+                        <Link href={`/products/${promo?.product_slug}`} className="block hover:opacity-80 transition-opacity duration-300">
+                            <h3 className="font-bold text-lg text-gray-900 leading-tight mb-2 line-clamp-2">
+                                {promo?.product_name}
+                            </h3>
+                        </Link>
+                        {promo?.category_name && (
+                            <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                                {promo.category_name}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                        <span className="text-2xl font-extrabold text-primary-600">
+                            {promo?.product_currency || 'CDF'} {parseFloat(promo?.product_price || 0).toLocaleString()}
+                        </span>
+                        <div className="flex items-center gap-1 text-gray-500 text-xs">
+                            <MapPin size={12} />
+                            <span>{promo?.seller_city || 'Local'}</span>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    );
+}
+
 export default function HeroSection({ heroProducts = [], featuredPromotions = [] }) {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [location, setLocation] = useState('');
     const heroRef = useRef(null);
+    const carouselViewportRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [slideWidth, setSlideWidth] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const prefersReducedMotion = useReducedMotion();
 
-    // Parallax scroll effect
-    const { scrollY } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-    const bgY = useTransform(scrollY, [0, 600], [0, 120]);
-    const contentY = useTransform(scrollY, [0, 600], [0, 60]);
-    const contentOpacity = useTransform(scrollY, [0, 400], [1, 0.3]);
+    const slides = featuredPromotions.slice(0, 4);
 
-    // Auto-play carousel: 2.5 seconds per slide
     useEffect(() => {
-        if (!isAutoPlaying || !featuredPromotions || featuredPromotions.length === 0) return;
+        const node = carouselViewportRef.current;
+        if (!node) return undefined;
+
+        const measure = () => {
+            const width = node.getBoundingClientRect().width;
+            if (width > 0) setSlideWidth(width);
+        };
+
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(node);
+        window.addEventListener('resize', measure);
+
+        const afterSplash = setTimeout(measure, 900);
+        const raf = requestAnimationFrame(measure);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('resize', measure);
+            clearTimeout(afterSplash);
+            cancelAnimationFrame(raf);
+        };
+    }, []);
+
+    useEffect(() => {
+        setCurrentIndex((prev) => (slides.length === 0 ? 0 : Math.min(prev, slides.length - 1)));
+    }, [slides.length]);
+
+    // Auto-play carousel
+    useEffect(() => {
+        if (!isAutoPlaying || slides.length <= 1) return;
 
         const interval = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % featuredPromotions.length);
-        }, 2500); // 2.5 seconds
+            setCurrentIndex((prev) => (prev + 1) % slides.length);
+        }, HERO_AUTOPLAY_MS);
 
         return () => clearInterval(interval);
-    }, [isAutoPlaying, featuredPromotions.length]);
+    }, [isAutoPlaying, slides.length]);
 
     const goToSlide = (index) => {
         setCurrentIndex(index);
@@ -102,12 +208,12 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
     };
 
     const goToPrevious = () => {
-        const newIndex = currentIndex === 0 ? featuredPromotions.length - 1 : currentIndex - 1;
+        const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
         goToSlide(newIndex);
     };
 
     const goToNext = () => {
-        const newIndex = (currentIndex + 1) % featuredPromotions.length;
+        const newIndex = (currentIndex + 1) % slides.length;
         goToSlide(newIndex);
     };
 
@@ -116,15 +222,10 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
         router.get('/search', { q: searchQuery, location: location });
     };
 
-    // Helper: format price
-    const formatPrice = (product) => {
-        if (!product) return '';
-        const price = product.sale_price || product.price;
-        return `${product.currency || 'USD'} ${parseFloat(price).toLocaleString()}`;
-    };
-
-    // Get current promotion
-    const currentPromo = featuredPromotions[currentIndex];
+    const translateX = slideWidth > 0 ? -currentIndex * slideWidth : 0;
+    const carouselTransition = prefersReducedMotion
+        ? { duration: 0.25, ease: EASE_OUT_EXPO }
+        : { duration: DURATION.normal, ease: EASE_OUT_EXPO };
 
     // Stats strip
     const stats = [
@@ -137,18 +238,16 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
 
     return (
         <div ref={heroRef} className="relative overflow-hidden">
-            {/* ── Background Image Layer (with parallax) ── */}
-            <motion.div
-                style={{ y: bgY }}
-                className="absolute inset-0 z-0"
-            >
+            <div className="absolute inset-0 z-0">
                 <img
                     src="/images/hero-marketplace.jpg"
                     alt=""
-                    className="w-full h-full object-cover hero-zoom-bg"
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    decoding="async"
                     onError={(e) => { e.target.style.display = 'none'; }}
                 />
-            </motion.div>
+            </div>
 
             {/* ── Dark Blue Gradient Overlay ── */}
             <div
@@ -166,47 +265,37 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
             </div>
 
             {/* ── Main Content ── */}
-            <motion.div
-                style={{ y: contentY, opacity: contentOpacity }}
-                className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-28 lg:pt-24 lg:pb-36"
-            >
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-28 lg:pt-24 lg:pb-36">
                 <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
                     {/* ── Left Content ── */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -40 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.7, ease: 'easeOut' }}
-                        className="lg:col-span-7 text-left"
-                    >
-                        {/* Trust badge */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2, duration: 0.5 }}
-                            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-sm font-medium px-4 py-2 rounded-full mb-6"
-                        >
-                            <ShieldCheck size={16} className="text-amber-400" />
-                            <span>{t('home.trusted_by')}</span>
-                        </motion.div>
+                    <div className="lg:col-span-7 text-left">
+                        <RevealAfterSplash delay={0.05} direction="up">
+                            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 text-sm font-medium px-4 py-2 rounded-full mb-6">
+                                <ShieldCheck size={16} className="text-amber-400" />
+                                <span>{t('home.trusted_by')}</span>
+                            </div>
+                        </RevealAfterSplash>
 
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4rem] font-extrabold text-white tracking-tight leading-[1.1] mb-6">
-                            {t('home.hero_title_1')}{' '}
-                            <span className="relative inline-block">
-                                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
-                                    {t('home.hero_title_highlight')}
-                                </span>
-                                <span className="absolute bottom-1 left-0 w-full h-3 bg-amber-400/20 rounded-full -z-0" />
-                            </span>{' '}
-                            {t('home.hero_title_2')}
+                            <RevealAfterSplash delay={0.08} as="span" className="block">
+                                {t('home.hero_title_1')}{' '}
+                                <span className="relative inline-block">
+                                    <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
+                                        {t('home.hero_title_highlight')}
+                                    </span>
+                                    <span className="absolute bottom-1 left-0 w-full h-3 bg-amber-400/20 rounded-full -z-0" />
+                                </span>{' '}
+                                {t('home.hero_title_2')}
+                            </RevealAfterSplash>
                         </h1>
 
-                        <p className="text-lg md:text-xl text-blue-100/80 mb-8 max-w-2xl leading-relaxed">
+                        <RevealAfterSplash delay={0.62} as="p" className="text-lg md:text-xl text-blue-100/80 mb-8 max-w-2xl leading-relaxed">
                             {t('home.hero_subtitle')}
-                        </p>
+                        </RevealAfterSplash>
 
-                        {/* ── Search Box (Glassmorphism) ── */}
-                        <div className="bg-white/95 backdrop-blur-xl p-2 rounded-2xl shadow-2xl shadow-black/20 flex flex-col md:flex-row gap-2 max-w-3xl mb-8 border border-white/50">
+                        <RevealAfterSplash delay={0.72} direction="up">
+                            <div className="web-glass bg-white/95 p-2 rounded-2xl shadow-2xl shadow-black/20 flex flex-col md:flex-row gap-2 max-w-3xl mb-8 border border-white/50">
                             <div className="relative flex-grow flex items-center">
                                 <Search className="absolute left-4 text-gray-400" size={20} />
                                 <input
@@ -230,17 +319,19 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
                             </div>
                             <button
                                 onClick={handleSearch}
-                                className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-primary-600/40 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                className="web-btn web-shine premium-cta bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-primary-600/40 flex items-center justify-center gap-2"
                             >
                                 <Search size={18} />
                                 {t('nav.search')}
                             </button>
-                        </div>
+                            </div>
+                        </RevealAfterSplash>
 
+                        <RevealAfterSplash delay={0.85} direction="up">
                         <div className="flex flex-wrap items-center gap-4">
                             <Link
                                 href="/products"
-                                className="group bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 hover:border-white/40 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 hover:-translate-y-0.5"
+                                className="group bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 hover:-translate-y-0.5"
                             >
                                 <TrendingUp size={18} />
                                 {t('home.browse_categories')}
@@ -253,164 +344,113 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
                                 {t('home.want_to_sell')}
                             </Link>
                         </div>
-                    </motion.div>
+                        </RevealAfterSplash>
+                    </div>
 
                     {/* ── Right Side: Hero Carousel ── */}
-                    <div className="w-full lg:col-span-5 relative h-[380px] sm:h-[460px] mt-12 lg:mt-0">
-                        {featuredPromotions && featuredPromotions.length > 0 ? (
-                            <div className="relative w-full h-full">
-                                {/* Carousel Slides */}
-                                <AnimatePresence mode="wait">
+                    <RevealAfterSplash
+                        delay={0.45}
+                        direction="right"
+                        className="w-full lg:col-span-5 relative h-[380px] sm:h-[460px] mt-12 lg:mt-0"
+                    >
+                        {slides.length > 0 ? (
+                            <div className="relative w-full h-full hero-carousel">
+                                <div
+                                    ref={carouselViewportRef}
+                                    className="w-full h-full overflow-hidden rounded-2xl"
+                                >
                                     <motion.div
-                                        key={currentIndex}
-                                        initial={{ opacity: 0, x: 100 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -100 }}
-                                        transition={{ duration: 0.5, ease: 'easeInOut' }}
-                                        className="absolute inset-0"
+                                        className="flex h-full hero-carousel-track"
+                                        initial={false}
+                                        animate={{ x: translateX }}
+                                        transition={carouselTransition}
                                     >
-                                        <div className="relative w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/20">
-                                            {/* Product Image */}
-                                            <div className="h-3/5 relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
-                                                <img
-                                                    src={currentPromo?.custom_image_url || currentPromo?.product_image || '/images/demo-products/default.jpg'}
-                                                    alt={currentPromo?.product_name || 'Promotion'}
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
+                                        {slides.map((promo, index) => (
+                                            <div
+                                                key={promo.id ?? promo.product_id ?? index}
+                                                className="h-full flex-shrink-0"
+                                                style={{ width: slideWidth > 0 ? slideWidth : '100%' }}
+                                            >
+                                                <HeroCarouselSlide
+                                                    promo={promo}
+                                                    isActive={index === currentIndex}
+                                                    t={t}
                                                 />
-                                                {/* Overlay gradient */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                                                
-                                                {/* Headline */}
-                                                {currentPromo?.headline && (
-                                                    <div className="absolute top-4 left-4 right-4">
-                                                        <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg shadow-lg">
-                                                            <p className="text-sm font-bold">{currentPromo.headline}</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Seller Info */}
-                                                <div className="absolute bottom-4 left-4 right-4">
-                                                    <div className="bg-black/60 backdrop-blur-md rounded-lg px-3 py-2 flex items-center gap-2">
-                                                        <Store size={14} className="text-amber-400 shrink-0" />
-                                                        <span className="text-white text-xs font-semibold truncate">
-                                                            {currentPromo?.seller_name || 'Vendeur'}
-                                                        </span>
-                                                        {currentPromo?.seller_verified && (
-                                                            <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Hot Badge */}
-                                                <div className="absolute top-4 right-4">
-                                                    <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
-                                                        {t('home.hot_deal', 'Offre Chaude')}
-                                                    </span>
-                                                </div>
                                             </div>
-
-                                            {/* Product Details */}
-                                            <div className="h-2/5 p-5 flex flex-col justify-between">
-                                                <div>
-                                                    <Link href={`/products/${currentPromo?.product_slug}`} className="block hover:opacity-80 transition-opacity">
-                                                        <h3 className="font-bold text-lg text-gray-900 leading-tight mb-2 line-clamp-2">
-                                                            {currentPromo?.product_name}
-                                                        </h3>
-                                                    </Link>
-                                                    {currentPromo?.category_name && (
-                                                        <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
-                                                            {currentPromo.category_name}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center justify-between mt-3">
-                                                    <span className="text-2xl font-extrabold text-primary-600">
-                                                        {currentPromo?.product_currency || 'CDF'} {parseFloat(currentPromo?.product_price || 0).toLocaleString()}
-                                                    </span>
-                                                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                                                        <MapPin size={12} />
-                                                        <span>{currentPromo?.seller_city || 'Local'}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        ))}
                                     </motion.div>
-                                </AnimatePresence>
+                                </div>
 
-                                {/* Navigation Arrows */}
-                                {featuredPromotions.length > 1 && (
+                                {slides.length > 1 && (
                                     <>
                                         <button
+                                            type="button"
                                             onClick={goToPrevious}
-                                            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-2 shadow-lg transition-all hover:scale-110"
-                                            aria-label="Previous slide"
+                                            className="web-slider-btn absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-transform hover:scale-105"
+                                            aria-label="Précédent"
                                         >
                                             <ChevronLeft size={20} className="text-gray-700" />
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={goToNext}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-2 shadow-lg transition-all hover:scale-110"
-                                            aria-label="Next slide"
+                                            className="web-slider-btn absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-transform hover:scale-105"
+                                            aria-label="Suivant"
                                         >
                                             <ChevronRight size={20} className="text-gray-700" />
                                         </button>
                                     </>
                                 )}
 
-                                {/* Dots Indicator */}
-                                {featuredPromotions.length > 1 && (
-                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-                                        {featuredPromotions.map((_, index) => (
+                                {slides.length > 1 && (
+                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+                                        {slides.map((_, index) => (
                                             <button
                                                 key={index}
+                                                type="button"
                                                 onClick={() => goToSlide(index)}
-                                                className={`transition-all duration-300 rounded-full ${
-                                                    index === currentIndex
-                                                        ? 'w-8 h-2 bg-primary-600'
-                                                        : 'w-2 h-2 bg-white/50 hover:bg-white/80'
-                                                }`}
-                                                aria-label={`Go to slide ${index + 1}`}
-                                            />
+                                                className="p-1"
+                                                aria-label={`Slide ${index + 1}`}
+                                            >
+                                                <span
+                                                    className="block h-1.5 rounded-full transition-all duration-300"
+                                                    style={{
+                                                        width: index === currentIndex ? 28 : 8,
+                                                        backgroundColor: index === currentIndex
+                                                            ? 'rgb(0 86 179)'
+                                                            : 'rgba(255,255,255,0.45)',
+                                                    }}
+                                                />
+                                            </button>
                                         ))}
                                     </div>
                                 )}
-
-                                {/* Slide Counter */}
-                                <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
-                                    {currentIndex + 1} / {featuredPromotions.length}
-                                </div>
                             </div>
                         ) : (
                             /* Fallback: No promotions */
-                            <div className="flex items-center justify-center h-full bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                            <div className="flex items-center justify-center h-full bg-white/10 rounded-2xl border border-white/20">
                                 <p className="text-white/80 text-center">{t('home.no_promotions', 'Aucune promotion disponible')}</p>
                             </div>
                         )}
-                    </div>
+                    </RevealAfterSplash>
                 </div>
-            </motion.div>
+            </div>
 
             {/* ── Stats Strip ── */}
             <div className="absolute bottom-0 left-0 w-full z-20">
-                <div className="bg-black/20 backdrop-blur-md border-t border-white/10">
+                <div className="bg-black/30 border-t border-white/10">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                         <div className="flex flex-wrap justify-center lg:justify-start gap-8 lg:gap-16">
                             {stats.map((stat, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.8 + (i * 0.1) }}
-                                    className="flex items-center gap-3"
-                                >
-                                    {stat.icon}
-                                    <div>
-                                        <div className="text-white font-bold text-lg">{stat.value}</div>
-                                        <div className="text-blue-200/70 text-[11px] uppercase tracking-wider font-medium">{stat.label}</div>
+                                <RevealAfterSplash key={i} delay={0.95 + i * 0.1} direction="up">
+                                    <div className="flex items-center gap-3">
+                                        {stat.icon}
+                                        <div>
+                                            <div className="text-white font-bold text-lg">{stat.value}</div>
+                                            <div className="text-blue-200/70 text-[11px] uppercase tracking-wider font-medium">{stat.label}</div>
+                                        </div>
                                     </div>
-                                </motion.div>
+                                </RevealAfterSplash>
                             ))}
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
+import SectionReveal from '../UI/SectionReveal';
 import SectionHeader from '../UI/SectionHeader';
 import useTranslation from '@/hooks/useTranslation';
 
@@ -49,7 +50,7 @@ export default function PopularCategories({ categories = [] }) {
     }
 
     return (
-        <section className="py-16 bg-white">
+        <SectionReveal className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <SectionHeader
                     title={t('home.popular_categories')}
@@ -100,6 +101,6 @@ export default function PopularCategories({ categories = [] }) {
                     ))}
                 </motion.div>
             </div>
-        </section>
+        </SectionReveal>
     );
 }

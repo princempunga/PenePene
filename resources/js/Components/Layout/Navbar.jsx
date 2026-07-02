@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Search, ShoppingCart, User, Bell, Heart, MapPin, ChevronDown, Package, MessageSquare, LogOut, Settings } from 'lucide-react';
 import Logo from '@/Components/Brand/Logo';
 import LanguageSwitcher from '@/Components/Layout/LanguageSwitcher';
@@ -67,7 +68,15 @@ export default function Navbar({ onMenuClick }) {
     const isAdmin = auth?.user?.role === 'admin' || auth?.user?.role === 'super_admin';
 
     return (
-        <header className={`hidden md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-white border-b border-gray-100'}`}>
+        <motion.header
+            initial={false}
+            animate={{
+                boxShadow: scrolled ? '0 4px 24px -4px rgba(0, 46, 93, 0.12)' : '0 0 0 0 transparent',
+                borderBottomColor: scrolled ? 'transparent' : 'rgb(243 244 246)',
+            }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className={`hidden md:block fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100`}
+        >
             {/* Top Bar */}
             <div className="hidden lg:block bg-gray-900 text-gray-300 text-xs py-1.5">
                 <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
@@ -108,7 +117,7 @@ export default function Navbar({ onMenuClick }) {
                             placeholder={t('nav.search_placeholder')}
                             className="w-full pl-5 pr-12 py-3.5 bg-gray-50 focus:bg-white border-none focus:ring-0 text-gray-900 placeholder-gray-400 font-medium transition-colors"
                         />
-                        <button type="submit" className="px-8 bg-primary-600 text-white font-bold hover:bg-primary-700 transition-colors flex items-center gap-2">
+                        <button type="submit" className="web-btn premium-cta px-8 bg-primary-600 text-white font-bold hover:bg-primary-700 transition-colors flex items-center gap-2">
                             <Search size={20} /> {t('nav.search')}
                         </button>
                     </form>
@@ -116,7 +125,7 @@ export default function Navbar({ onMenuClick }) {
 
                 {/* Icons & Account */}
                 <div className="flex items-center gap-2 md:gap-5 flex-shrink-0">
-                    <Link href="/become-a-seller" className="hidden xl:flex items-center justify-center px-4 py-2 bg-amber-50 text-amber-700 font-bold rounded-lg hover:bg-amber-100 transition-colors text-sm">
+                    <Link href="/become-a-seller" className="hidden xl:flex items-center justify-center px-4 py-2 bg-amber-50 text-amber-700 font-bold rounded-lg hover:bg-amber-100 transition-colors text-sm premium-cta">
                         {t('nav.start_selling')}
                     </Link>
 
@@ -151,8 +160,15 @@ export default function Navbar({ onMenuClick }) {
                                         </button>
 
                                         {/* Dropdown Menu */}
+                                        <AnimatePresence>
                                         {dropdownOpen && (
-                                            <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[200] animate-in fade-in slide-in-from-top-2 duration-150">
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                                                className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[200]"
+                                            >
                                                 {/* User info header */}
                                                 <div className="px-4 py-3 border-b border-gray-100">
                                                     <p className="font-semibold text-gray-900 truncate">{auth.user.name}</p>
@@ -195,8 +211,9 @@ export default function Navbar({ onMenuClick }) {
                                                         {t('nav.logout')}
                                                     </button>
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         )}
+                                        </AnimatePresence>
                                     </div>
                                 )}
                             </>
@@ -260,6 +277,6 @@ export default function Navbar({ onMenuClick }) {
                 .hide-scrollbar::-webkit-scrollbar { display: none; }
                 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
-        </header>
+        </motion.header>
     );
 }
