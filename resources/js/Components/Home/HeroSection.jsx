@@ -84,8 +84,9 @@ function PromoContent({ promo, t }) {
     return (
         <Link href={shopHref} className="group block w-full h-full" style={{ height: '100%' }}>
             <div className="w-full h-full bg-white flex flex-col overflow-hidden">
-                {/* Image (Flexible) */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 flex-1 min-h-0">
+                {/* Image (65%) */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800"
+                    style={{ height: '65%', flexShrink: 0 }}>
                     <AnimatePresence initial={false} mode="wait">
                         <motion.img
                             key={currentProduct?.id || imageSrc}
@@ -116,16 +117,16 @@ function PromoContent({ promo, t }) {
                         </div>
                     </div>
                 </div>
-                {/* Info (Fixed) */}
-                <div className="flex flex-col justify-between p-3 bg-white shrink-0">
+                {/* Info (35%) */}
+                <div className="flex flex-col justify-between p-2.5" style={{ flex: 1, minHeight: 0 }}>
                     <h3 className="font-bold text-xs text-gray-900 leading-snug line-clamp-2">{productName}</h3>
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-1.5">
                         <span className="text-sm font-extrabold text-primary-600 leading-none">
                             {productCurrency} {parseFloat(productPrice || 0).toLocaleString()}
                         </span>
-                        <div className="flex items-center gap-0.5 text-gray-500 text-[10px]">
-                            <MapPin size={10} />
-                            <span className="truncate max-w-[60px]">{promo?.seller_city || 'Local'}</span>
+                        <div className="flex items-center gap-0.5 text-gray-400 text-[9px]">
+                            <MapPin size={9} />
+                            <span className="truncate max-w-[50px]">{promo?.seller_city || 'Local'}</span>
                         </div>
                     </div>
                 </div>
@@ -308,8 +309,8 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
                     >
                         {slides.length > 0 ? (
                             <div
-                                className="grid grid-cols-2 gap-4"
-                                style={{ height: 'clamp(440px, 60vw, 560px)' }}
+                                className="grid grid-cols-2 gap-3"
+                                style={{ height: 'clamp(340px, 46vw, 480px)' }}
                             >
                                 {CARD_ANIMATIONS.map((animConfig, cardIndex) => {
                                     // Each card cycles through a subset of promos with a stagger offset
@@ -335,7 +336,7 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
                         ) : (
                             <div
                                 className="flex items-center justify-center bg-white/10 rounded-2xl border border-white/20"
-                                style={{ height: 'clamp(440px, 60vw, 560px)' }}
+                                style={{ height: 'clamp(340px, 46vw, 480px)' }}
                             >
                                 <p className="text-white/80 text-center">{t('home.no_promotions', 'Aucune promotion disponible')}</p>
                             </div>
