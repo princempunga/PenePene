@@ -164,7 +164,7 @@ function HeroAnimatedCard({ promos, startOffset, animConfig, prefersReducedMotio
                 boxShadow: `0 0 0 1.5px ${glowColor}80, 0 0 20px 4px ${glowColor}30` }} />
 
             {/* Animated content */}
-            <AnimatePresence initial={false} mode="wait">
+            <AnimatePresence initial={false}>
                 <motion.div
                     key={idx}
                     className="absolute inset-0"
