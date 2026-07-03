@@ -4,13 +4,48 @@ import { Search, MapPin, TrendingUp, Users, ShoppingBag, ShieldCheck, ArrowRight
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import useTranslation from '@/hooks/useTranslation';
 import { EASE_OUT_EXPO } from '@/lib/motion';
-import { DURATION } from '@/lib/premiumMotion';
 import { RevealAfterSplash } from '@/Components/UI/RevealAfterSplash';
 
-const HERO_AUTOPLAY_MS = 4500;
-
+const HERO_AUTOPLAY_MS = 7000;
 const DEFAULT_HERO_IMAGE = '/images/demo-products/default.jpg';
 
+// ── Animation configs per card slot ──────────────────────────────────────────
+const CARD_ANIMATIONS = [
+    {
+        // Card 1 — gauche → droite
+        label: 'slide-lr',
+        initial: { x: '-100%', opacity: 0 },
+        animate: { x: 0, opacity: 1 },
+        exit:    { x: '100%', opacity: 0 },
+        transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    },
+    {
+        // Card 2 — circulaire (rotation + scale)
+        label: 'circular',
+        initial: { rotate: -90, scale: 0.5, opacity: 0 },
+        animate: { rotate: 0,   scale: 1,   opacity: 1 },
+        exit:    { rotate:  90, scale: 0.5, opacity: 0 },
+        transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] },
+    },
+    {
+        // Card 3 — droite → gauche
+        label: 'slide-rl',
+        initial: { x: '100%', opacity: 0 },
+        animate: { x: 0, opacity: 1 },
+        exit:    { x: '-100%', opacity: 0 },
+        transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    },
+    {
+        // Card 4 — haut → bas
+        label: 'slide-tb',
+        initial: { y: '-100%', opacity: 0 },
+        animate: { y: 0,       opacity: 1 },
+        exit:    { y: '100%',  opacity: 0 },
+        transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    },
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const CATEGORY_HERO_IMAGES = {
     electronics: '/images/demo-products/iphone.jpg',
     fashion: '/images/demo-products/default.jpg',
@@ -20,291 +55,187 @@ const CATEGORY_HERO_IMAGES = {
 };
 
 function getCategoryFallback(product) {
-    const slug = product?.category?.slug;
-    return CATEGORY_HERO_IMAGES[slug] || DEFAULT_HERO_IMAGE;
+    return CATEGORY_HERO_IMAGES[product?.category?.slug] || DEFAULT_HERO_IMAGE;
 }
 
-function getProductImage(product) {
-    if (!product) {
-        return DEFAULT_HERO_IMAGE;
-    }
+// ── Promo Slide content ───────────────────────────────────────────────────────
+function PromoContent({ promo, t }) {
+    const [currentProductIndex, setCurrentProductIndex] = useState(0);
+    const products      = promo?.products || [];
+    const currentProduct = products[currentProductIndex] || null;
+    const imageSrc      = currentProduct?.image_url || promo?.custom_image_url || promo?.product_image || DEFAULT_HERO_IMAGE;
+    const productName   = currentProduct?.name    || promo?.product_name    || 'Promotion';
+    const productSlug   = currentProduct?.slug    || promo?.product_slug;
+    const productCurrency = currentProduct?.currency || promo?.product_currency || 'CDF';
+    const productPrice  = currentProduct?.price   || promo?.product_price   || 0;
+    const categoryName  = currentProduct?.category_name || promo?.category_name;
+    const shopHref      = productSlug
+        ? `/products/${productSlug}`
+        : promo?.seller_slug ? `/sellers/${promo.seller_slug}` : '#';
 
-    if (product.image_url) {
-        return product.image_url;
-    }
+    // Cycle through products within this promo
+    useEffect(() => {
+        if (products.length <= 1) { setCurrentProductIndex(0); return; }
+        setCurrentProductIndex(0);
+        const iv = setInterval(() => setCurrentProductIndex(p => (p + 1) % products.length), 2500);
+        return () => clearInterval(iv);
+    }, [products]);
 
-    if (product.demo_image) {
-        return product.demo_image;
-    }
-
-    const primary = product.images?.find((img) => img.is_primary) || product.images?.[0];
-
-    if (primary?.image_path) {
-        const path = primary.image_path;
-
-        if (path.startsWith('/images/') || path.startsWith('images/')) {
-            return path.startsWith('/') ? path : `/${path}`;
-        }
-
-        return `/storage/${path}`;
-    }
-
-    return getCategoryFallback(product);
-}
-
-function handleHeroImageError(event, product) {
-    const fallbacks = [
-        product?.demo_image,
-        getCategoryFallback(product),
-        '/images/demo-products/iphone.jpg',
-        '/images/demo-products/samsung.jpg',
-        DEFAULT_HERO_IMAGE,
-    ].filter(Boolean);
-
-    const currentSrc = event.currentTarget.getAttribute('src') || '';
-
-    const next = fallbacks.find((url) => !currentSrc.includes(url));
-
-    if (next) {
-        event.currentTarget.src = next;
-        return;
-    }
-
-    event.currentTarget.onerror = null;
-    event.currentTarget.src = DEFAULT_HERO_IMAGE;
-}
-
-function HeroCarouselSlide({ promo, isActive, t }) {
     return (
-        <div className="relative w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/20">
-                <div className="h-3/5 relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
-                    <img
-                        src={promo?.custom_image_url || promo?.product_image || '/images/demo-products/default.jpg'}
-                        alt={promo?.product_name || 'Promotion'}
-                        className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isActive ? 'scale-105' : 'scale-100'}`}
-                        loading={isActive ? 'eager' : 'lazy'}
-                        decoding="async"
-                        onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
+        <Link href={shopHref} className="group block w-full h-full" style={{ height: '100%' }}>
+            <div className="w-full h-full bg-white flex flex-col overflow-hidden">
+                {/* Image (Flexible) */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 flex-1 min-h-0">
+                    <AnimatePresence initial={false} mode="wait">
+                        <motion.img
+                            key={currentProduct?.id || imageSrc}
+                            src={imageSrc}
+                            alt={productName}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="eager"
+                            decoding="async"
+                            onError={e => { e.currentTarget.src = DEFAULT_HERO_IMAGE; }}
+                            initial={{ opacity: 0, scale: 1.04 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+                        />
+                    </AnimatePresence>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                     {promo?.headline && (
-                        <motion.div
-                            initial={false}
-                            animate={{ opacity: isActive ? 1 : 0.7, y: isActive ? 0 : 6 }}
-                            transition={{ duration: 0.5, ease: EASE_OUT_EXPO }}
-                            className="absolute top-4 left-4 right-4"
-                        >
-                            <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg shadow-lg">
-                                <p className="text-sm font-bold">{promo.headline}</p>
+                        <div className="absolute top-2 left-2 right-2">
+                            <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-2.5 py-1 rounded-lg">
+                                <p className="text-[11px] font-bold truncate">{promo.headline}</p>
                             </div>
-                        </motion.div>
+                        </div>
                     )}
-
-                    <div className="absolute bottom-4 left-4 right-4">
-                        {promo?.seller_slug ? (
-                            <Link href={`/sellers/${promo.seller_slug}`} className="bg-black/70 hover:bg-black/90 rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200" title={`Visiter la boutique de ${promo?.seller_name}`}>
-                                <Store size={14} className="text-amber-400 shrink-0" />
-                                <span className="text-white text-xs font-semibold truncate hover:underline underline-offset-2">
-                                    {promo?.seller_name || 'Vendeur'}
-                                </span>
-                                {promo?.seller_verified && (
-                                    <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
-                                )}
-                            </Link>
-                        ) : (
-                            <div className="bg-black/70 rounded-lg px-3 py-2 flex items-center gap-2">
-                                <Store size={14} className="text-amber-400 shrink-0" />
-                                <span className="text-white text-xs font-semibold truncate">
-                                    {promo?.seller_name || 'Vendeur'}
-                                </span>
-                                {promo?.seller_verified && (
-                                    <ShieldCheck size={14} className="text-green-400 shrink-0 ml-auto" />
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="absolute top-4 right-4">
-                        <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
-                            {t('home.hot_deal', 'Offre Chaude')}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="h-2/5 p-5 flex flex-col justify-between">
-                    <div>
-                        <Link href={`/products/${promo?.product_slug}`} className="block hover:opacity-80 transition-opacity duration-300">
-                            <h3 className="font-bold text-lg text-gray-900 leading-tight mb-2 line-clamp-2">
-                                {promo?.product_name}
-                            </h3>
-                        </Link>
-                        {promo?.category_name && (
-                            <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
-                                {promo.category_name}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center justify-between mt-3">
-                        <span className="text-2xl font-extrabold text-primary-600">
-                            {promo?.product_currency || 'CDF'} {parseFloat(promo?.product_price || 0).toLocaleString()}
-                        </span>
-                        <div className="flex items-center gap-1 text-gray-500 text-xs">
-                            <MapPin size={12} />
-                            <span>{promo?.seller_city || 'Local'}</span>
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-1">
+                        <div className="bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1 min-w-0">
+                            <Store size={10} className="text-amber-400 shrink-0" />
+                            <span className="text-white text-[10px] font-semibold truncate">{promo?.seller_name || 'Vendeur'}</span>
                         </div>
                     </div>
                 </div>
+                {/* Info (Fixed) */}
+                <div className="flex flex-col justify-between p-3 bg-white shrink-0">
+                    <h3 className="font-bold text-xs text-gray-900 leading-snug line-clamp-2">{productName}</h3>
+                    <div className="flex items-center justify-between mt-2">
+                        <span className="text-sm font-extrabold text-primary-600 leading-none">
+                            {productCurrency} {parseFloat(productPrice || 0).toLocaleString()}
+                        </span>
+                        <div className="flex items-center gap-0.5 text-gray-500 text-[10px]">
+                            <MapPin size={10} />
+                            <span className="truncate max-w-[60px]">{promo?.seller_city || 'Local'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+// ── One animated card slot ────────────────────────────────────────────────────
+function HeroAnimatedCard({ promos, startOffset, animConfig, prefersReducedMotion, glowColor }) {
+    const total = promos.length;
+    const [idx, setIdx] = useState(startOffset % Math.max(total, 1));
+
+    useEffect(() => {
+        if (total <= 1) return;
+        // Stagger each card's start time so they don't all cycle at once
+        const staggerMs = startOffset * (HERO_AUTOPLAY_MS / 4);
+        let iv;
+        const timer = setTimeout(() => {
+            iv = setInterval(() => setIdx(p => (p + 1) % total), HERO_AUTOPLAY_MS);
+        }, staggerMs);
+        return () => { clearTimeout(timer); clearInterval(iv); };
+    }, [total, startOffset]);
+
+    if (!promos.length) return null;
+    const promo = promos[idx];
+
+    return (
+        <div
+            className="relative overflow-hidden rounded-xl"
+            style={{ height: '100%' }}
+        >
+            {/* Glow border */}
+            <div className="absolute inset-0 rounded-xl pointer-events-none" style={{ zIndex: 10,
+                boxShadow: `0 0 0 1.5px ${glowColor}80, 0 0 20px 4px ${glowColor}30` }} />
+
+            {/* Animated content */}
+            <AnimatePresence initial={false} mode="wait">
+                <motion.div
+                    key={idx}
+                    className="absolute inset-0"
+                    initial={prefersReducedMotion ? {} : animConfig.initial}
+                    animate={animConfig.animate}
+                    exit={prefersReducedMotion ? {} : animConfig.exit}
+                    transition={animConfig.transition}
+                    style={{ overflow: 'hidden', borderRadius: '0.75rem' }}
+                >
+                    <PromoContent promo={promo} />
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 }
 
+// ── Glow colors per card ──────────────────────────────────────────────────────
+const GLOW_COLORS = [
+    'rgba(34,211,238,1)',   // cyan   — card 1
+    'rgba(168,85,247,1)',   // violet — card 2
+    'rgba(251,191,36,1)',   // amber  — card 3
+    'rgba(34,197,94,1)',    // green  — card 4
+];
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Main HeroSection
+// ═══════════════════════════════════════════════════════════════════════════════
 export default function HeroSection({ heroProducts = [], featuredPromotions = [] }) {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
-    const [location, setLocation] = useState('');
-    const heroRef = useRef(null);
-    const carouselViewportRef = useRef(null);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [slideWidth, setSlideWidth] = useState(0);
-    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-    const [direction, setDirection] = useState(0);
-    const prefersReducedMotion = useReducedMotion();
+    const [location, setLocation]       = useState('');
+    const heroRef                        = useRef(null);
+    const prefersReducedMotion           = useReducedMotion();
 
-    const slides = featuredPromotions.slice(0, 4);
-
-    useEffect(() => {
-        const node = carouselViewportRef.current;
-        if (!node) return undefined;
-
-        const measure = () => {
-            const width = node.getBoundingClientRect().width;
-            if (width > 0) setSlideWidth(width);
-        };
-
-        measure();
-        const observer = new ResizeObserver(measure);
-        observer.observe(node);
-        window.addEventListener('resize', measure);
-
-        const afterSplash = setTimeout(measure, 900);
-        const raf = requestAnimationFrame(measure);
-
-        return () => {
-            observer.disconnect();
-            window.removeEventListener('resize', measure);
-            clearTimeout(afterSplash);
-            cancelAnimationFrame(raf);
-        };
-    }, []);
-
-    useEffect(() => {
-        setCurrentIndex((prev) => (slides.length === 0 ? 0 : Math.min(prev, slides.length - 1)));
-    }, [slides.length]);
-
-    // Auto-play carousel
-    useEffect(() => {
-        if (!isAutoPlaying || slides.length <= 1) return;
-
-        const interval = setInterval(() => {
-            setDirection(1);
-            setCurrentIndex((prev) => (prev + 1) % slides.length);
-        }, HERO_AUTOPLAY_MS);
-
-        return () => clearInterval(interval);
-    }, [isAutoPlaying, slides.length]);
-
-    const goToSlide = (index) => {
-            setDirection(index > currentIndex ? 1 : -1);
-            setCurrentIndex(index);
-            setIsAutoPlaying(false);
-            // Resume auto-play after 10 seconds of inactivity
-            setTimeout(() => setIsAutoPlaying(true), 10000);
-        };
-    
-        const goToPrevious = () => {
-            setDirection(-1);
-            const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
-            goToSlide(newIndex);
-        };
-    
-        const goToNext = () => {
-            setDirection(1);
-            const newIndex = (currentIndex + 1) % slides.length;
-            goToSlide(newIndex);
-        };
+    const slides = featuredPromotions.slice(0, 8); // up to 8 promos, spread across 4 cards
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get('/search', { q: searchQuery, location: location });
+        router.get('/search', { q: searchQuery, location });
     };
 
-    const slideVariants = {
-            enter: (dir) => ({
-                x: dir > 0 ? '20%' : '-20%',
-                opacity: 0,
-                scale: 0.9,
-                rotateY: dir > 0 ? 10 : -10,
-                zIndex: 0,
-            }),
-            center: {
-                x: 0,
-                opacity: 1,
-                scale: 1,
-                rotateY: 0,
-                zIndex: 1,
-            },
-            exit: (dir) => ({
-                x: dir > 0 ? '-20%' : '20%',
-                opacity: 0,
-                scale: 0.9,
-                rotateY: dir > 0 ? -10 : 10,
-                zIndex: 0,
-            }),
-        };
-
-    // Stats strip
     const stats = [
-        { label: t('home.active_products'), value: "25,000+", icon: <ShoppingBag size={18} className="text-amber-300" /> },
-        { label: t('home.verified_sellers'), value: "2,500+", icon: <Users size={18} className="text-amber-300" /> },
-        { label: t('home.cities_covered'), value: "20+", icon: <MapPin size={18} className="text-amber-300" /> },
+        { label: t('home.active_products'),  value: '25,000+', icon: <ShoppingBag size={18} className="text-amber-300" /> },
+        { label: t('home.verified_sellers'), value: '2,500+',  icon: <Users       size={18} className="text-amber-300" /> },
+        { label: t('home.cities_covered'),   value: '20+',     icon: <MapPin      size={18} className="text-amber-300" /> },
     ];
-
-
 
     return (
         <div ref={heroRef} className="relative overflow-hidden">
             <div className="absolute inset-0 z-0">
-                <img
-                    src="/images/hero-marketplace.jpg"
-                    alt=""
-                    className="w-full h-full object-cover"
-                    loading="eager"
-                    decoding="async"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                />
+                <img src="/images/hero-marketplace.jpg" alt="" className="w-full h-full object-cover"
+                    loading="eager" decoding="async" onError={e => { e.target.style.display = 'none'; }} />
             </div>
 
-            {/* ── Dark Blue Gradient Overlay ── */}
-            <div
-                className="absolute inset-0 z-[1]"
-                style={{
-                    background: 'linear-gradient(135deg, rgba(15,30,90,0.92) 0%, rgba(20,52,160,0.88) 40%, rgba(30,58,138,0.85) 70%, rgba(15,30,90,0.90) 100%)',
-                }}
-            />
+            {/* Dark overlay */}
+            <div className="absolute inset-0 z-[1]" style={{
+                background: 'linear-gradient(135deg, rgba(15,30,90,0.92) 0%, rgba(20,52,160,0.88) 40%, rgba(30,58,138,0.85) 70%, rgba(15,30,90,0.90) 100%)',
+            }} />
 
-            {/* ── Decorative Elements ── */}
+            {/* Decorative blobs */}
             <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none">
                 <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[100px]" />
                 <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-amber-400/8 blur-[80px]" />
                 <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] rounded-full bg-blue-300/5 blur-[60px]" />
             </div>
 
-            {/* ── Main Content ── */}
+            {/* Main content */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-28 lg:pt-24 lg:pb-36">
                 <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
-                    {/* ── Left Content ── */}
+                    {/* ── Left column ── */}
                     <div className="lg:col-span-7 text-left">
                         <RevealAfterSplash delay={0.05} direction="up">
                             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 text-sm font-medium px-4 py-2 rounded-full mb-6">
@@ -332,95 +263,80 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
 
                         <RevealAfterSplash delay={0.72} direction="up">
                             <div className="web-glass bg-white/95 p-2 rounded-2xl shadow-2xl shadow-black/20 flex flex-col md:flex-row gap-2 max-w-3xl mb-8 border border-white/50">
-                            <div className="relative flex-grow flex items-center">
-                                <Search className="absolute left-4 text-gray-400" size={20} />
-                                <input
-                                    type="text"
-                                    placeholder={t('home.search_placeholder')}
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400 font-medium"
-                                />
-                            </div>
-                            <div className="hidden md:block w-px bg-gray-200 my-2" />
-                            <div className="relative flex-grow md:max-w-[200px] flex items-center border-t border-gray-100 md:border-t-0">
-                                <MapPin className="absolute left-4 text-gray-400" size={20} />
-                                <input
-                                    type="text"
-                                    placeholder={t('home.location_placeholder')}
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400 font-medium"
-                                />
-                            </div>
-                            <button
-                                onClick={handleSearch}
-                                className="web-btn web-shine premium-cta bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-primary-600/40 flex items-center justify-center gap-2"
-                            >
-                                <Search size={18} />
-                                {t('nav.search')}
-                            </button>
+                                <div className="relative flex-grow flex items-center">
+                                    <Search className="absolute left-4 text-gray-400" size={20} />
+                                    <input type="text" placeholder={t('home.search_placeholder')}
+                                        value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                                        className="w-full pl-12 pr-4 py-3.5 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400 font-medium" />
+                                </div>
+                                <div className="hidden md:block w-px bg-gray-200 my-2" />
+                                <div className="relative flex-grow md:max-w-[200px] flex items-center border-t border-gray-100 md:border-t-0">
+                                    <MapPin className="absolute left-4 text-gray-400" size={20} />
+                                    <input type="text" placeholder={t('home.location_placeholder')}
+                                        value={location} onChange={e => setLocation(e.target.value)}
+                                        className="w-full pl-12 pr-4 py-3.5 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-400 font-medium" />
+                                </div>
+                                <button onClick={handleSearch}
+                                    className="web-btn web-shine premium-cta bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-primary-600/40 flex items-center justify-center gap-2">
+                                    <Search size={18} />
+                                    {t('nav.search')}
+                                </button>
                             </div>
                         </RevealAfterSplash>
 
                         <RevealAfterSplash delay={0.85} direction="up">
-                        <div className="flex flex-wrap items-center gap-4">
-                            <Link
-                                href="/products"
-                                className="group bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 hover:-translate-y-0.5"
-                            >
-                                <TrendingUp size={18} />
-                                {t('home.browse_categories')}
-                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                            <Link
-                                href="/seller/register"
-                                className="text-blue-200 hover:text-white font-medium underline underline-offset-4 decoration-blue-300/40 hover:decoration-white/60 transition-colors"
-                            >
-                                {t('home.want_to_sell')}
-                            </Link>
-                        </div>
+                            <div className="flex flex-wrap items-center gap-4">
+                                <Link href="/products"
+                                    className="group bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 hover:-translate-y-0.5">
+                                    <TrendingUp size={18} />
+                                    {t('home.browse_categories')}
+                                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                                <Link href="/seller/register"
+                                    className="text-blue-200 hover:text-white font-medium underline underline-offset-4 decoration-blue-300/40 hover:decoration-white/60 transition-colors">
+                                    {t('home.want_to_sell')}
+                                </Link>
+                            </div>
                         </RevealAfterSplash>
                     </div>
 
-                    {/* ── Right Side: Hero Carousel ── */}
+                    {/* ── Right column: 4 animated cards ── */}
                     <RevealAfterSplash
                         delay={0.45}
                         direction="right"
-                        className="w-full lg:col-span-5 relative h-[380px] sm:h-[460px] mt-12 lg:mt-0"
+                        className="w-full lg:col-span-5 mt-12 lg:mt-0"
                     >
                         {slides.length > 0 ? (
-                            <div className="grid h-full grid-cols-2 gap-3">
-                                {slides.slice(0, 4).map((promo, index) => {
-                                    const shopHref = promo?.seller_slug ? `/sellers/${promo.seller_slug}` : `/products/${promo?.product_slug}`;
+                            <div
+                                className="grid grid-cols-2 gap-4"
+                                style={{ height: 'clamp(440px, 60vw, 560px)' }}
+                            >
+                                {CARD_ANIMATIONS.map((animConfig, cardIndex) => {
+                                    // Each card cycles through a subset of promos with a stagger offset
+                                    const cardPromos = slides.length >= 4
+                                        ? slides.filter((_, i) => i % 4 === cardIndex).concat(
+                                            slides.filter((_, i) => i % 4 !== cardIndex)
+                                          )
+                                        : slides;
 
                                     return (
-                                        <Link
-                                            key={promo.id ?? promo.product_id ?? index}
-                                            href={shopHref}
-                                            className="group relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-2xl"
-                                        >
-                                            <img
-                                                src={promo?.custom_image_url || promo?.product_image || '/images/demo-products/default.jpg'}
-                                                alt={promo?.product_name || 'Promotion'}
-                                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                                loading="lazy"
-                                                decoding="async"
-                                                onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
+                                        <div key={cardIndex} className="relative">
+                                            <HeroAnimatedCard
+                                                promos={cardPromos}
+                                                startOffset={cardIndex}
+                                                animConfig={animConfig}
+                                                prefersReducedMotion={prefersReducedMotion}
+                                                glowColor={GLOW_COLORS[cardIndex]}
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                                            <div className="absolute bottom-3 left-3 right-3">
-                                                <p className="text-sm font-semibold text-white line-clamp-2">
-                                                    {promo?.product_name || 'Produit en vedette'}
-                                                </p>
-                                            </div>
-                                        </Link>
+                                        </div>
                                     );
                                 })}
                             </div>
                         ) : (
-                            /* Fallback: No promotions */
-                            <div className="flex items-center justify-center h-full bg-white/10 rounded-2xl border border-white/20">
+                            <div
+                                className="flex items-center justify-center bg-white/10 rounded-2xl border border-white/20"
+                                style={{ height: 'clamp(440px, 60vw, 560px)' }}
+                            >
                                 <p className="text-white/80 text-center">{t('home.no_promotions', 'Aucune promotion disponible')}</p>
                             </div>
                         )}
@@ -428,7 +344,7 @@ export default function HeroSection({ heroProducts = [], featuredPromotions = []
                 </div>
             </div>
 
-            {/* ── Stats Strip ── */}
+            {/* Stats strip */}
             <div className="absolute bottom-0 left-0 w-full z-20">
                 <div className="bg-black/30 border-t border-white/10">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

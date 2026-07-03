@@ -121,7 +121,9 @@ class HomepagePromotionController extends Controller
     {
         $rules = [
             'seller_id'        => ($isUpdate ? 'sometimes' : 'required') . '|exists:sellers,id',
-            'product_id'       => ($isUpdate ? 'sometimes' : 'required') . '|exists:products,id',
+            'product_id'       => ($isUpdate ? 'sometimes' : 'required_without:product_ids') . '|nullable|exists:products,id',
+            'product_ids'      => 'nullable|array|min:1|max:5',
+            'product_ids.*'    => 'integer|exists:products,id',
             'custom_image'     => 'nullable|image|max:5120',
             'custom_image_url' => 'nullable|string|max:500',
             'headline'         => 'nullable|string|max:100',
@@ -137,6 +139,11 @@ class HomepagePromotionController extends Controller
         $data['ends_at'] = $request->input('ends_at') ?: null;
         $data['headline'] = $request->input('headline') ?: null;
         $data['custom_image_url'] = $request->input('custom_image_url') ?: null;
+        $data['product_ids'] = $request->input('product_ids') ?: [];
+
+        if (empty($data['product_id']) && !empty($data['product_ids'])) {
+            $data['product_id'] = $data['product_ids'][0];
+        }
 
         return $data;
     }
@@ -148,6 +155,7 @@ class HomepagePromotionController extends Controller
             'promotion_order'  => $promo->promotion_order,
             'seller_id'        => $promo->seller_id,
             'product_id'       => $promo->product_id,
+            'product_ids'      => $promo->product_ids ?: ($promo->product_id ? [$promo->product_id] : []),
             'custom_image_url' => $promo->custom_image_url,
             'hero_image_url'   => $this->resolveHeroImage($promo),
             'headline'         => $promo->headline,

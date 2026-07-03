@@ -9,6 +9,7 @@ class HomepagePromotion extends Model
     protected $fillable = [
         'seller_id',
         'product_id',
+        'product_ids',
         'custom_image_url',
         'headline',
         'promotion_order',
@@ -21,6 +22,7 @@ class HomepagePromotion extends Model
     {
         return [
             'is_active'  => 'boolean',
+            'product_ids' => 'array',
             'starts_at'  => 'datetime',
             'ends_at'    => 'datetime',
         ];

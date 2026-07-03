@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Megaphone, Save, Trash2, AlertCircle, ChevronLeft, ChevronRight, Eye, ShoppingBag, Loader2 } from 'lucide-react';
-import axios from 'axios';
 
 const HERO_SLOTS = [1, 2, 3, 4];
 const EXTRA_SLOTS = [5, 6, 7, 8, 9, 10];
@@ -12,9 +11,7 @@ function emptySlot(slot) {
         promotion_order: slot,
         seller_id: '',
         product_id: '',
-        custom_image_url: '',
-        custom_image_file: null,
-        custom_image_preview: null,
+        product_ids: [],
         headline: '',
         is_active: true,
         starts_at: '',
@@ -28,25 +25,49 @@ function formatDateForInput(dateString) {
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
-function getPreviewImage(promo, products) {
-    if (promo.custom_image_preview) return promo.custom_image_preview;
-    if (promo.custom_image_url) return promo.custom_image_url;
-    if (promo.hero_image_url) return promo.hero_image_url;
-    const product = products.find((p) => String(p.id) === String(promo.product_id));
-    return product?.image_url || null;
+function SlotPreviewCard({ slot, products, productIds = [], headline, sellerName }) {
+    const selectedProducts = productIds
+        .map((id) => products.find((p) => String(p.id) === String(id)))
+        .filter(Boolean);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (selectedProducts.length <= 1) return undefined;
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % selectedProducts.length);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [selectedProducts.length]);
+
+    const currentProduct = selectedProducts[currentIndex];
+    const img = currentProduct?.image_url || null;
+
+    return (
+        <div className="relative aspect-[4/3] rounded-lg overflow-hidden border-2 border-gray-200 bg-white shadow-sm">
+            {img ? (
+                <img src={img} alt={`Cadre ${slot}`} className="w-full h-full object-cover" />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-sm font-semibold">
+                    Cadre {slot}
+                </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 text-white text-xs">
+                <div className="space-y-1">
+                    <div className="font-semibold">Cadre {slot}</div>
+                    {headline && <div className="truncate">{headline}</div>}
+                    <div className="text-[10px] text-white/80">{sellerName || 'Vendeur'}</div>
+                </div>
+                <div className="rounded-full bg-black/50 px-3 py-1 text-[11px]">
+                    {selectedProducts.length > 0 ? `${currentIndex + 1}/${selectedProducts.length}` : '0/5'}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function HeroPreview({ slides }) {
-    const [index, setIndex] = useState(0);
-    const activeSlides = slides.filter((s) => s.is_active && s.product_id && getPreviewImage(s, s._products || []));
-
-    useEffect(() => {
-        if (activeSlides.length <= 1) return undefined;
-        const timer = setInterval(() => {
-            setIndex((prev) => (prev + 1) % activeSlides.length);
-        }, 3000);
-        return () => clearInterval(timer);
-    }, [activeSlides.length]);
+    const activeSlides = slides.filter((s) => s.is_active && (s.product_ids?.length > 0 || s.product_id));
 
     if (activeSlides.length === 0) {
         return (
@@ -56,88 +77,34 @@ function HeroPreview({ slides }) {
         );
     }
 
-    const current = activeSlides[index] || activeSlides[0];
-    const image = getPreviewImage(current, current._products || []);
-
     return (
         <div className="rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <Eye size={16} />
-                    Aperçu carrousel hero ({activeSlides.length}/4 slides actifs)
+                    Aperçu hero 4 cadres (chaque cadre défile toutes les 1s)
                 </div>
-                {activeSlides.length > 1 && (
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setIndex((prev) => (prev === 0 ? activeSlides.length - 1 : prev - 1))}
-                            className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-600"
-                        >
-                            <ChevronLeft size={16} />
-                        </button>
-                        <span className="text-xs text-gray-500 min-w-[3rem] text-center">
-                            {index + 1} / {activeSlides.length}
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => setIndex((prev) => (prev + 1) % activeSlides.length)}
-                            className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-600"
-                        >
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
-                )}
             </div>
-            <div className="grid grid-cols-4 gap-2 p-3 bg-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-gray-100">
                 {HERO_SLOTS.map((slot) => {
                     const slide = slides.find((s) => s.promotion_order === slot);
-                    const img = slide ? getPreviewImage(slide, slide._products || []) : null;
-                    const isCurrent = slide && activeSlides[index]?.promotion_order === slot;
-
                     return (
-                        <div
+                        <SlotPreviewCard
                             key={slot}
-                            className={`relative aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${
-                                isCurrent ? 'border-primary-500 ring-2 ring-primary-200' : 'border-gray-200'
-                            }`}
-                        >
-                            {img ? (
-                                <img src={img} alt={`Slide ${slot}`} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs font-bold">
-                                    {slot}
-                                </div>
-                            )}
-                            <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                                {slot}
-                            </span>
-                        </div>
+                            slot={slot}
+                            products={slide?._products || []}
+                            productIds={slide?.product_ids || (slide?.product_id ? [slide.product_id] : [])}
+                            headline={slide?.headline}
+                            sellerName={slide?.seller_name}
+                        />
                     );
                 })}
-            </div>
-            <div className="p-4 flex gap-4 items-center border-t border-gray-100">
-                <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                    {image ? (
-                        <img src={image} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">—</div>
-                    )}
-                </div>
-                <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">
-                        {current.product_name || current.headline || `Emplacement ${current.promotion_order}`}
-                    </p>
-                    <p className="text-sm text-gray-500 truncate">{current.seller_name || 'Vendeur non défini'}</p>
-                    {current.headline && (
-                        <p className="text-xs text-primary-600 mt-1 truncate">{current.headline}</p>
-                    )}
-                </div>
             </div>
         </div>
     );
 }
 
-function ProductPicker({ products, loading, selectedId, onSelect }) {
+function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelection = 5 }) {
     if (loading) {
         return (
             <div className="flex items-center justify-center gap-2 py-6 text-primary-500">
@@ -154,44 +121,55 @@ function ProductPicker({ products, loading, selectedId, onSelect }) {
             </div>
         );
     }
+
+    const selectedSet = new Set(selectedIds.map((id) => String(id)));
+    const activeCount = selectedIds.length;
+
     return (
-        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
-            {products.map((p) => {
-                const isSelected = String(p.id) === String(selectedId);
-                return (
-                    <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => onSelect(p.id)}
-                        className={`relative flex flex-col rounded-xl border-2 overflow-hidden text-left transition-all duration-200 hover:shadow-md ${
-                            isSelected
-                                ? 'border-primary-500 ring-2 ring-primary-200 shadow-md'
-                                : 'border-gray-200 hover:border-primary-300'
-                        }`}
-                    >
-                        <div className="w-full h-24 bg-gray-100">
-                            {p.image_url ? (
-                                <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                    <ShoppingBag size={28} />
+        <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+                <span>Choisissez jusqu'à {maxSelection} produits</span>
+                <span className="font-semibold text-gray-900">{activeCount} / {maxSelection}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+                {products.map((p) => {
+                    const isSelected = selectedSet.has(String(p.id));
+                    return (
+                        <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => onToggle(p.id)}
+                            className={`relative flex flex-col rounded-xl border-2 overflow-hidden text-left transition-all duration-200 hover:shadow-md ${
+                                isSelected
+                                    ? 'border-primary-500 ring-2 ring-primary-200 shadow-md'
+                                    : 'border-gray-200 hover:border-primary-300'
+                            } ${!isSelected && activeCount >= maxSelection ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            disabled={!isSelected && activeCount >= maxSelection}
+                        >
+                            <div className="w-full h-24 bg-gray-100">
+                                {p.image_url ? (
+                                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                        <ShoppingBag size={28} />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="p-2">
+                                <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight">{p.name}</p>
+                                <p className="text-xs text-primary-600 font-bold mt-0.5">{parseFloat(p.price).toLocaleString()} {p.currency}</p>
+                            </div>
+                            {isSelected && (
+                                <div className="absolute top-1 right-1 w-5 h-5 bg-primary-600 rounded-full flex items-center justify-center">
+                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
                                 </div>
                             )}
-                        </div>
-                        <div className="p-2">
-                            <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight">{p.name}</p>
-                            <p className="text-xs text-primary-600 font-bold mt-0.5">{parseFloat(p.price).toLocaleString()} {p.currency}</p>
-                        </div>
-                        {isSelected && (
-                            <div className="absolute top-1 right-1 w-5 h-5 bg-primary-600 rounded-full flex items-center justify-center">
-                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                        )}
-                    </button>
-                );
-            })}
+                        </button>
+                    );
+                })}
+            </div>
         </div>
     );
 }
@@ -207,7 +185,7 @@ function PromotionSlotCard({
 }) {
     const isExisting = !!promo.id;
     const products = sellerProducts[promo.seller_id] || [];
-    const selectedProduct = products.find((p) => String(p.id) === String(promo.product_id));
+    const selectedProduct = products.find((p) => String(p.id) === String(promo.product_ids?.[0] || promo.product_id));
     const previewImage = selectedProduct?.image_url || promo.hero_image_url || null;
 
     return (
@@ -263,14 +241,35 @@ function PromotionSlotCard({
                 {promo.seller_id && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Choisir un produit
+                            Choisir 5 produits
                         </label>
                         <ProductPicker
                             products={products}
                             loading={false}
-                            selectedId={promo.product_id}
-                            onSelect={(id) => onUpdate(promo.promotion_order, 'product_id', id)}
+                            selectedIds={promo.product_ids}
+                            onToggle={(id) => {
+                                const isSelected = promo.product_ids.includes(id);
+                                const nextIds = isSelected
+                                    ? promo.product_ids.filter((item) => item !== id)
+                                    : [...promo.product_ids, id].slice(0, 5);
+                                onUpdate(promo.promotion_order, 'product_ids', nextIds);
+                            }}
                         />
+                    </div>
+                )}
+
+                {promo.product_ids && promo.product_ids.length > 0 && (
+                    <div className="space-y-2">
+                        <div className="text-sm font-medium text-gray-700">Produits sélectionnés</div>
+                        <div className="grid grid-cols-5 gap-2">
+                            {products
+                                .filter((p) => promo.product_ids.includes(p.id))
+                                .map((p) => (
+                                    <div key={p.id} className="h-16 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                                    </div>
+                                ))}
+                        </div>
                     </div>
                 )}
 
@@ -322,7 +321,7 @@ function PromotionSlotCard({
                 <button
                     type="button"
                     onClick={() => onSave(promo)}
-                    disabled={!promo.seller_id || !promo.product_id}
+                    disabled={!promo.seller_id || !promo.product_ids?.length}
                     className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Save size={16} />
@@ -340,10 +339,9 @@ function buildInitialPromotions(promotions = []) {
         return existing
             ? {
                 ...existing,
-                custom_image_file: null,
-                custom_image_preview: null,
                 seller_id: existing.seller_id || '',
                 product_id: existing.product_id || '',
+                product_ids: existing.product_ids?.length ? existing.product_ids : existing.product_id ? [existing.product_id] : [],
             }
             : emptySlot(slot);
     });
@@ -371,52 +369,8 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
 
             if (field === 'seller_id') {
                 updated[index].product_id = '';
+                updated[index].product_ids = [];
             }
-
-            return updated;
-        });
-    };
-
-    const handleImageSelect = (slotIndex, file) => {
-        if (!file) return;
-
-        const preview = URL.createObjectURL(file);
-        setLocalPromotions((prev) => {
-            const updated = [...prev];
-            const index = updated.findIndex((p) => p.promotion_order === slotIndex);
-            if (index === -1) return prev;
-
-            if (updated[index].custom_image_preview) {
-                URL.revokeObjectURL(updated[index].custom_image_preview);
-            }
-
-            updated[index] = {
-                ...updated[index],
-                custom_image_file: file,
-                custom_image_preview: preview,
-                custom_image_url: '',
-            };
-
-            return updated;
-        });
-    };
-
-    const handleClearImage = (slotIndex) => {
-        setLocalPromotions((prev) => {
-            const updated = [...prev];
-            const index = updated.findIndex((p) => p.promotion_order === slotIndex);
-            if (index === -1) return prev;
-
-            if (updated[index].custom_image_preview) {
-                URL.revokeObjectURL(updated[index].custom_image_preview);
-            }
-
-            updated[index] = {
-                ...updated[index],
-                custom_image_file: null,
-                custom_image_preview: null,
-                custom_image_url: '',
-            };
 
             return updated;
         });
@@ -425,18 +379,15 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
     const buildFormData = (promo) => {
         const formData = new FormData();
         formData.append('seller_id', promo.seller_id);
-        formData.append('product_id', promo.product_id);
+        formData.append('product_id', promo.product_ids?.[0] || promo.product_id || '');
         formData.append('promotion_order', promo.promotion_order);
         formData.append('is_active', promo.is_active ? '1' : '0');
 
         if (promo.headline) formData.append('headline', promo.headline);
         if (promo.starts_at) formData.append('starts_at', promo.starts_at);
         if (promo.ends_at) formData.append('ends_at', promo.ends_at);
-        if (promo.custom_image_url && !promo.custom_image_file) {
-            formData.append('custom_image_url', promo.custom_image_url);
-        }
-        if (promo.custom_image_file) {
-            formData.append('custom_image', promo.custom_image_file);
+        if (promo.product_ids?.length) {
+            promo.product_ids.forEach((id) => formData.append('product_ids[]', id));
         }
 
         return formData;
@@ -469,8 +420,8 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
                         <h3 className="font-semibold">Carrousel Hero — 4 emplacements</h3>
                         <p className="text-sm mt-1 text-primary-800">
                             Les emplacements <strong>1 à 4</strong> alimentent le défilement hero de la page d'accueil.
-                            Sélectionnez un vendeur puis choisissez un de ses produits — l'image du produit sera utilisée automatiquement.
-                            Rotation automatique toutes les 4 secondes.
+                            Sélectionnez un vendeur, puis choisissez jusqu'à 5 produits depuis sa boutique.
+                            Chaque cadre affiche ces produits et défile automatiquement toutes les 1 seconde.
                         </p>
                     </div>
                 </div>
