@@ -220,7 +220,7 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
                     <h2 className="font-bold text-gray-900">Commandes sur la période</h2>
                     <span className="text-sm text-gray-500">{recentOrders.length} affichée{recentOrders.length !== 1 ? 's' : ''}</span>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="w-full overflow-x-auto scrollbar-thin">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">

@@ -34,23 +34,23 @@ class HomepagePromotionSeeder extends Seeder
         $heroSlides = [
             [
                 'order'    => 1,
-                'image'    => '/images/demo-products/tecno.jpg',
-                'headline' => 'Offre Tecno — Stock limité !',
+                'image'    => '/images/demo-products/iphone.jpg',
+                'headline' => 'Offre iPhone — Stock limité !',
             ],
             [
                 'order'    => 2,
-                'image'    => '/images/demo-products/tv.jpg',
-                'headline' => 'TV Smart — Promo exclusive',
+                'image'    => '/images/demo-products/headphones.jpg',
+                'headline' => 'Casque Audio — Promo exclusive',
             ],
             [
                 'order'    => 3,
-                'image'    => '/images/demo-products/tecno.jpg',
-                'headline' => 'Smartphone à prix réduit',
+                'image'    => '/images/demo-products/samsung.jpg',
+                'headline' => 'Samsung Galaxy à prix réduit',
             ],
             [
                 'order'    => 4,
-                'image'    => '/images/demo-products/tv.jpg',
-                'headline' => '4ᵉ slide hero — Visible dans le défilement',
+                'image'    => '/images/demo-products/speaker.jpg',
+                'headline' => 'Enceinte Bluetooth Premium',
             ],
         ];
 

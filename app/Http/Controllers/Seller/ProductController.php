@@ -71,7 +71,7 @@ class ProductController extends Controller
     {
         $seller = $request->user()->seller;
 
-        $query = Product::with(['category', 'images'])
+        $query = Product::with(['category', 'subcategory', 'images'])
             ->where('seller_id', $seller->id)
             ->latest();
 

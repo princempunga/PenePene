@@ -62,7 +62,8 @@ export default function SponsoredIndex({ sponsored }) {
             )}
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <table className="w-full text-left text-sm text-gray-500">
+                <div className="w-full overflow-x-auto scrollbar-thin">
+                    <table className="w-full text-left text-sm text-gray-500">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                         <tr>
                             <th className="px-6 py-4">Produit</th>
@@ -112,6 +113,7 @@ export default function SponsoredIndex({ sponsored }) {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </SellerLayout>
     );

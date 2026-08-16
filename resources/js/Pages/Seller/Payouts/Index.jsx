@@ -255,7 +255,7 @@ export default function PayoutsIndex({ payouts, summary }) {
 
                             {payouts.data.length > 0 ? (
                                 <>
-                                    <div className="overflow-x-auto">
+                                    <div className="w-full overflow-x-auto scrollbar-thin">
                                         <table className="w-full text-left text-sm text-gray-600">
                                             <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
                                                 <tr>

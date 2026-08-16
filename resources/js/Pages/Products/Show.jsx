@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import {
     MapPin, ShieldCheck, Truck, ArrowRight, MessageCircle, Heart,
-    Phone, Sparkles, ShoppingCart, Zap, X,
+    Phone, Sparkles, ShoppingCart, Zap, X, Zap as BoltIcon,
+    Package as PackageIcon, ClipboardList, CheckCircle2, ChevronDown,
 } from 'lucide-react';
 import ImageGallery from '@/Components/Product/ImageGallery';
 import RatingStars from '@/Components/UI/RatingStars';
@@ -23,12 +24,24 @@ function ProductActions({
     onBuyNow,
     onAddToCart,
     onToggleFavorite,
+    onOrderNow,
 }) {
     const { t } = useTranslation();
     const disabled = adding || availableStock < 1;
 
     return (
         <div className="w-full space-y-3">
+            {/* Commander maintenant - bouton principal */}
+            <button
+                type="button"
+                onClick={onOrderNow}
+                disabled={disabled}
+                className="w-full h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold flex items-center justify-center gap-2 whitespace-nowrap transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                <ClipboardList className="w-5 h-5 shrink-0" />
+                <span>{disabled && availableStock < 1 ? 'Rupture de stock' : 'Commander maintenant'}</span>
+            </button>
+
             <button
                 type="button"
                 onClick={onBuyNow}
@@ -67,6 +80,166 @@ function ProductActions({
     );
 }
 
+/* ── Modal de commande directe ──────────────────────────────── */
+function OrderModal({ product, quantity, availableStock, onClose, auth }) {
+    const [address, setAddress] = useState('');
+    const [notes, setNotes]     = useState('');
+    const [qty, setQty]         = useState(quantity);
+    const [submitting, setSubmitting] = useState(false);
+    const [done, setDone]       = useState(false);
+
+    const unitPrice = parseFloat(product.sale_price || product.price);
+    const total     = unitPrice * qty;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!auth?.user) {
+            router.get(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+            return;
+        }
+        setSubmitting(true);
+        router.post('/buyer/orders', {
+            product_id:       product.id,
+            quantity:         qty,
+            shipping_address: address,
+            notes:            notes || null,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setSubmitting(false),
+            onSuccess: () => setDone(true),
+        });
+    };
+
+    if (done) {
+        return (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle2 size={32} className="text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Commande envoyée !</h3>
+                    <p className="text-gray-500 text-sm mb-6">Le vendeur a été notifié et va traiter votre demande très bientôt.</p>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onClose}
+                            className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors"
+                        >
+                            Fermer
+                        </button>
+                        <button
+                            onClick={() => router.visit('/buyer/orders')}
+                            className="flex-1 py-2.5 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors"
+                        >
+                            Mes commandes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
+                            <ClipboardList size={18} className="text-green-600" />
+                        </div>
+                        <h2 className="font-bold text-gray-900">Commander maintenant</h2>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {/* Corps */}
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto">
+                    <div className="p-5 space-y-5 flex-1">
+
+                        {/* Résumé produit */}
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                            <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
+                                {product.images?.[0]?.image_path ? (
+                                    <img src={`/storage/${product.images[0].image_path}`} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    <PackageIcon size={24} className="m-auto mt-3 text-gray-400" />
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-gray-900 truncate text-sm">{product.name}</p>
+                                <p className="text-primary-600 font-bold">{product.currency} {unitPrice.toLocaleString()}</p>
+                            </div>
+                        </div>
+
+                        {/* Quantité */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Quantité</label>
+                            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden w-36">
+                                <button type="button" onClick={() => setQty(Math.max(1, qty - 1))}
+                                    className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">−</button>
+                                <span className="flex-1 text-center font-bold text-gray-900">{qty}</span>
+                                <button type="button" onClick={() => setQty(Math.min(availableStock, qty + 1))}
+                                    className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">+</button>
+                            </div>
+                        </div>
+
+                        {/* Adresse */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Adresse de livraison <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                required
+                                value={address}
+                                onChange={e => setAddress(e.target.value)}
+                                rows={3}
+                                placeholder="Ex : Av. de la Paix, Commune de Gombe, Kinshasa…"
+                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none"
+                            />
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Notes <span className="text-gray-400 font-normal">(facultatif)</span>
+                            </label>
+                            <textarea
+                                value={notes}
+                                onChange={e => setNotes(e.target.value)}
+                                rows={2}
+                                placeholder="Instructions spéciales, couleur, taille…"
+                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Footer avec total et bouton */}
+                    <div className="p-5 border-t border-gray-100 bg-gray-50">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm text-gray-600">Total estimé</span>
+                            <span className="text-lg font-black text-green-700">{product.currency} {total.toLocaleString()}</span>
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={submitting || !address.trim()}
+                            className="w-full h-12 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <ClipboardList size={18} />
+                            {submitting ? 'Envoi en cours…' : 'Confirmer la commande'}
+                        </button>
+                        <p className="text-center text-xs text-gray-400 mt-2">Le vendeur recevra votre commande et vous contactera</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
 export default function Show({
     product,
     relatedProducts,
@@ -85,6 +258,7 @@ export default function Show({
     const [conversationId, setConversationId] = useState(null);
     const [startingChat, setStartingChat] = useState(false);
     const [reportModalOpen, setReportModalOpen] = useState(false);
+    const [showOrderModal, setShowOrderModal] = useState(false);
     const autoChatStarted = useRef(false);
 
     const seller = product.seller;
@@ -322,6 +496,17 @@ export default function Show({
                                 onBuyNow={startChat}
                                 onAddToCart={() => addToCart(false)}
                                 onToggleFavorite={toggleFavorite}
+                                onOrderNow={() => {
+                                    if (!auth?.user) {
+                                        router.get(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                                        return;
+                                    }
+                                    if (auth.user.role !== 'buyer') {
+                                        dispatchToast('Seuls les acheteurs peuvent passer des commandes.', 'info');
+                                        return;
+                                    }
+                                    setShowOrderModal(true);
+                                }}
                             />
                         </div>
 
@@ -534,6 +719,16 @@ export default function Show({
                     sellerName={seller.business_name}
                     isOpen={reportModalOpen}
                     onClose={() => setReportModalOpen(false)}
+                />
+            )}
+
+            {showOrderModal && !isDemo && (
+                <OrderModal
+                    product={product}
+                    quantity={quantity}
+                    availableStock={availableStock}
+                    auth={auth}
+                    onClose={() => setShowOrderModal(false)}
                 />
             )}
         </AppLayout>

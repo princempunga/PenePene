@@ -138,7 +138,7 @@ function PromoContent({ promo, t }) {
 // ── One animated card slot ────────────────────────────────────────────────────
 function HeroAnimatedCard({ promos, startOffset, animConfig, prefersReducedMotion, glowColor }) {
     const total = promos.length;
-    const [idx, setIdx] = useState(startOffset % Math.max(total, 1));
+    const [idx, setIdx] = useState(0);
 
     useEffect(() => {
         if (total <= 1) return;

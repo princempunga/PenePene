@@ -129,7 +129,8 @@ export default function OrdersIndex({ orders, filters }) {
                 {orders.data.length > 0 ? (
                     <>
                         <div className="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <table className="w-full text-left text-sm text-gray-600">
+                            <div className="w-full overflow-x-auto scrollbar-thin">
+                                <table className="w-full text-left text-sm text-gray-600">
                                 <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
                                     <tr>
                                         <th className="px-4 py-4">N° commande</th>
@@ -193,6 +194,7 @@ export default function OrdersIndex({ orders, filters }) {
                                     })}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
 
                         <div className="lg:hidden space-y-3">
