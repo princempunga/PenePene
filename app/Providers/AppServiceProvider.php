@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Category;
-use Illuminate\Support\Facades\Inertia;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
