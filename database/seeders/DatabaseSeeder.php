@@ -122,8 +122,8 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ── Appel du seeder Super Admin / Admin ────────────────────────────────
-        $this->call(SuperAdminSeeder::class);
+        // ── Appel du seeder Users / Admin / Demo accounts ─────────────────────
+        $this->call(UserSeeder::class);
 
         // ── Demo Buyer ─────────────────────────────────────────────────────────
         $buyerUser = User::firstOrCreate(
