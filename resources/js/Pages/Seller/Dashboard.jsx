@@ -8,7 +8,7 @@ import { ORDER_STATUS_LABELS_FR } from '@/lib/orderStatusLabels';
 import {
     Package, ShoppingCart, DollarSign, Clock, Star,
     Plus, MessageCircle, FileText, User, AlertTriangle,
-    TrendingUp, ArrowRight, Inbox,
+    TrendingUp, ArrowRight, Inbox, CheckCircle2, Banknote, ChevronRight,
 } from 'lucide-react';
 
 function StatCard({ icon: Icon, iconBg, iconColor, label, value, subtext }) {
@@ -158,35 +158,84 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                     />
                 </div>
 
-                {/* CRM Pipeline - Suivi des conversations */}
+                {/* CRM Pipeline - Suivi des commandes */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="font-bold text-gray-900">Pipeline des négociations</h2>
-                        <Link href="/seller/messages" className="text-sm text-primary-600 font-medium hover:text-primary-700">
-                            Voir les conversations →
+                        <Link href="/seller/orders" className="text-sm text-primary-600 font-medium hover:text-primary-700">
+                            Voir les commandes →
                         </Link>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <Link href="/seller/messages" className="group bg-blue-50 border border-blue-100 hover:border-blue-300 hover:shadow-md rounded-xl p-4 transition-all">
-                            <p className="text-3xl font-bold text-blue-700 mb-1">{stats.activeInquiries ?? 0}</p>
-                            <p className="text-sm font-medium text-blue-600">Demandes</p>
-                            <p className="text-xs text-blue-400 mt-0.5">Nouvelles demandes de devis</p>
-                        </Link>
-                        <Link href="/seller/messages" className="group bg-amber-50 border border-amber-100 hover:border-amber-300 hover:shadow-md rounded-xl p-4 transition-all">
-                            <p className="text-3xl font-bold text-amber-700 mb-1">{stats.negotiating ?? 0}</p>
-                            <p className="text-sm font-medium text-amber-600">Négociation</p>
-                            <p className="text-xs text-amber-400 mt-0.5">En cours de discussion</p>
-                        </Link>
-                        <Link href="/seller/messages" className="group bg-indigo-50 border border-indigo-100 hover:border-indigo-300 hover:shadow-md rounded-xl p-4 transition-all">
-                            <p className="text-3xl font-bold text-indigo-700 mb-1">{stats.dealsConfirmed ?? 0}</p>
-                            <p className="text-sm font-medium text-indigo-600">Confirmés</p>
-                            <p className="text-xs text-indigo-400 mt-0.5">Accords conclus</p>
-                        </Link>
-                        <Link href="/seller/messages" className="group bg-green-50 border border-green-100 hover:border-green-300 hover:shadow-md rounded-xl p-4 transition-all">
-                            <p className="text-3xl font-bold text-green-700 mb-1">{stats.dealsSold ?? 0}</p>
-                            <p className="text-sm font-medium text-green-600">Vendus</p>
-                            <p className="text-xs text-green-400 mt-0.5">Transactions complètes</p>
-                        </Link>
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0">
+
+                            {/* Étape 1 : Demandes */}
+                            <Link
+                                href="/seller/orders?status=pending"
+                                className="group flex-1 flex flex-col items-center justify-center gap-2 p-4 sm:p-5 rounded-xl bg-blue-50 border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all text-center cursor-pointer"
+                            >
+                                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Inbox size={22} className="text-blue-600" />
+                                </div>
+                                <p className="text-3xl font-black text-blue-700">{stats.activeInquiries ?? 0}</p>
+                                <div>
+                                    <p className="text-sm font-bold text-blue-700">Demandes</p>
+                                    <p className="text-xs text-blue-400 mt-0.5">En attente de traitement</p>
+                                </div>
+                                {(stats.activeInquiries ?? 0) > 0 && (
+                                    <span className="mt-1 inline-flex items-center gap-1 text-xs text-blue-600 font-semibold bg-blue-100 px-2 py-0.5 rounded-full">
+                                        Action requise
+                                    </span>
+                                )}
+                            </Link>
+
+                            {/* Flèche */}
+                            <div className="hidden sm:flex items-center justify-center px-2 text-gray-300">
+                                <ChevronRight size={28} strokeWidth={1.5} />
+                            </div>
+                            <div className="flex sm:hidden items-center justify-center py-1 text-gray-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 5l7 7-7 7"/></svg>
+                            </div>
+
+                            {/* Étape 2 : Confirmés */}
+                            <Link
+                                href="/seller/orders?status=confirmed"
+                                className="group flex-1 flex flex-col items-center justify-center gap-2 p-4 sm:p-5 rounded-xl bg-amber-50 border-2 border-amber-200 hover:border-amber-400 hover:shadow-md transition-all text-center cursor-pointer"
+                            >
+                                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <CheckCircle2 size={22} className="text-amber-600" />
+                                </div>
+                                <p className="text-3xl font-black text-amber-700">{stats.dealsConfirmed ?? 0}</p>
+                                <div>
+                                    <p className="text-sm font-bold text-amber-700">Confirmés</p>
+                                    <p className="text-xs text-amber-400 mt-0.5">Commandes acceptées</p>
+                                </div>
+                            </Link>
+
+                            {/* Flèche */}
+                            <div className="hidden sm:flex items-center justify-center px-2 text-gray-300">
+                                <ChevronRight size={28} strokeWidth={1.5} />
+                            </div>
+                            <div className="flex sm:hidden items-center justify-center py-1 text-gray-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 5l7 7-7 7"/></svg>
+                            </div>
+
+                            {/* Étape 3 : Vendus */}
+                            <Link
+                                href="/seller/orders?status=delivered"
+                                className="group flex-1 flex flex-col items-center justify-center gap-2 p-4 sm:p-5 rounded-xl bg-green-50 border-2 border-green-200 hover:border-green-400 hover:shadow-md transition-all text-center cursor-pointer"
+                            >
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Banknote size={22} className="text-green-600" />
+                                </div>
+                                <p className="text-3xl font-black text-green-700">{stats.dealsSold ?? 0}</p>
+                                <div>
+                                    <p className="text-sm font-bold text-green-700">Vendus</p>
+                                    <p className="text-xs text-green-400 mt-0.5">Transactions complètes</p>
+                                </div>
+                            </Link>
+
+                        </div>
                     </div>
                 </div>
 

@@ -4,7 +4,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/formatCurrency';
 import SellerLayout from '@/Layouts/SellerLayout';
 import Pagination from '@/Components/UI/Pagination';
-import { Plus, Edit, Trash2, Eye, Package, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package, Search, Folder, Tag, DollarSign, Layers } from 'lucide-react';
 
 const statusColors = {
     pending:  'bg-amber-100 text-amber-800',
@@ -125,8 +125,10 @@ export default function ProductsIndex({ products, filters = {} }) {
 
                 {!isEmpty ? (
                     <>
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-600">
+                {/* Vue tableau — desktop lg+ */}
+                        <div className="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div className="w-full overflow-x-auto scrollbar-thin">
+                                <table className="w-full text-left text-sm text-gray-600">
                                 <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
                                     <tr>
                                         <th className="px-6 py-4">Produit</th>
@@ -212,6 +214,204 @@ export default function ProductsIndex({ products, filters = {} }) {
                                     })}
                                 </tbody>
                             </table>
+                            </div>
+                        </div>
+
+                        {/* ─── Vue cartes TABLETTE (md → lg) ─── */}
+                        <div className="hidden md:block lg:hidden space-y-3">
+                            {products.data.map((product) => {
+                                const imgPath = getPrimaryImage(product);
+                                const availableStock = product.initial_stock - product.confirmed_sales;
+
+                                return (
+                                    <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-start gap-4">
+
+                                        {/* Image produit */}
+                                        <div className="w-24 h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                                            {imgPath ? (
+                                                <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Package size={28} />
+                                            )}
+                                        </div>
+
+                                        {/* Détails produit */}
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-gray-900 text-base mb-2 truncate" title={product.name}>
+                                                {product.name}
+                                            </h3>
+                                            <div className="space-y-1 text-sm text-gray-600">
+                                                <div className="flex items-center gap-2">
+                                                    <Folder size={13} className="text-gray-400 shrink-0" />
+                                                    <span>
+                                                        <span className="text-gray-400">Cat: </span>
+                                                        {product.category?.name || 'Sans catégorie'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Tag size={13} className="text-gray-400 shrink-0" />
+                                                    <span>
+                                                        <span className="text-gray-400">Sous-catégorie : </span>
+                                                        {product.subcategory?.name || 'Non spécifiée'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <DollarSign size={13} className="text-gray-400 shrink-0" />
+                                                    <span className="font-semibold text-gray-900">
+                                                        Prix: {formatCurrency(product.sale_price || product.price)}
+                                                        {product.sale_price && (
+                                                            <span className="ml-2 text-xs line-through text-gray-400 font-normal">
+                                                                {formatCurrency(product.price)}
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Layers size={13} className="text-gray-400 shrink-0" />
+                                                    <span>
+                                                        <span className="text-gray-400">Stock disponible: </span>
+                                                        <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>
+                                                            {availableStock}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Statut + Boutons d'action */}
+                                        <div className="flex flex-col items-end justify-between self-stretch shrink-0 gap-3">
+                                            {/* Badge statut */}
+                                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
+                                                {statusLabels[product.status] || product.status}
+                                            </span>
+
+                                            {/* Boutons — avec bordures colorées comme dans le screenshot */}
+                                            <div className="flex items-center gap-2 flex-wrap justify-end">
+                                                <Link
+                                                    href={`/seller/products/${product.id}/edit`}
+                                                    className="w-9 h-9 flex items-center justify-center border border-green-400 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+                                                    title="Modifier"
+                                                >
+                                                    <Edit size={16} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(product.id)}
+                                                    disabled={processing}
+                                                    className="w-9 h-9 flex items-center justify-center border border-red-400 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                    title="Supprimer"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                <Link
+                                                    href={`/seller/products/${product.id}`}
+                                                    className="w-9 h-9 flex items-center justify-center border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                                                    title="Voir"
+                                                >
+                                                    <Eye size={16} />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* ─── Vue cartes MOBILE (<md) ─── */}
+                        <div className="md:hidden space-y-4">
+                            {products.data.map((product) => {
+                                const imgPath = getPrimaryImage(product);
+                                const availableStock = product.initial_stock - product.confirmed_sales;
+
+                                return (
+                                    <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col gap-3">
+                                        <div className="flex items-start gap-3">
+                                            {/* Image produit */}
+                                            <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                                                {imgPath ? (
+                                                    <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Package size={24} />
+                                                )}
+                                            </div>
+
+                                            {/* Détails produit */}
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-bold text-gray-900 text-sm mb-1.5 truncate" title={product.name}>
+                                                    {product.name}
+                                                </h3>
+                                                <div className="space-y-1 text-xs text-gray-600">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Folder size={12} className="text-gray-400 shrink-0" />
+                                                        <span className="truncate">
+                                                            <span className="text-gray-400">Cat : </span>
+                                                            {product.category?.name || 'Sans catégorie'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Tag size={12} className="text-gray-400 shrink-0" />
+                                                        <span className="truncate">
+                                                            <span className="text-gray-400">Sous-catégorie : </span>
+                                                            {product.subcategory?.name || 'Non spécifiée'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <DollarSign size={12} className="text-gray-400 shrink-0" />
+                                                        <span className="font-semibold text-gray-900 truncate">
+                                                            Prix : {formatCurrency(product.sale_price || product.price)}
+                                                            {product.sale_price && (
+                                                                <span className="ml-1 text-[10px] line-through text-gray-400 font-normal">
+                                                                    {formatCurrency(product.price)}
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Layers size={12} className="text-gray-400 shrink-0" />
+                                                        <span>
+                                                            <span className="text-gray-400">Stock disponible : </span>
+                                                            <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>
+                                                                {availableStock}
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Bas de carte : Badge Statut + Boutons Action */}
+                                        <div className="flex items-center justify-between pt-2.5 border-t border-gray-100">
+                                            <span className={`inline-block px-3 py-0.5 rounded-full text-[11px] font-bold ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
+                                                {statusLabels[product.status] || product.status}
+                                            </span>
+
+                                            <div className="flex items-center gap-2">
+                                                <Link
+                                                    href={`/seller/products/${product.id}/edit`}
+                                                    className="w-8 h-8 flex items-center justify-center border border-green-400 text-green-600 rounded-lg hover:bg-green-50 transition-colors"
+                                                    title="Modifier"
+                                                >
+                                                    <Edit size={15} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(product.id)}
+                                                    disabled={processing}
+                                                    className="w-8 h-8 flex items-center justify-center border border-red-400 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                    title="Supprimer"
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
+                                                <Link
+                                                    href={`/seller/products/${product.id}`}
+                                                    className="w-8 h-8 flex items-center justify-center border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                                                    title="Voir"
+                                                >
+                                                    <Eye size={15} />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                         <Pagination links={products.links} />
                     </>
