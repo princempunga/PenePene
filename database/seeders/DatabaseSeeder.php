@@ -122,31 +122,8 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ── Super Admin ────────────────────────────────────────────────────────
-        $superAdmin = User::firstOrCreate(
-            ['email' => 'superadmin@penepene.co.tz'],
-            [
-                'name'              => 'Super Admin',
-                'email'             => 'superadmin@penepene.co.tz',
-                'phone'             => '+255700000001',
-                'password'          => Hash::make('password'),
-                'role'              => 'super_admin',
-                'email_verified_at' => now(),
-            ]
-        );
-
-        // ── Standard Admin ─────────────────────────────────────────────────────
-        User::firstOrCreate(
-            ['email' => 'admin@penepene.co.tz'],
-            [
-                'name'              => 'Platform Admin',
-                'email'             => 'admin@penepene.co.tz',
-                'phone'             => '+255700000002',
-                'password'          => Hash::make('password'),
-                'role'              => 'admin',
-                'email_verified_at' => now(),
-            ]
-        );
+        // ── Appel du seeder Super Admin / Admin ────────────────────────────────
+        $this->call(SuperAdminSeeder::class);
 
         // ── Demo Buyer ─────────────────────────────────────────────────────────
         $buyerUser = User::firstOrCreate(
@@ -178,6 +155,11 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+        
+        // Récupérer le Super Admin créé par SuperAdminSeeder
+        $superAdmin = User::where('email', 'josephtshim6@gmail.com')->first() 
+                      ?? User::where('role', 'super_admin')->first();
+        
         Seller::firstOrCreate(['user_id' => $sellerUser->id], [
             'user_id'       => $sellerUser->id,
             'business_name' => 'Demo Store',
@@ -187,23 +169,28 @@ class DatabaseSeeder extends Seeder
             'country'       => 'TZ',
             'status'        => 'verified',
             'verified_at'   => now(),
-            'verified_by'   => $superAdmin->id,
+            'verified_by'   => $superAdmin?->id,
         ]);
 
         $this->command->info('✅ PenePene seeding complete!');
         $this->command->info('');
-        $this->command->info('  Super Admin: superadmin@penepene.co.tz  / password');
-        $this->command->info('  Admin:       admin@penepene.co.tz       / password');
-        $this->command->info('  Buyer:       buyer@penepene.co.tz       / password');
-        $this->command->info('  Seller:      seller@penepene.co.tz      / password');
+        $this->command->info('🔐 Comptes de connexion :');
+        $this->command->info('  Super Admin: josephtshim6@gmail.com  / Josephes6@');
+        $this->command->info('  Admin:       admin@penepene.com       / password');
+        $this->command->info('  Buyer:       buyer@penepene.co.tz     / password');
+        $this->command->info('  Seller:      seller@penepene.co.tz    / password');
         $this->command->info('');
 
+        $this->call(DemoUsersSeeder::class);
         $this->call(GovernmentUserSeeder::class);
         $this->call(HomepagePromotionSeeder::class);
 
-        $this->command->info('  Government (Commune):  commune@rdc.gov.cd   / password');
-        $this->command->info('  Government (Ville):    ville@rdc.gov.cd     / password');
-        $this->command->info('  Government (Province): province@rdc.gov.cd  / password');
-        $this->command->info('  Government (National): national@rdc.gov.cd  / password');
+        $this->command->info('');
+        $this->command->info('🏛️  Comptes gouvernement :');
+        $this->command->info('  Commune:  commune@rdc.gov.cd   / password');
+        $this->command->info('  Ville:    ville@rdc.gov.cd     / password');
+        $this->command->info('  Province: province@rdc.gov.cd  / password');
+        $this->command->info('  National: national@rdc.gov.cd  / password');
+        $this->command->info('');
     }
 }
