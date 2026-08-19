@@ -69,7 +69,7 @@ export default function CategoriesIndex({ categories, allCategories }) {
             setEditingCategory(category);
             setData({
                 name: category.name,
-                parent_id: category.parent_id || '',
+                parent_id: category.parent_id ? String(category.parent_id) : '',
                 icon: category.icon || '',
                 is_active: category.is_active,
             });
@@ -196,8 +196,8 @@ export default function CategoriesIndex({ categories, allCategories }) {
                                         {allCategories.map(cat => (
                                             <option 
                                                 key={cat.id} 
-                                                value={cat.id}
-                                                disabled={editingCategory && (cat.id === editingCategory.id || cat.parent_id === editingCategory.id)}
+                                                value={String(cat.id)}
+                                                disabled={editingCategory && (Number(cat.id) === Number(editingCategory.id) || Number(cat.id) === Number(editingCategory.parent_id))}
                                             >
                                                 {cat.parent_id ? '— ' : ''}{cat.name}
                                             </option>

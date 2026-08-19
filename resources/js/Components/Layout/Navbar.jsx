@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Search, ShoppingCart, User, Bell, Heart, MapPin, ChevronDown, Package, MessageSquare, LogOut, Settings } from 'lucide-react';
@@ -14,7 +14,7 @@ function getDashboardUrl(role) {
 }
 
 export default function Navbar({ onMenuClick }) {
-    const { auth, cart_count, wishlist_count: sharedWishlistCount } = usePage().props;
+    const { auth, cart_count, wishlist_count: sharedWishlistCount, categories: topCategories = [] } = usePage().props;
     const { t } = useTranslation();
     const [wishlistCount, setWishlistCount] = useState(sharedWishlistCount || 0);
     const [scrolled, setScrolled] = useState(false);
@@ -66,6 +66,20 @@ export default function Navbar({ onMenuClick }) {
     const isBuyer = auth?.user?.role === 'buyer';
     const isSeller = auth?.user?.role === 'seller';
     const isAdmin = auth?.user?.role === 'admin' || auth?.user?.role === 'super_admin';
+
+    const dynamicCategories = useMemo(() => {
+        if (Array.isArray(topCategories) && topCategories.length > 0) {
+            return topCategories;
+        }
+
+        return [
+            { id: 1, name: 'Electronics', slug: 'electronics', children: [] },
+            { id: 2, name: 'Fashion', slug: 'fashion', children: [] },
+            { id: 3, name: 'Home & Living', slug: 'home-living', children: [] },
+            { id: 4, name: 'Vehicles', slug: 'vehicles', children: [] },
+            { id: 5, name: 'Health & Beauty', slug: 'health-beauty', children: [] },
+        ];
+    }, [topCategories]);
 
     return (
         <motion.header
@@ -258,18 +272,43 @@ export default function Navbar({ onMenuClick }) {
             {/* Bottom Links Bar (Categories) */}
             <div className="hidden lg:block border-t border-gray-100 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
-                    <ul className="flex items-center gap-8 py-2.5 text-sm font-medium text-gray-600 overflow-x-auto hide-scrollbar">
+                    <ul className="flex items-center gap-2 py-2.5 text-sm font-medium text-gray-600 overflow-x-auto hide-scrollbar">
                         <li>
-                            <Link href="/categories" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold whitespace-nowrap">
+                            <Link href="/categories" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold whitespace-nowrap px-2 py-1.5">
                                 <Menu size={16} /> {t('nav.all_categories')}
                             </Link>
                         </li>
-                        <li><Link href="/categories/electronics" className="hover:text-primary-600 whitespace-nowrap">{t('nav.electronics')}</Link></li>
-                        <li><Link href="/categories/fashion" className="hover:text-primary-600 whitespace-nowrap">{t('nav.fashion')}</Link></li>
-                        <li><Link href="/categories/home-living" className="hover:text-primary-600 whitespace-nowrap">{t('nav.home_living')}</Link></li>
-                        <li><Link href="/categories/vehicles" className="hover:text-primary-600 whitespace-nowrap">{t('nav.vehicles')}</Link></li>
-                        <li><Link href="/categories/health-beauty" className="hover:text-primary-600 whitespace-nowrap">{t('nav.health_beauty')}</Link></li>
-                        <li><Link href="/products?filter=sale" className="text-red-600 font-bold hover:text-red-700 whitespace-nowrap flex items-center gap-1">{t('nav.flash_deals')}</Link></li>
+
+                        {dynamicCategories.map((category) => {
+                            const hasChildren = Array.isArray(category.children) && category.children.length > 0;
+
+                            return (
+                                <li key={category.id} className="relative group">
+                                    <Link
+                                        href={category.slug ? `/categories/${category.slug}` : '/categories'}
+                                        className="block px-2 py-1.5 rounded-md hover:text-primary-600 hover:bg-gray-50 whitespace-nowrap transition-colors"
+                                    >
+                                        {category.name}
+                                    </Link>
+
+                                    {hasChildren && (
+                                        <div className="absolute left-0 top-full z-30 hidden min-w-[220px] group-hover:block rounded-xl border border-gray-200 bg-white shadow-lg py-2">
+                                            {category.children.map((child) => (
+                                                <Link
+                                                    key={child.id}
+                                                    href={child.slug ? `/categories/${child.slug}` : '/categories'}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+                                                >
+                                                    {child.name}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </li>
+                            );
+                        })}
+
+                        <li><Link href="/products?filter=sale" className="text-red-600 font-bold hover:text-red-700 whitespace-nowrap flex items-center gap-1 px-2 py-1.5">{t('nav.flash_deals')}</Link></li>
                     </ul>
                 </div>
             </div>

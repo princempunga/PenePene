@@ -13,10 +13,12 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::with('subcategories')
+        $categories = Category::query()
+            ->with('children')
             ->withCount(['products' => function ($query) {
                 $query->where('status', 'active');
             }])
+            ->whereNull('parent_id')
             ->active()
             ->orderBy('sort_order')
             ->get();
@@ -35,7 +37,7 @@ class CategoryController extends Controller
         $category->image = DemoProductService::categoryImage($category);
         $category->name = CatalogTranslations::categoryName($category->slug, $category->name);
 
-        $category->load(['subcategories' => fn ($q) => $q->active()->orderBy('sort_order')]);
+        $category->load(['children' => fn ($q) => $q->active()->orderBy('sort_order')]);
 
         $query = Product::with(['seller', 'images', 'category'])
             ->where('category_id', $category->id)
@@ -60,7 +62,7 @@ class CategoryController extends Controller
 
         $categoryImage = DemoProductService::categoryImage($category);
 
-        $subcategoryCards = $category->subcategories
+        $subcategoryCards = $category->children
             ->unique(fn ($sub) => DemoProductService::normalizeSubcategorySlug($sub->slug, $category->slug))
             ->values()
             ->map(function ($sub) use ($category, $categoryImage) {
@@ -79,7 +81,7 @@ class CategoryController extends Controller
             ->values()
             ->all();
 
-        $category->unsetRelation('subcategories');
+        $category->unsetRelation('children');
 
         return Inertia::render('Categories/Show', [
             'category'          => $category,

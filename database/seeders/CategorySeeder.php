@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Category;
-use App\Models\Subcategory;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
@@ -28,35 +27,35 @@ class CategorySeeder extends Seeder
 
         $sortOrder = 1;
         foreach ($categories as $catName => $subcategories) {
-            $slug = Str::slug($catName);
+            $parentSlug = Str::slug($catName);
 
             $category = Category::firstOrCreate(
-                ['slug' => $slug],
+                ['slug' => $parentSlug],
                 [
                     'name'             => $catName,
-                    'slug'             => $slug,
-                    'image'            => "/images/categories/{$slug}.jpg",
+                    'slug'             => $parentSlug,
+                    'image'            => "/images/categories/{$parentSlug}.jpg",
                     'is_active'        => true,
                     'sort_order'       => $sortOrder,
+                    'parent_id'        => null,
                     'meta_title'       => "Buy {$catName} online | PenePene",
                     'meta_description' => "Shop for {$catName} at the best prices on PenePene Marketplace.",
                 ]
             );
 
-            if (empty($category->image)) {
-                $category->update(['image' => "/images/categories/{$slug}.jpg"]);
-            }
-
             $subSortOrder = 1;
             foreach ($subcategories as $subName) {
-                Subcategory::firstOrCreate(
-                    ['slug' => $slug . '-' . Str::slug($subName), 'category_id' => $category->id],
+                $subSlug = $parentSlug . '-' . Str::slug($subName);
+
+                Category::firstOrCreate(
+                    ['slug' => $subSlug],
                     [
-                        'category_id' => $category->id,
                         'name'        => $subName,
-                        'slug'        => $slug . '-' . Str::slug($subName),
+                        'slug'        => $subSlug,
+                        'parent_id'   => $category->id,
                         'is_active'   => true,
                         'sort_order'  => $subSortOrder++,
+                        'image'       => "/images/categories/{$subSlug}.jpg",
                     ]
                 );
             }
