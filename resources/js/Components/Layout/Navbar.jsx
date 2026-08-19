@@ -111,21 +111,21 @@ export default function Navbar({ onMenuClick }) {
             <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-8">
                 {/* Logo & Mobile Menu */}
                 <div className="flex items-center gap-4 flex-shrink-0">
-                    <button 
+                    <button
                         onClick={onMenuClick}
                         className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-primary-600 bg-gray-50 rounded-lg"
                     >
                         <Menu size={24} />
                     </button>
-                    
+
                     <Logo className="h-11 md:h-12 w-auto max-w-[160px]" />
                 </div>
 
                 {/* Search Bar (Desktop) */}
                 <div className="hidden lg:flex flex-1 max-w-3xl relative group">
                     <form onSubmit={handleSearch} className="w-full flex relative shadow-sm group-hover:shadow-md transition-shadow rounded-xl overflow-hidden border border-gray-200 focus-within:border-primary-500 focus-within:ring-4 focus-within:ring-primary-500/10">
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder={t('nav.search_placeholder')}
@@ -237,7 +237,7 @@ export default function Navbar({ onMenuClick }) {
                                 <span className="hidden md:block font-bold text-sm group-hover:text-primary-600">{t('nav.sign_in')}</span>
                             </Link>
                         )}
-                        
+
                         <div className="w-px h-8 bg-gray-200 hidden md:block mx-1"></div>
 
                         <Link href="/favorites" className="hidden md:flex p-2 hover:bg-gray-100 rounded-full transition-colors group relative" title={t('nav.wishlist')}>
@@ -248,7 +248,7 @@ export default function Navbar({ onMenuClick }) {
                                 </span>
                             )}
                         </Link>
-                        
+
                         <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative group flex items-center gap-2">
                             <div className="relative">
                                 <ShoppingCart size={24} className="group-hover:text-primary-600" />

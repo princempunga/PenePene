@@ -33,16 +33,16 @@ const CategoryItem = ({ category, onEdit, onDelete, level = 0 }) => {
                     </button>
                 </div>
             </div>
-            
+
             {expanded && hasChildren && (
                 <div className="w-full">
                     {category.children.map(child => (
-                        <CategoryItem 
-                            key={child.id} 
-                            category={child} 
-                            onEdit={onEdit} 
-                            onDelete={onDelete} 
-                            level={level + 1} 
+                        <CategoryItem
+                            key={child.id}
+                            category={child}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                            level={level + 1}
                         />
                     ))}
                 </div>
@@ -113,10 +113,10 @@ export default function CategoriesIndex({ categories, allCategories }) {
         <>
             <Head title="Categories" />
             <AdminLayout title="Product Categories">
-                
+
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-gray-500">Manage the product taxonomy tree.</p>
-                    <button 
+                    <button
                         onClick={() => openModal()}
                         className="bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors text-sm shadow-sm"
                     >
@@ -140,15 +140,15 @@ export default function CategoriesIndex({ categories, allCategories }) {
                     <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2 text-gray-700 font-semibold">
                         <ListTree size={18} /> Category Structure
                     </div>
-                    
+
                     {categories.length > 0 ? (
                         <div className="w-full">
                             {categories.map(category => (
-                                <CategoryItem 
-                                    key={category.id} 
-                                    category={category} 
-                                    onEdit={openModal} 
-                                    onDelete={handleDelete} 
+                                <CategoryItem
+                                    key={category.id}
+                                    category={category}
+                                    onEdit={openModal}
+                                    onDelete={handleDelete}
                                 />
                             ))}
                         </div>
@@ -171,12 +171,12 @@ export default function CategoriesIndex({ categories, allCategories }) {
                                     <X size={20} />
                                 </button>
                             </div>
-                            
+
                             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={data.name}
                                         onChange={e => setData('name', e.target.value)}
                                         required
@@ -187,15 +187,15 @@ export default function CategoriesIndex({ categories, allCategories }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
-                                    <select 
+                                    <select
                                         value={data.parent_id}
                                         onChange={e => setData('parent_id', e.target.value)}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white"
                                     >
                                         <option value="">-- None (Top Level) --</option>
                                         {allCategories.map(cat => (
-                                            <option 
-                                                key={cat.id} 
+                                            <option
+                                                key={cat.id}
                                                 value={String(cat.id)}
                                                 disabled={editingCategory && (Number(cat.id) === Number(editingCategory.id) || Number(cat.id) === Number(editingCategory.parent_id))}
                                             >
@@ -208,8 +208,8 @@ export default function CategoriesIndex({ categories, allCategories }) {
 
                                 {editingCategory && (
                                     <div className="flex items-center gap-2 pt-2">
-                                        <input 
-                                            type="checkbox" 
+                                        <input
+                                            type="checkbox"
                                             id="is_active"
                                             checked={data.is_active}
                                             onChange={e => setData('is_active', e.target.checked)}
@@ -220,14 +220,14 @@ export default function CategoriesIndex({ categories, allCategories }) {
                                 )}
 
                                 <div className="pt-4 border-t border-gray-100 flex gap-3 justify-end">
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={closeModal}
                                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
                                     >
                                         Cancel
                                     </button>
-                                    <button 
+                                    <button
                                         type="submit"
                                         disabled={processing}
                                         className="px-4 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-900 disabled:opacity-50"
