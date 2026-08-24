@@ -39,8 +39,12 @@ class CategoryController extends Controller
 
         $category->load(['children' => fn ($q) => $q->active()->orderBy('sort_order')]);
 
+        // Products filed directly under a subcategory still belong to this
+        // category page, so roll them up alongside the category's own products.
+        $categoryIds = $category->selfAndChildrenIds();
+
         $query = Product::with(['seller', 'images', 'category'])
-            ->where('category_id', $category->id)
+            ->whereIn('category_id', $categoryIds)
             ->active();
 
         $listing = ProductListing::paginateOrDemo($query, $category);
@@ -50,7 +54,7 @@ class CategoryController extends Controller
         }
 
         $featuredQuery = Product::with(['seller', 'images', 'category'])
-            ->where('category_id', $category->id)
+            ->whereIn('category_id', $categoryIds)
             ->active()
             ->latest()
             ->take(8)

@@ -62,22 +62,43 @@ class CategoryController extends Controller
         ]);
     }
 
+    /**
+     * Create a category by name and, optionally, one subcategory under it —
+     * both typed freehand rather than picked from a list. Typing the name of
+     * a category that already exists reuses it instead of duplicating it, so
+     * this also works as "add a subcategory to an existing category".
+     */
     public function store(Request $request)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'subcategory_name' => ['nullable', 'string', 'max:255'],
             'icon' => ['nullable', 'string', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $category = Category::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'icon' => $request->icon,
-            'parent_id' => $request->parent_id ?: null,
-            'is_active' => $request->boolean('is_active', true),
-        ]);
+        $slug = Str::slug($request->name);
+
+        $category = Category::firstOrCreate(
+            ['slug' => $slug],
+            [
+                'name' => $request->name,
+                'icon' => $request->icon,
+                'parent_id' => null,
+                'is_active' => $request->boolean('is_active', true),
+            ]
+        );
+
+        if ($request->filled('subcategory_name')) {
+            Category::firstOrCreate(
+                ['slug' => $slug . '-' . Str::slug($request->subcategory_name)],
+                [
+                    'name' => $request->subcategory_name,
+                    'parent_id' => $category->id,
+                    'is_active' => true,
+                ]
+            );
+        }
 
         return back()->with('success', 'Category created successfully.');
     }

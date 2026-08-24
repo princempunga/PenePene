@@ -128,7 +128,9 @@ class DemoProductService
         return array_keys(self::SUBCATEGORY_META);
     }
 
-    public static function subcategoryMeta(?Subcategory $subcategory, ?string $rawSlug = null, string $categorySlug = 'electronics'): array
+    // Accepts either the legacy Subcategory model or a Category row used as a
+    // subcategory (category.parent_id set) — both expose the same fields.
+    public static function subcategoryMeta(Subcategory|Category|null $subcategory, ?string $rawSlug = null, string $categorySlug = 'electronics'): array
     {
         $key = self::normalizeSubcategorySlug($subcategory?->slug ?? $rawSlug, $categorySlug);
         $meta = self::SUBCATEGORY_META[$key] ?? null;

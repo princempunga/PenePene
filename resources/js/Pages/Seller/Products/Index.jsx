@@ -229,7 +229,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                 {!isEmpty ? (
                     <>
                         {selectedCount > 0 && (
-                            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3">
+                            <div className="sticky top-4 z-30 mb-4 flex items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 shadow-sm md:static">
                                 <div className="flex items-center gap-2 text-sm font-medium text-primary-800">
                                     <Check size={16} />
                                     {selectedCount} produit{selectedCount > 1 ? 's' : ''} sélectionné{selectedCount > 1 ? 's' : ''}
@@ -244,7 +244,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                             </div>
                         )}
 
-                        <div className="mb-4 flex items-center justify-between gap-3">
+                        <div className="sticky top-16 z-20 mb-4 flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white/90 px-3 py-2 backdrop-blur-sm shadow-sm md:static md:bg-transparent md:shadow-none md:backdrop-blur-none md:border-0 md:px-0 md:py-0">
                             <label className="inline-flex items-center gap-2 text-sm text-gray-700">
                                 <input
                                     type="checkbox"

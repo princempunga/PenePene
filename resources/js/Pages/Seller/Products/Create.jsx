@@ -140,8 +140,8 @@ export default function ProductCreate({ categories }) {
                 </div>
 
                 {step === 1 && (
-                    <div className="max-w-3xl space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <div className="w-full max-w-3xl space-y-6 pb-36 md:pb-0">
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
                             <div className="flex items-start gap-3 mb-5">
                                 <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
                                     <ImageIcon size={20} className="text-primary-600" />
@@ -155,7 +155,7 @@ export default function ProductCreate({ categories }) {
                                 </div>
                             </div>
 
-                            <label className="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-primary-400 transition-colors mb-5">
+                            <label className="flex flex-col items-center justify-center w-full min-h-[140px] sm:min-h-[160px] border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-primary-400 transition-colors mb-5">
                                 <Upload size={32} className="text-gray-400 mb-2" />
                                 <span className="text-sm text-gray-700 font-medium">Cliquez pour ajouter des photos</span>
                                 <span className="text-xs text-gray-400 mt-1">PNG, JPG · 1 Go max par photo</span>
@@ -167,7 +167,7 @@ export default function ProductCreate({ categories }) {
                                     <p className="text-sm font-medium text-gray-700 mb-3">
                                         {products.length} photo{products.length > 1 ? 's' : ''} sélectionnée{products.length > 1 ? 's' : ''}
                                     </p>
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                         {products.map((product, index) => (
                                             <div key={product.id} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 group">
                                                 <img src={product.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
@@ -194,20 +194,23 @@ export default function ProductCreate({ categories }) {
                             )}
                         </div>
 
-                        <button
-                            type="button"
-                            disabled={products.length === 0}
-                            onClick={() => setStep(2)}
-                            className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl transition-colors"
-                        >
-                            Continuer — {products.length} produit{products.length > 1 ? 's' : ''}
-                            <ChevronRight size={18} />
-                        </button>
+                        {/* ── Bouton fixe au-dessus de la bottom nav (mobile) ── */}
+                        <div className="fixed bottom-[60px] left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-gray-100 px-4 py-3 md:static md:bg-transparent md:border-0 md:px-0 md:py-0">
+                            <button
+                                type="button"
+                                disabled={products.length === 0}
+                                onClick={() => setStep(2)}
+                                className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary-200 transition-all duration-200"
+                            >
+                                Continuer — {products.length} produit{products.length > 1 ? 's' : ''}
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
                     </div>
                 )}
 
                 {step === 2 && (
-                    <div className="max-w-5xl space-y-6">
+                    <div className="w-full max-w-5xl space-y-6 pb-40 md:pb-6">
                         <div className="flex flex-wrap items-center justify-between gap-3 bg-primary-50 border border-primary-200 rounded-xl px-4 py-3">
                             <span className="inline-flex items-center gap-2 text-sm font-medium text-primary-800">
                                 <Package size={16} />
@@ -242,40 +245,43 @@ export default function ProductCreate({ categories }) {
                             ))}
                         </div>
 
-                        {pendingProducts.length > 0 && (
-                            <form onSubmit={handlePublishAll}>
-                                <button
-                                    type="submit"
-                                    id="btn-publier-tout"
-                                    disabled={publishingAll}
-                                    className="w-full flex items-center justify-center gap-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg shadow-primary-200 transition-all duration-200 hover:shadow-xl hover:shadow-primary-300 hover:-translate-y-0.5"
-                                >
-                                    {publishingAll ? (
-                                        <>
-                                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                                            </svg>
-                                            Publication en cours…
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Send size={22} />
-                                            Publier {pendingProducts.length > 1 ? `les ${pendingProducts.length} produits` : 'le produit'}
-                                        </>
-                                    )}
-                                </button>
-                            </form>
-                        )}
+                        {/* ── Bouton fixe au-dessus de la bottom nav (mobile) ── */}
+                        <div className="fixed bottom-[60px] left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-gray-100 px-4 py-3 md:static md:bg-transparent md:border-0 md:px-0 md:py-0">
+                            {pendingProducts.length > 0 && (
+                                <form onSubmit={handlePublishAll} className="mb-3">
+                                    <button
+                                        type="submit"
+                                        id="btn-publier-tout"
+                                        disabled={publishingAll}
+                                        className="w-full flex items-center justify-center gap-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg shadow-primary-200 transition-all duration-200 hover:shadow-xl hover:shadow-primary-300 hover:-translate-y-0.5"
+                                    >
+                                        {publishingAll ? (
+                                            <>
+                                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                                </svg>
+                                                Publication en cours…
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send size={22} />
+                                                Publier {pendingProducts.length > 1 ? `les ${pendingProducts.length} produits` : 'le produit'}
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
 
-                        <button
-                            type="button"
-                            onClick={() => setStep(1)}
-                            className="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700"
-                        >
-                            <ChevronLeft size={16} />
-                            Retour aux photos
-                        </button>
+                            <button
+                                type="button"
+                                onClick={() => setStep(1)}
+                                className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 py-1"
+                            >
+                                <ChevronLeft size={16} />
+                                Retour aux photos
+                            </button>
+                        </div>
                     </div>
                 )}
             </SellerLayout>

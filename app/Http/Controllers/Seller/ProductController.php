@@ -60,7 +60,7 @@ class ProductController extends Controller
             'products.*.name'           => 'required|string|max:255',
             'products.*.description'    => 'required|string',
             'products.*.category_id'    => 'required|exists:categories,id',
-            'products.*.subcategory_id' => 'nullable|exists:subcategories,id',
+            'products.*.subcategory_id' => 'nullable|exists:categories,id',
             'products.*.price'          => 'required|numeric|min:0',
             'products.*.sale_price'     => 'nullable|numeric|min:0',
             'products.*.initial_stock'  => 'required|integer|min:1',
@@ -93,14 +93,46 @@ class ProductController extends Controller
 
     public function create(Request $request)
     {
-        $categories = Category::active()
-            ->with(['subcategories' => fn ($q) => $q->active()->orderBy('sort_order')])
-            ->orderBy('sort_order')
-            ->get();
+        $categories = $this->topLevelCategoriesWithChildren();
 
         return Inertia::render('Seller/Products/Create', [
             'categories' => $categories,
         ]);
+    }
+
+    /**
+     * Top-level categories only, each with its own subcategories preloaded.
+     * Products are always filed under the most specific one the seller picks
+     * (the subcategory itself when chosen, otherwise the parent category) —
+     * see resolveCategoryId(). Never expose a subcategory as if it were a
+     * top-level category or products filed under it become unreachable when
+     * browsing the parent category on the public site.
+     */
+    private function topLevelCategoriesWithChildren()
+    {
+        return Category::active()
+            ->whereNull('parent_id')
+            ->with(['subcategories' => fn ($q) => $q->active()->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->get();
+    }
+
+    /**
+     * Resolve the category a product should actually be filed under: the
+     * chosen subcategory when it is a genuine child of the chosen category,
+     * otherwise the category itself.
+     */
+    private function resolveCategoryId(int $categoryId, $subcategoryId): int
+    {
+        if (empty($subcategoryId)) {
+            return $categoryId;
+        }
+
+        $isValidChild = Category::where('id', $subcategoryId)
+            ->where('parent_id', $categoryId)
+            ->exists();
+
+        return $isValidChild ? (int) $subcategoryId : $categoryId;
     }
 
     public function store(Request $request)
@@ -109,7 +141,7 @@ class ProductController extends Controller
 
         $request->validate([
             'category_id'    => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:subcategories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
             'name'           => 'required|string|max:255',
             'description'    => 'required|string',
             'price'          => 'required|numeric|min:0',
@@ -123,8 +155,7 @@ class ProductController extends Controller
 
         $product = Product::create([
             'seller_id'       => $seller->id,
-            'category_id'     => $request->category_id,
-            'subcategory_id'  => $request->subcategory_id,
+            'category_id'     => $this->resolveCategoryId((int) $request->category_id, $request->subcategory_id),
             'name'            => $request->name,
             'slug'            => Str::slug($request->name) . '-' . uniqid(),
             'description'     => $request->description,
@@ -186,8 +217,7 @@ class ProductController extends Controller
             foreach ($validated['products'] as $index => $item) {
                 $product = Product::create([
                     'seller_id'       => $seller->id,
-                    'category_id'     => $item['category_id'],
-                    'subcategory_id'  => $item['subcategory_id'] ?? null,
+                    'category_id'     => $this->resolveCategoryId((int) $item['category_id'], $item['subcategory_id'] ?? null),
                     'name'            => $item['name'],
                     'slug'            => Str::slug($item['name']) . '-' . uniqid(),
                     'description'     => $item['description'],
@@ -249,15 +279,22 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $categories = Category::active()
-            ->with(['subcategories' => fn ($q) => $q->active()->orderBy('sort_order')])
-            ->orderBy('sort_order')
-            ->get();
+        $categories = $this->topLevelCategoriesWithChildren();
 
         $product->load(['category', 'subcategory', 'images']);
 
+        // The product may be filed directly under a subcategory (a Category
+        // with a parent_id). The edit form only offers top-level categories,
+        // so pre-select the parent and let the subcategory dropdown pick up
+        // the actual value.
+        $productData = $product->toArray();
+        if ($product->category?->parent_id) {
+            $productData['subcategory_id'] = $product->category_id;
+            $productData['category_id'] = $product->category->parent_id;
+        }
+
         return Inertia::render('Seller/Products/Edit', [
-            'product'    => $product,
+            'product'    => $productData,
             'categories' => $categories,
         ]);
     }
@@ -272,7 +309,7 @@ class ProductController extends Controller
 
         $rules = [
             'category_id'    => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:subcategories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
             'name'           => 'required|string|max:255',
             'description'    => 'required|string',
             'price'          => 'required|numeric|min:0',
@@ -289,8 +326,7 @@ class ProductController extends Controller
         ]));
 
         $data = [
-            'category_id'   => $request->category_id,
-            'subcategory_id'=> $request->subcategory_id,
+            'category_id'   => $this->resolveCategoryId((int) $request->category_id, $request->subcategory_id),
             'name'          => $request->name,
             'description'   => $request->description,
             'price'         => $request->price,

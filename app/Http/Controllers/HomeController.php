@@ -16,13 +16,17 @@ class HomeController extends Controller
     {
         $baseProductQuery = Product::with(['seller', 'images', 'category'])->active();
 
-        $popularCategories = Category::withCount(['products' => function ($query) {
-                $query->where('status', 'active');
-            }])
+        $popularCategories = Category::with('children')
+            ->whereNull('parent_id')
             ->active()
-            ->orderByDesc('products_count')
+            ->get()
+            ->each(fn (Category $category) => $category->setAttribute(
+                'products_count',
+                $category->active_product_count,
+            ))
+            ->sortByDesc('products_count')
             ->take(12)
-            ->get();
+            ->values();
 
         $heroProducts = (clone $baseProductQuery)
             ->latest()
