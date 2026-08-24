@@ -47,5 +47,28 @@ class Category extends Model
         return $this->products()->where('status', 'active')->count();
     }
 
+    /**
+     * IDs of this category plus all of its direct children.
+     * Used so that browsing a parent category also surfaces products
+     * that were published directly under one of its subcategories.
+     *
+     * @return array<int>
+     */
+    public function selfAndChildrenIds(): array
+    {
+        return $this->children()
+            ->pluck('id')
+            ->push($this->id)
+            ->all();
+    }
+
+    /** Active product count for this category, including its direct children. */
+    public function getActiveProductCountAttribute(): int
+    {
+        return Product::where('status', 'active')
+            ->whereIn('category_id', $this->selfAndChildrenIds())
+            ->count();
+    }
+
     public function getRouteKeyName(): string { return 'slug'; }
 }

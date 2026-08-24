@@ -32,15 +32,24 @@ const LEGACY_BADGE_MAP = {
 
 const DEFAULT_PRODUCT_IMAGE = '/images/demo-products/default.jpg';
 
+// Images can live on the public disk (seeded assets under "images/…") or on
+// the storage disk (seller uploads under "products/…") — resolve either.
+function resolveImagePath(path) {
+    if (!path) return null;
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) return path;
+    if (path.startsWith('images/')) return `/${path}`;
+    return `/storage/${path}`;
+}
+
 function getProductImage(product) {
     if (product.demo_image) {
-        return product.demo_image;
+        return resolveImagePath(product.demo_image) || product.demo_image;
     }
 
     const primaryImage = product.images?.find((img) => img.is_primary)?.image_path
         || product.images?.[0]?.image_path;
 
-    return primaryImage ? `/storage/${primaryImage}` : DEFAULT_PRODUCT_IMAGE;
+    return resolveImagePath(primaryImage) || DEFAULT_PRODUCT_IMAGE;
 }
 
 function normalizeBadge(badge) {

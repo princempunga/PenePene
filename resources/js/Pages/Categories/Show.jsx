@@ -113,7 +113,7 @@ export default function Show({
                             {subcategoryCards.map((sub) => (
                                 <StaggerItem key={`sub-${sub.id}`}>
                                     <Link
-                                        href={`/products?category=${category.slug}&subcategory=${sub.short_slug || sub.slug}`}
+                                        href={`/categories/${sub.slug}`}
                                         className="group relative block min-h-[140px] rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-1 premium-card"
                                     >
                                         <img

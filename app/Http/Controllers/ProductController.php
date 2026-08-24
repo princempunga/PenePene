@@ -24,22 +24,43 @@ class ProductController extends Controller
         $category = null;
         $subcategory = null;
 
+        $childCategory = null;
+
         if ($request->filled('category')) {
             $category = Category::where('slug', $request->category)->first();
 
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('slug', $request->category);
-            });
+            // A category with published subcategories rolls up their products too,
+            // so browsing "Electronics" also shows items filed under "Smartphones".
+            if ($category) {
+                $categoryIds = $category->selfAndChildrenIds();
+                $query->whereIn('category_id', $categoryIds);
+            }
         }
 
         if ($request->filled('subcategory')) {
-            $subcategory = DemoProductService::resolveSubcategory(
-                $request->subcategory,
-                $request->category
-            );
+            // Prefer the real category hierarchy (subcategories are Category rows
+            // with a parent_id) before falling back to the legacy demo catalog.
+            if ($category) {
+                $requestedSlug = $request->subcategory;
+                $childCategory = $category->children()
+                    ->where(function ($q) use ($category, $requestedSlug) {
+                        $q->where('slug', $requestedSlug)
+                          ->orWhere('slug', $category->slug . '-' . $requestedSlug);
+                    })
+                    ->first();
+            }
 
-            if ($subcategory) {
-                $query->where('subcategory_id', $subcategory->id);
+            if ($childCategory) {
+                $query->where('category_id', $childCategory->id);
+            } else {
+                $subcategory = DemoProductService::resolveSubcategory(
+                    $request->subcategory,
+                    $request->category
+                );
+
+                if ($subcategory) {
+                    $query->where('subcategory_id', $subcategory->id);
+                }
             }
         }
 

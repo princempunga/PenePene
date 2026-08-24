@@ -58,32 +58,27 @@ export default function Index({ categories }) {
                                         <ChevronRight className={`shrink-0 transition-colors ${meta.color} opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform duration-300`} />
                                     </Link>
 
-                                    {category.subcategories && category.subcategories.length > 0 && (
-                                        <div className="p-6">
-                                            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                                    {category.children && category.children.length > 0 && (
+                                        <div className="px-6 py-5">
+                                            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                                                 {t('categories_page.subcategories', 'Sous-catégories')}
                                             </h3>
-                                            <ul className="space-y-2">
-                                                {category.subcategories.map((sub) => {
+                                            <div className="flex flex-wrap gap-2">
+                                                {category.children.map((sub) => {
                                                     const SubIcon = getSubcategoryIcon(sub.slug, category.slug);
-                                                    const subMeta = getCategoryIconMeta(category.slug);
 
                                                     return (
-                                                        <li key={sub.id}>
-                                                            <Link
-                                                                    href={`/products?category=${category.slug}&subcategory=${sub.slug}`}
-                                                                    className="text-gray-700 hover:text-primary-600 flex items-center gap-3 py-1.5 rounded-lg hover:bg-gray-50 px-2 -mx-2 transition-colors group/sub"
-                                                                >
-                                                                    <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${subMeta.bg} ${subMeta.color} shrink-0 transition-transform duration-300 group-hover/sub:scale-110`}>
-                                                                        <SubIcon size={15} strokeWidth={2} />
-                                                                    </span>
-                                                                    <span className="font-medium text-sm">{sub.name}</span>
-                                                                    <ChevronRight size={14} className="ml-auto opacity-0 group-hover/sub:opacity-50 group-hover/sub:translate-x-0.5 text-gray-400 transition-all duration-300" />
-                                                                </Link>
-                                                        </li>
+                                                        <Link
+                                                            key={sub.id}
+                                                            href={`/categories/${sub.slug}`}
+                                                            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 pl-2 pr-3 py-1.5 text-xs font-medium text-gray-700 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+                                                        >
+                                                            <SubIcon size={13} strokeWidth={2} className="shrink-0" />
+                                                            {sub.name}
+                                                        </Link>
                                                     );
                                                 })}
-                                            </ul>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

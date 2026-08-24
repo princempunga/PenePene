@@ -58,10 +58,13 @@ export default function CategoriesIndex({ categories, allCategories }) {
 
     const { data, setData, post, put, delete: destroy, processing, reset, clearErrors } = useForm({
         name: '',
+        subcategory_name: '',
         parent_id: '',
         icon: '',
         is_active: true,
     });
+
+    const topLevelCategories = allCategories.filter((cat) => !cat.parent_id);
 
     const openModal = (category = null) => {
         clearErrors();
@@ -69,6 +72,7 @@ export default function CategoriesIndex({ categories, allCategories }) {
             setEditingCategory(category);
             setData({
                 name: category.name,
+                subcategory_name: '',
                 parent_id: category.parent_id ? String(category.parent_id) : '',
                 icon: category.icon || '',
                 is_active: category.is_active,
@@ -77,6 +81,7 @@ export default function CategoriesIndex({ categories, allCategories }) {
             setEditingCategory(null);
             setData({
                 name: '',
+                subcategory_name: '',
                 parent_id: '',
                 icon: '',
                 is_active: true,
@@ -174,37 +179,67 @@ export default function CategoriesIndex({ categories, allCategories }) {
 
                             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        {editingCategory ? 'Name' : 'Catégorie'}
+                                    </label>
                                     <input
                                         type="text"
+                                        list={editingCategory ? undefined : 'existing-categories'}
                                         value={data.name}
                                         onChange={e => setData('name', e.target.value)}
                                         required
+                                        placeholder={editingCategory ? '' : 'Ex : Électronique'}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none"
                                     />
+                                    {!editingCategory && (
+                                        <datalist id="existing-categories">
+                                            {topLevelCategories.map(cat => (
+                                                <option key={cat.id} value={cat.name} />
+                                            ))}
+                                        </datalist>
+                                    )}
                                     {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
-                                    <select
-                                        value={data.parent_id}
-                                        onChange={e => setData('parent_id', e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white"
-                                    >
-                                        <option value="">-- None (Top Level) --</option>
-                                        {allCategories.map(cat => (
-                                            <option
-                                                key={cat.id}
-                                                value={String(cat.id)}
-                                                disabled={editingCategory && (Number(cat.id) === Number(editingCategory.id) || Number(cat.id) === Number(editingCategory.parent_id))}
-                                            >
-                                                {cat.parent_id ? '— ' : ''}{cat.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.parent_id && <p className="mt-1 text-xs text-red-600">{errors.parent_id}</p>}
-                                </div>
+                                {editingCategory ? (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
+                                        <select
+                                            value={data.parent_id}
+                                            onChange={e => setData('parent_id', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white"
+                                        >
+                                            <option value="">-- None (Top Level) --</option>
+                                            {allCategories.map(cat => (
+                                                <option
+                                                    key={cat.id}
+                                                    value={String(cat.id)}
+                                                    disabled={Number(cat.id) === Number(editingCategory.id) || Number(cat.id) === Number(editingCategory.parent_id)}
+                                                >
+                                                    {cat.parent_id ? '— ' : ''}{cat.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.parent_id && <p className="mt-1 text-xs text-red-600">{errors.parent_id}</p>}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Sous-catégorie <span className="font-normal text-gray-400">(facultatif)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.subcategory_name}
+                                            onChange={e => setData('subcategory_name', e.target.value)}
+                                            placeholder="Ex : Téléphones"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none"
+                                        />
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            Si la catégorie existe déjà, la sous-catégorie lui sera ajoutée.
+                                        </p>
+                                        {errors.subcategory_name && <p className="mt-1 text-xs text-red-600">{errors.subcategory_name}</p>}
+                                    </div>
+                                )}
 
                                 {editingCategory && (
                                     <div className="flex items-center gap-2 pt-2">
