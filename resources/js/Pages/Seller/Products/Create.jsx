@@ -176,8 +176,9 @@ export default function ProductCreate({ categories }) {
                                                 </span>
                                                 <button
                                                     type="button"
+                                                    aria-label={`Supprimer la photo ${index + 1}`}
                                                     onClick={() => removePhoto(index)}
-                                                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                                                    className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-100 shadow-sm transition-opacity hover:bg-red-600"
                                                 >
                                                     <X size={12} />
                                                 </button>

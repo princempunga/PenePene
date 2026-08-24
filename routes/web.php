@@ -287,6 +287,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/products/create',               [\App\Http\Controllers\Seller\ProductController::class, 'create'])->name('products.create');
         Route::post('/products',                     [\App\Http\Controllers\Seller\ProductController::class, 'store'])->name('products.store');
         Route::post('/products/bulk',                [\App\Http\Controllers\Seller\ProductController::class, 'storeBulk'])->name('products.store-bulk');
+        Route::post('/products/bulk-delete',         [\App\Http\Controllers\Seller\ProductController::class, 'destroyBulk'])->name('products.bulk-delete');
         Route::get('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'show'])->name('products.show');
         Route::get('/products/{product:id}/edit',    [\App\Http\Controllers\Seller\ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'update'])->name('products.update');

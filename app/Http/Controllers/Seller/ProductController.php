@@ -390,6 +390,40 @@ class ProductController extends Controller
         return back()->with('success', 'Image principale mise à jour.');
     }
 
+    public function destroyBulk(Request $request)
+    {
+        $seller = $request->user()->seller;
+
+        $validated = $request->validate([
+            'ids'   => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:products,id'],
+        ]);
+
+        $products = Product::whereIn('id', $validated['ids'])
+            ->where('seller_id', $seller->id)
+            ->get();
+
+        if ($products->isEmpty()) {
+            return back()->withErrors([
+                'ids' => 'Aucun produit sélectionné n\'est autorisé à la suppression.',
+            ]);
+        }
+
+        $count = 0;
+
+        DB::transaction(function () use ($products, &$count) {
+            foreach ($products as $product) {
+                $product->delete();
+                $count++;
+            }
+        });
+
+        return redirect()->route('seller.products.index')
+            ->with('success', $count > 1
+                ? "{$count} produits supprimés avec succès."
+                : 'Produit supprimé avec succès.');
+    }
+
     public function destroy(Request $request, Product $product)
     {
         $seller = $request->user()->seller;

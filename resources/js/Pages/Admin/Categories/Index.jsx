@@ -177,6 +177,7 @@ export default function CategoriesIndex({ categories, allCategories }) {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                                     <input
                                         type="text"
+                                        name="name"
                                         value={data.name}
                                         onChange={e => setData('name', e.target.value)}
                                         required
@@ -188,20 +189,21 @@ export default function CategoriesIndex({ categories, allCategories }) {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
                                     <select
+                                        name="parent_id"
                                         value={data.parent_id}
                                         onChange={e => setData('parent_id', e.target.value)}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white"
                                     >
                                         <option value="">-- None (Top Level) --</option>
-                                        {allCategories.map(cat => (
-                                            <option
-                                                key={cat.id}
-                                                value={String(cat.id)}
-                                                disabled={editingCategory && (Number(cat.id) === Number(editingCategory.id) || Number(cat.id) === Number(editingCategory.parent_id))}
-                                            >
-                                                {cat.parent_id ? '— ' : ''}{cat.name}
-                                            </option>
-                                        ))}
+                                        {allCategories
+                                            .filter(cat => cat.parent_id === null)
+                                            .filter(cat => !editingCategory || Number(cat.id) !== Number(editingCategory.id))
+                                            .map(cat => (
+                                                <option key={cat.id} value={String(cat.id)}>
+                                                    {cat.name}
+                                                </option>
+                                            ))
+                                        }
                                     </select>
                                     {errors.parent_id && <p className="mt-1 text-xs text-red-600">{errors.parent_id}</p>}
                                 </div>
