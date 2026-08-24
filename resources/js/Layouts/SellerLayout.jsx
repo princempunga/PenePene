@@ -37,6 +37,7 @@ function isNavActive(currentPath, href) {
     return currentPath === href || currentPath.startsWith(`${href}/`);
 }
 
+// ─── NavLink : horizontal sur mobile drawer, icône+label vertical sur tablette, full sur lg ───
 function NavLink({ item, currentPath, badges, onNavigate, t }) {
     const { key, href, icon: Icon, badge } = item;
     const isActive = isNavActive(currentPath, href);
@@ -48,34 +49,29 @@ function NavLink({ item, currentPath, badges, onNavigate, t }) {
             onClick={onNavigate}
             title={t(key)}
             className={`
-                flex flex-row md:flex-col lg:flex-row
-                items-center
-                justify-start md:justify-center lg:justify-start
-                gap-3 md:gap-1 lg:gap-3
-                px-4 md:px-1 lg:px-4
-                py-2.5 md:py-2 lg:py-2.5
+                flex items-center gap-3
+                px-4 py-3
                 text-sm font-medium transition-colors
-                border-l-2 md:border-l-0 md:rounded-xl md:mx-1
+                border-l-2
                 ${isActive
-                    ? 'border-primary-500 md:border-transparent bg-primary-50 md:bg-transparent text-primary-700'
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
                     : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }
+                md:flex-col md:gap-1 md:px-1 md:py-2 md:border-l-0 md:rounded-xl md:mx-1 md:justify-center
+                lg:flex-row lg:gap-3 lg:px-4 lg:py-2.5 lg:border-l-2 lg:rounded-none lg:mx-0 lg:justify-start
+                ${isActive ? 'md:border-transparent lg:border-primary-500' : ''}
             `}
         >
-            {/* Icône — carré bleu plein sur tablette si actif */}
             <div className={`
-                relative shrink-0
-                flex items-center justify-center
-                md:w-10 md:h-10 lg:w-auto lg:h-auto
-                md:rounded-xl lg:rounded-none
+                relative shrink-0 flex items-center justify-center
+                md:w-10 md:h-10 md:rounded-xl lg:w-auto lg:h-auto lg:rounded-none
                 transition-colors
                 ${isActive
                     ? 'md:bg-primary-600 md:text-white lg:bg-transparent lg:text-primary-700'
-                    : 'md:text-gray-500 lg:text-gray-600'
+                    : 'text-current md:text-gray-500 lg:text-gray-600'
                 }
             `}>
                 <Icon size={18} />
-                {/* Mini badge sur tablette uniquement */}
                 {count > 0 && (
                     <span className="hidden md:flex lg:hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-bold min-w-[14px] h-[14px] items-center justify-center rounded-full">
                         {count > 9 ? '9+' : count}
@@ -83,22 +79,18 @@ function NavLink({ item, currentPath, badges, onNavigate, t }) {
                 )}
             </div>
 
-            {/* Label — toujours visible, empilé sous l'icône sur tablette */}
             <span className="
-                flex-1 md:flex-none lg:flex-1
-                text-sm md:text-[9px] lg:text-sm
-                text-left md:text-center lg:text-left
-                md:leading-tight
+                flex-1 text-sm text-left
+                md:flex-none md:text-[9px] md:text-center md:leading-tight
+                lg:flex-1 lg:text-sm lg:text-left
             ">{t(key)}</span>
 
-            {/* Badge pill — lg+ uniquement */}
             {count > 0 && (
                 <span className="hidden lg:flex bg-red-500 text-white text-xs font-bold min-w-5 h-5 px-1 items-center justify-center rounded-full">
                     {count > 9 ? '9+' : count}
                 </span>
             )}
 
-            {/* Chevron — lg+ uniquement */}
             {isActive && <ChevronRight size={14} className="text-primary-500 shrink-0 hidden lg:block" />}
         </Link>
     );
@@ -117,69 +109,112 @@ export default function SellerLayout({ children, title }) {
     };
 
     const closeSidebar = () => setSidebarOpen(false);
+    const openSidebar  = () => setSidebarOpen(true);
 
-    const SidebarContent = () => (
-        <div className="flex flex-col h-full">
-            {/* Carte profil — masquée sur tablette (md), visible sur lg+) */}
-            <div className="hidden lg:block bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
-                <div className="flex items-center gap-3 mb-3">
+    // ─── Profil affiché dans le drawer mobile & lg sidebar ───
+    const profileAvatar = seller?.logo
+        ? <img src={`/storage/${seller.logo}`} alt={seller.business_name} className="w-12 h-12 rounded-full object-cover border border-gray-200 shrink-0" />
+        : auth.user?.avatar
+            ? <img src={`/storage/${auth.user.avatar}`} alt="" className="w-12 h-12 rounded-full object-cover shrink-0" />
+            : <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-xl shrink-0">
+                {seller?.business_name?.charAt(0)?.toUpperCase() || auth.user?.name?.charAt(0)?.toUpperCase()}
+              </div>;
+
+    return (
+        <div className="h-screen overflow-hidden bg-gray-50 flex w-full">
+
+            {/* ── Overlay backdrop (mobile only) ── */}
+            <div
+                className={`fixed inset-0 z-[55] bg-black/50 md:hidden transition-opacity duration-300 ${
+                    sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={closeSidebar}
+                aria-hidden="true"
+            />
+
+            {/* ══════════════════════════════════════════════
+                SIDEBAR
+                • Mobile   : drawer fixed, glisse depuis la gauche (z-[60])
+                • Tablette : barre icônes w-24
+                • Desktop  : barre complète w-72
+               ══════════════════════════════════════════════ */}
+            <aside
+                className={`
+                    fixed inset-y-0 left-0 z-[60] flex flex-col
+                    w-[280px] bg-white border-r border-gray-200 shadow-2xl
+                    transition-transform duration-300 ease-in-out
+                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                    md:relative md:translate-x-0 md:shadow-none md:z-auto
+                    md:w-24 md:bg-gray-50 md:border-r md:shadow-sm
+                    lg:w-72
+                `}
+            >
+                {/* ── En-tête du drawer (mobile uniquement) ── */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 md:hidden">
+                    <div className="flex items-center gap-3">
+                        {profileAvatar}
+                        <div className="min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm truncate">{seller?.business_name || auth.user?.name}</p>
+                            {seller?.status && (
+                                <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                                    seller.status === 'verified' ? 'bg-green-100 text-green-700' :
+                                    seller.status === 'pending'  ? 'bg-amber-100 text-amber-700' :
+                                    'bg-gray-100 text-gray-600'
+                                }`}>
+                                    <Store size={10} />
+                                    {sellerStatusLabels[seller.status] || seller.status}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={closeSidebar}
+                        className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        aria-label="Fermer le menu"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* ── Carte profil tablette (md → lg) ── */}
+                <div className="hidden md:flex lg:hidden justify-center py-3 px-2 border-b border-gray-100">
                     {seller?.logo ? (
-                        <img
-                            src={`/storage/${seller.logo}`}
-                            alt={seller.business_name}
-                            className="w-14 h-14 rounded-full object-cover border border-gray-200 shrink-0"
-                        />
+                        <img src={`/storage/${seller.logo}`} alt={seller.business_name} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
                     ) : auth.user?.avatar ? (
-                        <img
-                            src={`/storage/${auth.user.avatar}`}
-                            alt=""
-                            className="w-14 h-14 rounded-full object-cover shrink-0"
-                        />
+                        <img src={`/storage/${auth.user.avatar}`} alt="" className="w-10 h-10 rounded-full object-cover" />
                     ) : (
-                        <div className="w-14 h-14 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-2xl shrink-0">
+                        <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-lg">
                             {seller?.business_name?.charAt(0)?.toUpperCase() || auth.user?.name?.charAt(0)?.toUpperCase()}
                         </div>
                     )}
-                    <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{seller?.business_name || t('layouts.seller.seller_portal')}</p>
-                        <p className="text-xs text-gray-500 truncate">{auth.user?.email}</p>
+                </div>
+
+                {/* ── Carte profil desktop (lg+) ── */}
+                <div className="hidden lg:block p-4 border-b border-gray-100">
+                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                        <div className="flex items-center gap-3 mb-3">
+                            {profileAvatar}
+                            <div className="min-w-0">
+                                <p className="font-semibold text-gray-900 truncate">{seller?.business_name || t('layouts.seller.seller_portal')}</p>
+                                <p className="text-xs text-gray-500 truncate">{auth.user?.email}</p>
+                            </div>
+                        </div>
+                        {seller?.status && (
+                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
+                                seller.status === 'verified' ? 'bg-green-100 text-green-700' :
+                                seller.status === 'pending'  ? 'bg-amber-100 text-amber-700' :
+                                'bg-gray-100 text-gray-600'
+                            }`}>
+                                <Store size={12} />
+                                {sellerStatusLabels[seller.status] || seller.status}
+                            </span>
+                        )}
                     </div>
                 </div>
-                {seller?.status && (
-                    <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-                        seller.status === 'verified' ? 'bg-green-100 text-green-700' :
-                        seller.status === 'pending'  ? 'bg-amber-100 text-amber-700' :
-                        'bg-gray-100 text-gray-600'
-                    }`}>
-                        <Store size={12} />
-                        {sellerStatusLabels[seller.status] || seller.status}
-                    </span>
-                )}
-            </div>
 
-            {/* Avatar réduit visible uniquement sur tablette (md → lg) */}
-            <div className="md:flex lg:hidden justify-center py-3 mb-2">
-                {seller?.logo ? (
-                    <img
-                        src={`/storage/${seller.logo}`}
-                        alt={seller.business_name}
-                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                    />
-                ) : auth.user?.avatar ? (
-                    <img
-                        src={`/storage/${auth.user.avatar}`}
-                        alt=""
-                        className="w-10 h-10 rounded-full object-cover"
-                    />
-                ) : (
-                    <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-lg">
-                        {seller?.business_name?.charAt(0)?.toUpperCase() || auth.user?.name?.charAt(0)?.toUpperCase()}
-                    </div>
-                )}
-            </div>
-
-            <nav className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col flex-1 overflow-hidden">
-                <div className="flex-1 overflow-y-auto py-2">
+                {/* ── Navigation ── */}
+                <nav className="flex-1 overflow-y-auto py-2 scrollbar-none">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.href}
@@ -190,59 +225,38 @@ export default function SellerLayout({ children, title }) {
                             t={t}
                         />
                     ))}
-                </div>
+                </nav>
 
+                {/* ── Déconnexion ── */}
                 <Link
                     href="/logout"
                     method="post"
                     as="button"
                     onClick={closeSidebar}
-                    className="mt-auto w-full flex items-center md:justify-center lg:justify-start gap-3 md:px-2 lg:px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 border-t border-gray-100 transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 border-t border-gray-100 transition-colors md:justify-center lg:justify-start"
                     title={t('layouts.seller.sign_out')}
                 >
                     <LogOut size={18} className="shrink-0" />
-                    <span className="hidden lg:block">{t('layouts.seller.sign_out')}</span>
+                    <span className="md:hidden lg:block">{t('layouts.seller.sign_out')}</span>
                 </Link>
-            </nav>
-        </div>
-    );
-
-    return (
-        <div className="h-screen overflow-hidden bg-gray-50 flex w-full">
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/50 md:hidden"
-                    onClick={closeSidebar}
-                    aria-hidden="true"
-                />
-            )}
-
-            {/* Sidebar — drawer mobile, icône+label tablette, pleine desktop */}
-            <aside className={`
-                fixed top-0 left-0 bottom-0 z-50 w-72 p-4 bg-gray-50 border-r border-gray-200
-                flex-shrink-0 overflow-y-auto
-                transform transition-transform duration-300 ease-in-out
-                md:translate-x-0 md:static md:h-screen md:z-40
-                md:w-24 lg:w-72
-                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-                hide-scrollbar
-            `}>
-                <SidebarContent />
             </aside>
 
+            {/* ── Zone principale ── */}
             <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-                <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4 gap-2 sm:gap-4">
-                    {/* Bouton menu — visible aussi sur tablette (md) pour toggle la sidebar mobile */}
+
+                {/* ── Header ── */}
+                <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4 gap-2 sm:gap-4 shrink-0">
+                    {/* Hamburger — mobile uniquement */}
                     <button
                         type="button"
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        onClick={openSidebar}
                         className="block md:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                        aria-label={sidebarOpen ? t('layouts.seller.close_menu') : t('layouts.seller.open_menu')}
+                        aria-label="Ouvrir le menu"
                     >
-                        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+                        <Menu size={22} />
                     </button>
 
-                    <Link href="/seller/dashboard" className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2 lg:ml-0 ml-1">
+                    <Link href="/seller/dashboard" className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
                         PenePene
                         <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-0.5 rounded-md">{t('layouts.seller.seller_badge')}</span>
                     </Link>
@@ -275,7 +289,8 @@ export default function SellerLayout({ children, title }) {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 min-w-0 flex flex-col">
+                {/* ── Contenu principal ── */}
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-6 min-w-0">
                     {title && (
                         <h1 className="text-2xl font-bold text-gray-900 mb-6">{title}</h1>
                     )}
@@ -285,7 +300,8 @@ export default function SellerLayout({ children, title }) {
                 </main>
             </div>
 
-            <SellerMobileBottomNav onMenuClick={() => setSidebarOpen(true)} />
+            {/* ── Bottom nav mobile ── */}
+            <SellerMobileBottomNav onMenuClick={openSidebar} />
         </div>
     );
 }

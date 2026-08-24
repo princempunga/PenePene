@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { Home, Package, ShoppingCart, Bell, User } from 'lucide-react';
+import { Home, Package, ShoppingCart, Bell, Menu } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 
 export default function SellerMobileBottomNav({ onMenuClick }) {
@@ -21,11 +21,10 @@ export default function SellerMobileBottomNav({ onMenuClick }) {
         { key: 'Produits', href: '/seller/products', icon: Package, badge: null },
         { key: 'Commandes', href: '/seller/orders', icon: ShoppingCart, badge: null },
         { key: 'Notifications', href: '/seller/notifications', icon: Bell, badge: 'notifications' },
-        { key: 'Profil', href: '/seller/profile', icon: User, badge: null },
     ];
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-around items-center px-1 h-[60px] pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-around items-center px-1 h-[60px] pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -53,6 +52,18 @@ export default function SellerMobileBottomNav({ onMenuClick }) {
                     </Link>
                 );
             })}
+
+            {/* Opens the full sidebar drawer — Profil, Messages, Avis, Documents,
+                Rapports, Paramètres boutique, Abonnements all live there and have
+                no other entry point on mobile. */}
+            <button
+                type="button"
+                onClick={onMenuClick}
+                className="flex flex-col items-center justify-center flex-1 py-1 text-gray-500 hover:text-primary-600 transition-colors"
+            >
+                <Menu size={20} />
+                <span className="text-[10px] mt-0.5 font-medium truncate">{t('mobile.menu', 'Menu')}</span>
+            </button>
         </div>
     );
 }
