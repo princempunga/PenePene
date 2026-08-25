@@ -358,84 +358,79 @@ export default function ProductsIndex({ products, filters = {} }) {
                                 const isSelected = selectedIds.includes(product.id);
 
                                 return (
-                                    <div key={product.id} className={`bg-white rounded-xl border ${isSelected ? 'border-primary-300 bg-primary-50/30' : 'border-gray-200'} shadow-sm p-4 flex items-start gap-4`}>
-                                        <div className="flex items-center self-stretch pt-1">
-                                            <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                onChange={() => toggleProductSelection(product.id)}
-                                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                                            />
-                                        </div>
-
-                                        <div className="w-24 h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
-                                            {imgPath ? (
-                                                <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <Package size={28} />
-                                            )}
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-bold text-gray-900 text-base mb-1 truncate" title={product.name}>
-                                                {product.name}
-                                            </h3>
-                                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">
-                                                {getProductExcerpt(product.description)}
-                                            </p>
-                                            <div className="mt-2 space-y-1 text-sm text-gray-600">
-                                                <div className="flex items-center gap-2">
-                                                    <Folder size={13} className="text-gray-400 shrink-0" />
-                                                    <span>
-                                                        <span className="text-gray-400">Cat: </span>
-                                                        {product.category?.name || 'Sans catégorie'}
-                                                    </span>
+                                    <div key={product.id} className={`bg-white rounded-xl border ${isSelected ? 'border-primary-300 bg-primary-50/30' : 'border-gray-200'} shadow-sm p-4`}>
+                                        <div className="flex gap-4">
+                                            <div className="flex flex-col items-center gap-3 shrink-0">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => toggleProductSelection(product.id)}
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                                />
+                                                <div className="w-24 h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                                                    {imgPath ? (
+                                                        <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Package size={28} />
+                                                    )}
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Tag size={13} className="text-gray-400 shrink-0" />
-                                                    <span>
-                                                        <span className="text-gray-400">Sous-catégorie : </span>
-                                                        {product.subcategory?.name || 'Non spécifiée'}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <DollarSign size={13} className="text-gray-400 shrink-0" />
-                                                    <span className="font-semibold text-gray-900">
-                                                        Prix: {formatCurrency(product.sale_price || product.price)}
-                                                        {product.sale_price && (
-                                                            <span className="ml-2 text-xs line-through text-gray-400 font-normal">
-                                                                {formatCurrency(product.price)}
-                                                            </span>
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Layers size={13} className="text-gray-400 shrink-0" />
-                                                    <span>
-                                                        <span className="text-gray-400">Stock disponible: </span>
-                                                        <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>
-                                                            {availableStock}
+                                                <div className="w-full space-y-1.5 text-xs text-gray-600">
+                                                    <h3 className="font-bold text-gray-900 text-sm text-center leading-tight line-clamp-2" title={product.name}>
+                                                        {product.name}
+                                                    </h3>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Folder size={12} className="text-gray-400 shrink-0" />
+                                                        <span className="line-clamp-1">
+                                                            <span className="text-gray-400">Cat: </span>
+                                                            {product.category?.name || 'Sans catégorie'}
                                                         </span>
-                                                    </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Tag size={12} className="text-gray-400 shrink-0" />
+                                                        <span className="line-clamp-1">
+                                                            <span className="text-gray-400">Sous-cat: </span>
+                                                            {product.subcategory?.name || 'Non spécifiée'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <DollarSign size={12} className="text-gray-400 shrink-0" />
+                                                        <span className="font-semibold text-gray-900">
+                                                            {formatCurrency(product.sale_price || product.price)}
+                                                            {product.sale_price && (
+                                                                <span className="ml-1 text-[10px] line-through text-gray-400 font-normal">
+                                                                    {formatCurrency(product.price)}
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Layers size={12} className="text-gray-400 shrink-0" />
+                                                        <span>
+                                                            <span className="text-gray-400">Stock: </span>
+                                                            <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>
+                                                                {availableStock}
+                                                            </span>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="flex flex-col items-end justify-between self-stretch shrink-0 gap-3">
-                                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
-                                                {statusLabels[product.status] || product.status}
-                                            </span>
+                                            <div className="flex flex-col items-end justify-between self-stretch shrink-0 gap-3">
+                                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
+                                                    {statusLabels[product.status] || product.status}
+                                                </span>
 
-                                            <div className="flex items-center gap-2 flex-wrap justify-end">
-                                                <Link href={`/seller/products/${product.id}/edit`} className="w-9 h-9 flex items-center justify-center border border-green-400 text-green-600 rounded-lg hover:bg-green-50 transition-colors" title="Modifier">
-                                                    <Edit size={16} />
-                                                </Link>
-                                                <button onClick={() => handleDelete(product.id)} disabled={processing} className="w-9 h-9 flex items-center justify-center border border-red-400 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50" title="Supprimer">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                                <Link href={`/seller/products/${product.id}`} className="w-9 h-9 flex items-center justify-center border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors" title="Voir">
-                                                    <Eye size={16} />
-                                                </Link>
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <Link href={`/seller/products/${product.id}`} className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors" title="Voir">
+                                                        <Eye size={16} />
+                                                    </Link>
+                                                    <Link href={`/seller/products/${product.id}/edit`} className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Modifier">
+                                                        <Edit size={16} />
+                                                    </Link>
+                                                    <button onClick={() => handleDelete(product.id)} disabled={processing} className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50" title="Supprimer">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -443,9 +438,10 @@ export default function ProductsIndex({ products, filters = {} }) {
                             })}
                         </div>
 
-                        <div className="md:hidden grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <div className="md:hidden grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 pb-20">
                             {products.data.map((product) => {
                                 const imgPath = getPrimaryImage(product);
+                                const availableStock = product.initial_stock - product.confirmed_sales;
                                 const isSelected = selectedIds.includes(product.id);
 
                                 return (
@@ -474,17 +470,29 @@ export default function ProductsIndex({ products, filters = {} }) {
                                             )}
                                         </div>
 
-                                        <div className="mt-2">
+                                        <div className="mt-2 space-y-1">
                                             <h3 className="font-bold text-gray-900 text-xs leading-tight line-clamp-2" title={product.name}>
                                                 {product.name}
                                             </h3>
-                                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">
-                                                {getProductExcerpt(product.description)}
+                                            <p className="text-[11px] text-gray-500 line-clamp-2">
+                                                {getProductExcerpt(product.description, 80)}
                                             </p>
+                                            <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                <Folder size={10} className="text-gray-400 shrink-0" />
+                                                <span className="line-clamp-1">{product.category?.name || 'Sans catégorie'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                <Tag size={10} className="text-gray-400 shrink-0" />
+                                                <span className="line-clamp-1">{product.subcategory?.name || 'Non spécifiée'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                <Layers size={10} className="text-gray-400 shrink-0" />
+                                                <span>Stock: <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>{availableStock}</span></span>
+                                            </div>
                                         </div>
 
-                                        <div className="mt-3 flex items-center justify-between gap-2">
-                                            <span className="text-[10px] font-semibold text-gray-700">
+                                        <div className="mt-2.5 flex items-center justify-between gap-2">
+                                            <span className="text-[10px] font-bold text-gray-900">
                                                 {formatCurrency(product.sale_price || product.price)}
                                             </span>
                                             <div className="flex items-center gap-1.5">
