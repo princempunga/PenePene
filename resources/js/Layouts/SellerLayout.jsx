@@ -6,7 +6,6 @@ import {
     Star, FileText, CreditCard, Settings,
 } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
-import PageTransition from '@/Components/UI/PageTransition';
 import SellerMobileBottomNav from '@/Components/Layout/SellerMobileBottomNav';
 
 const navItems = [
@@ -290,13 +289,11 @@ export default function SellerLayout({ children, title }) {
                 </header>
 
                 {/* ── Contenu principal ── */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-6 min-w-0">
+                <main className="flex-1 h-[calc(100vh-4rem)] overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-6 min-w-0">
                     {title && (
                         <h1 className="text-2xl font-bold text-gray-900 mb-6">{title}</h1>
                     )}
-                    <PageTransition>
-                        {children}
-                    </PageTransition>
+                    {children}
                 </main>
             </div>
 

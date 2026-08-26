@@ -5,9 +5,9 @@ import Pagination from '@/Components/UI/Pagination';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { ORDER_STATUS_LABELS_FR } from '@/lib/orderStatusLabels';
-import { Package, Calendar, Filter, X, MessageCircle } from 'lucide-react';
+import { Package, Calendar, Filter, X, MessageCircle, CreditCard, Truck, MapPin } from 'lucide-react';
 
-const STATUS_TABS = ['all', 'pending', 'confirmed', 'cancelled'];
+const STATUS_TABS = ['all', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 function formatDate(date) {
     return new Date(date).toLocaleDateString('fr-FR', {
@@ -19,6 +19,10 @@ function formatDate(date) {
 
 function getFirstItem(order) {
     return order.items?.[0] ?? null;
+}
+
+function getItemCount(order) {
+    return order.items?.length ?? 0;
 }
 
 export default function OrdersIndex({ orders, filters }) {
@@ -129,77 +133,106 @@ export default function OrdersIndex({ orders, filters }) {
                 {orders.data.length > 0 ? (
                     <>
                         <div className="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="w-full overflow-x-auto scrollbar-thin">
+                            <div className="w-full overflow-x-auto scrollbar-thin max-h-[600px] overflow-y-auto">
                                 <table className="w-full text-left text-sm text-gray-600">
-                                <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-4 py-4">N° commande</th>
-                                        <th className="px-4 py-4">Client</th>
-                                        <th className="px-4 py-4">Produit</th>
-                                        <th className="px-4 py-4">Qté</th>
-                                        <th className="px-4 py-4">Prix</th>
-                                        <th className="px-4 py-4">Date</th>
-                                        <th className="px-4 py-4">Statut</th>
-                                        <th className="px-4 py-4">Conversation</th>
-                                        <th className="px-4 py-4 text-right">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {orders.data.map((order) => {
-                                        const item = getFirstItem(order);
-                                        return (
-                                            <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-4 py-4 font-bold text-gray-900">
-                                                    {order.order_number}
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    {order.buyer?.user?.name || 'Inconnu'}
-                                                </td>
-                                                <td className="px-4 py-4 max-w-[160px] truncate">
-                                                    {item?.product_name || item?.product?.name || '—'}
-                                                </td>
-                                                <td className="px-4 py-4">{item?.quantity ?? '—'}</td>
-                                                <td className="px-4 py-4 font-semibold whitespace-nowrap">
-                                                    {formatCurrency(order.total_amount)}
-                                                </td>
-                                                <td className="px-4 py-4 whitespace-nowrap">
-                                                    {formatDate(order.created_at)}
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <StatusBadge status={order.status} labels={ORDER_STATUS_LABELS_FR} />
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    {order.conversation_id ? (
-                                                        <Link
-                                                            href={`/seller/messages/${order.conversation_id}`}
-                                                            className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-xs font-medium"
-                                                        >
-                                                            <MessageCircle size={14} />
-                                                            Ouvrir
-                                                        </Link>
-                                                    ) : (
-                                                        <span className="text-xs text-gray-400">—</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-4 text-right">
-                                                    <Link
-                                                        href={`/seller/orders/${order.id}`}
-                                                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 font-medium transition-colors"
-                                                    >
-                                                        Détails
-                                                    </Link>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                    <thead className="sticky top-0 z-10 bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
+                                        <tr>
+                                            <th className="px-4 py-4">N° commande</th>
+                                            <th className="px-4 py-4">Client</th>
+                                            <th className="px-4 py-4">Produits</th>
+                                            <th className="px-4 py-4">Total</th>
+                                            <th className="px-4 py-4">Paiement</th>
+                                            <th className="px-4 py-4">Date</th>
+                                            <th className="px-4 py-4">Statut</th>
+                                            <th className="px-4 py-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {orders.data.map((order) => {
+                                            const item = getFirstItem(order);
+                                            const itemCount = getItemCount(order);
+                                            const imgPath = item?.product?.images?.[0]?.image_path;
+
+                                            return (
+                                                <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-4 py-4 font-bold text-gray-900 whitespace-nowrap">
+                                                        {order.order_number}
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div>
+                                                            <p className="font-medium text-gray-900">{order.buyer?.user?.name || 'Inconnu'}</p>
+                                                            {order.buyer?.user?.phone && (
+                                                                <p className="text-xs text-gray-500">{order.buyer.user.phone}</p>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                                                                {imgPath ? (
+                                                                    <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <Package size={16} />
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="truncate max-w-[140px] font-medium text-gray-900">
+                                                                    {item?.product_name || item?.product?.name || '—'}
+                                                                </p>
+                                                                {itemCount > 1 && (
+                                                                    <p className="text-xs text-gray-500">+{itemCount - 1} autre{itemCount > 2 ? 's' : ''}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4 font-semibold whitespace-nowrap">
+                                                        {formatCurrency(order.total_amount)}
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <span className={`inline-flex items-center gap-1 text-xs font-medium ${order.payment_status === 'paid' ? 'text-green-700' : 'text-amber-700'}`}>
+                                                            <CreditCard size={12} />
+                                                            {order.payment_status === 'paid' ? 'Payé' : 'En attente'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-4 whitespace-nowrap">
+                                                        {formatDate(order.created_at)}
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <StatusBadge status={order.status} labels={ORDER_STATUS_LABELS_FR} />
+                                                    </td>
+                                                    <td className="px-4 py-4 text-right">
+                                                        <div className="inline-flex items-center gap-2">
+                                                            {order.conversation_id && (
+                                                                <Link
+                                                                    href={`/seller/messages/${order.conversation_id}`}
+                                                                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+                                                                    title="Conversation"
+                                                                >
+                                                                    <MessageCircle size={14} />
+                                                                </Link>
+                                                            )}
+                                                            <Link
+                                                                href={`/seller/orders/${order.id}`}
+                                                                className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 font-medium transition-colors text-xs"
+                                                            >
+                                                                Détails
+                                                            </Link>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
                         <div className="lg:hidden space-y-3">
                             {orders.data.map((order) => {
                                 const item = getFirstItem(order);
+                                const itemCount = getItemCount(order);
+                                const imgPath = item?.product?.images?.[0]?.image_path;
+
                                 return (
                                     <Link
                                         key={order.id}
@@ -207,11 +240,20 @@ export default function OrdersIndex({ orders, filters }) {
                                         className="block bg-white rounded-xl border border-gray-200 shadow-sm p-4 hover:border-primary-200 transition-colors"
                                     >
                                         <div className="flex items-start justify-between gap-3 mb-3">
-                                            <div>
-                                                <p className="font-bold text-gray-900">{order.order_number}</p>
-                                                <p className="text-sm text-gray-500 mt-0.5">
-                                                    {order.buyer?.user?.name || 'Inconnu'}
-                                                </p>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                                                    {imgPath ? (
+                                                        <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Package size={20} />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-gray-900">{order.order_number}</p>
+                                                    <p className="text-sm text-gray-500 mt-0.5">
+                                                        {order.buyer?.user?.name || 'Inconnu'}
+                                                    </p>
+                                                </div>
                                             </div>
                                             <StatusBadge status={order.status} labels={ORDER_STATUS_LABELS_FR} />
                                         </div>
@@ -221,12 +263,17 @@ export default function OrdersIndex({ orders, filters }) {
                                                 <span className="text-gray-500">Produit</span>
                                                 <span className="font-medium text-gray-900 truncate ml-4">
                                                     {item?.product_name || '—'}
+                                                    {itemCount > 1 && <span className="text-gray-400"> +{itemCount - 1}</span>}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-gray-500">Qté / Prix</span>
-                                                <span className="text-gray-900">
-                                                    {item?.quantity ?? '—'} · {formatCurrency(order.total_amount)}
+                                                <span className="text-gray-500">Total</span>
+                                                <span className="font-semibold text-gray-900">{formatCurrency(order.total_amount)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Paiement</span>
+                                                <span className={`font-medium ${order.payment_status === 'paid' ? 'text-green-700' : 'text-amber-700'}`}>
+                                                    {order.payment_status === 'paid' ? 'Payé' : 'En attente'}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between">

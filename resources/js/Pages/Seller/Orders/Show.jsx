@@ -4,7 +4,7 @@ import SellerLayout from '@/Layouts/SellerLayout';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { ORDER_STATUS_LABELS_FR } from '@/lib/orderStatusLabels';
-import { User, MapPin, Package, Check, X, Truck, MessageCircle, ShoppingBag, AlertCircle } from 'lucide-react';
+import { User, MapPin, Package, Check, X, Truck, MessageCircle, ShoppingBag, AlertCircle, CreditCard, Calendar, Phone, Mail } from 'lucide-react';
 
 const STATUS_STEPS = ['pending', 'confirmed', 'shipped', 'delivered'];
 
@@ -13,6 +13,16 @@ function formatDate(date) {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+    });
+}
+
+function formatDateTime(date) {
+    return new Date(date).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
     });
 }
 
@@ -51,8 +61,9 @@ export default function OrderShow({ order }) {
 
     return (
         <>
-            <Head title={`Gérer la commande ${order.order_number}`} />
+            <Head title={`Commande ${order.order_number}`} />
             <SellerLayout title="Détails de la commande">
+                {/* En-tête */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <Link
@@ -67,9 +78,12 @@ export default function OrderShow({ order }) {
                         </h1>
                         <StatusBadge status={order.status} labels={ORDER_STATUS_LABELS_FR} />
                     </div>
-                    <p className="text-sm text-gray-500">
-                        Passée le {formatDate(order.created_at)}
-                    </p>
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <span className="flex items-center gap-1">
+                            <Calendar size={14} />
+                            {formatDate(order.created_at)}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Bannière d'action urgente si commande en attente */}
@@ -104,41 +118,6 @@ export default function OrderShow({ order }) {
                         {errors.status}
                     </div>
                 )}
-
-                {/* Accès rapide : conversation, produit, détails */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                    {order.conversation_id && (
-                        <Link
-                            href={`/seller/messages/${order.conversation_id}`}
-                            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-primary-300 transition-colors"
-                        >
-                            <MessageCircle size={20} className="text-primary-600 shrink-0" />
-                            <div>
-                                <p className="font-semibold text-gray-900 text-sm">Conversation</p>
-                                <p className="text-xs text-gray-500">Échanger avec le client</p>
-                            </div>
-                        </Link>
-                    )}
-                    {order.items?.[0]?.product?.slug && (
-                        <Link
-                            href={`/seller/products/${order.items[0].product.id}`}
-                            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:border-primary-300 transition-colors"
-                        >
-                            <Package size={20} className="text-primary-600 shrink-0" />
-                            <div>
-                                <p className="font-semibold text-gray-900 text-sm">Produit</p>
-                                <p className="text-xs text-gray-500 truncate">{order.items[0].product_name}</p>
-                            </div>
-                        </Link>
-                    )}
-                    <div className="flex items-center gap-3 p-4 bg-primary-50 rounded-xl border border-primary-200">
-                        <Check size={20} className="text-primary-600 shrink-0" />
-                        <div>
-                            <p className="font-semibold text-gray-900 text-sm">Détails commande</p>
-                            <p className="text-xs text-gray-500">{formatCurrency(order.total_amount)}</p>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Chronologie du statut */}
                 {!isTerminal && (
@@ -177,8 +156,8 @@ export default function OrderShow({ order }) {
                         </div>
                         {order.confirmed_at && (
                             <p className="text-xs text-gray-500 mt-4">
-                                Confirmée le {formatDate(order.confirmed_at)}
-                                {order.delivered_at && ` · Livrée le ${formatDate(order.delivered_at)}`}
+                                Confirmée le {formatDateTime(order.confirmed_at)}
+                                {order.delivered_at && ` · Livrée le ${formatDateTime(order.delivered_at)}`}
                             </p>
                         )}
                     </div>
@@ -192,10 +171,10 @@ export default function OrderShow({ order }) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Articles */}
+                        {/* Articles commandés */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-5 border-b border-gray-100">
-                                <h2 className="font-bold text-gray-900">Articles commandés</h2>
+                                <h2 className="font-bold text-gray-900">Articles commandés ({order.items?.length || 0})</h2>
                             </div>
 
                             {order.items?.length > 0 ? (
@@ -206,7 +185,7 @@ export default function OrderShow({ order }) {
 
                                         return (
                                             <div key={item.id} className="p-4 sm:p-5 flex items-center gap-4">
-                                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shrink-0">
+                                                <Link href={item.product?.id ? `/seller/products/${item.product.id}` : '#'} className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shrink-0">
                                                     {imgPath ? (
                                                         <img
                                                             src={`/storage/${imgPath}`}
@@ -218,7 +197,7 @@ export default function OrderShow({ order }) {
                                                             <Package size={20} className="text-gray-300" />
                                                         </div>
                                                     )}
-                                                </div>
+                                                </Link>
                                                 <div className="flex-1 min-w-0">
                                                     {item.product?.slug ? (
                                                         <Link
@@ -234,15 +213,12 @@ export default function OrderShow({ order }) {
                                                         </p>
                                                     )}
                                                     <p className="text-sm text-gray-500 mt-1">
-                                                        Qté : {item.quantity}
+                                                        Qté : {item.quantity} · {formatCurrency(item.unit_price)} l&apos;unité
                                                     </p>
                                                 </div>
                                                 <div className="text-right shrink-0">
                                                     <p className="font-bold text-gray-900">
                                                         {formatCurrency(item.total_price)}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">
-                                                        {formatCurrency(item.unit_price)} l&apos;unité
                                                     </p>
                                                 </div>
                                             </div>
@@ -255,8 +231,9 @@ export default function OrderShow({ order }) {
                                 </div>
                             )}
 
-                            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end">
-                                <div className="w-full sm:w-64 space-y-2 text-sm">
+                            {/* Récapitulatif des prix */}
+                            <div className="p-5 border-t border-gray-100 bg-gray-50">
+                                <div className="w-full sm:w-64 sm:ml-auto space-y-2 text-sm">
                                     <div className="flex justify-between text-gray-600">
                                         <span>Sous-total</span>
                                         <span>{formatCurrency(order.subtotal)}</span>
@@ -277,6 +254,7 @@ export default function OrderShow({ order }) {
                             </div>
                         </div>
 
+                        {/* Notes du client */}
                         {order.buyer_notes && (
                             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                                 <h2 className="font-bold text-gray-900 mb-2">Notes du client</h2>
@@ -295,10 +273,8 @@ export default function OrderShow({ order }) {
                             <div className="p-5 sm:p-6 space-y-3">
                                 {order.status === 'pending' && (
                                     <>
-                                        {/* Titre des actions pour pending */}
                                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Choisissez une action</p>
 
-                                        {/* ACCEPTER */}
                                         <button
                                             type="button"
                                             onClick={() => updateStatus('confirmed')}
@@ -314,7 +290,6 @@ export default function OrderShow({ order }) {
                                             </div>
                                         </button>
 
-                                        {/* CONTACTER */}
                                         {order.conversation_id && (
                                             <Link
                                                 href={`/seller/messages/${order.conversation_id}`}
@@ -330,7 +305,6 @@ export default function OrderShow({ order }) {
                                             </Link>
                                         )}
 
-                                        {/* REFUSER */}
                                         <button
                                             type="button"
                                             onClick={() => updateStatus('cancelled')}
@@ -402,12 +376,16 @@ export default function OrderShow({ order }) {
                                     {order.buyer?.user?.name || 'Client inconnu'}
                                 </p>
                                 {order.buyer?.user?.email && (
-                                    <p className="text-sm text-gray-500 mt-1">
+                                    <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                                        <Mail size={14} className="text-gray-400" />
                                         {order.buyer.user.email}
                                     </p>
                                 )}
                                 {order.buyer?.user?.phone && (
-                                    <p className="text-sm text-gray-500">{order.buyer.user.phone}</p>
+                                    <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                        <Phone size={14} className="text-gray-400" />
+                                        {order.buyer.user.phone}
+                                    </p>
                                 )}
                             </div>
 
@@ -419,6 +397,33 @@ export default function OrderShow({ order }) {
                                 <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     {formatAddress(order)}
                                 </p>
+                            </div>
+
+                            <div className="pt-3 border-t border-gray-100">
+                                <h3 className="font-semibold text-gray-900 text-sm flex items-center gap-2 mb-2">
+                                    <CreditCard size={16} className="text-gray-400" />
+                                    Paiement
+                                </h3>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500">Statut</span>
+                                        <span className={`font-medium ${order.payment_status === 'paid' ? 'text-green-700' : 'text-amber-700'}`}>
+                                            {order.payment_status === 'paid' ? 'Payé' : 'En attente'}
+                                        </span>
+                                    </div>
+                                    {order.payment_method && (
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Méthode</span>
+                                            <span className="font-medium text-gray-900">{order.payment_method}</span>
+                                        </div>
+                                    )}
+                                    {order.paid_at && (
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Payé le</span>
+                                            <span className="font-medium text-gray-900">{formatDateTime(order.paid_at)}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {order.buyer?.user?.name && order.conversation_id && (

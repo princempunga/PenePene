@@ -1,28 +1,27 @@
-import React from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { usePage } from '@inertiajs/react';
-import { DURATION, EASE } from '@/lib/premiumMotion';
 
 export default function PageTransition({ children }) {
     const { url } = usePage();
-    const prefersReducedMotion = useReducedMotion();
+    const [animate, setAnimate] = useState(false);
 
-    if (prefersReducedMotion) {
-        return <div className="w-full h-full web-page">{children}</div>;
-    }
+    useEffect(() => {
+        setAnimate(false);
+        const timer = requestAnimationFrame(() => {
+            setAnimate(true);
+        });
+        return () => cancelAnimationFrame(timer);
+    }, [url]);
 
     return (
-        <AnimatePresence mode="wait">
-            <motion.div
-                key={url}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: DURATION.fast, ease: EASE.outExpo }}
-                className="w-full h-full web-page"
-            >
-                {children}
-            </motion.div>
-        </AnimatePresence>
+        <div 
+            className="w-full min-h-full web-page"
+            style={{
+                opacity: animate ? 1 : 0,
+                transition: 'opacity 0.2s ease-out'
+            }}
+        >
+            {children}
+        </div>
     );
 }

@@ -229,7 +229,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                 {!isEmpty ? (
                     <>
                         {selectedCount > 0 && (
-                            <div className="sticky top-4 z-30 mb-4 flex items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 shadow-sm md:static">
+                            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 shadow-sm">
                                 <div className="flex items-center gap-2 text-sm font-medium text-primary-800">
                                     <Check size={16} />
                                     {selectedCount} produit{selectedCount > 1 ? 's' : ''} sélectionné{selectedCount > 1 ? 's' : ''}
@@ -244,7 +244,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                             </div>
                         )}
 
-                        <div className="sticky top-16 z-20 mb-4 flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white/90 px-3 py-2 backdrop-blur-sm shadow-sm md:static md:bg-transparent md:shadow-none md:backdrop-blur-none md:border-0 md:px-0 md:py-0">
+                        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm">
                             <label className="inline-flex items-center gap-2 text-sm text-gray-700">
                                 <input
                                     type="checkbox"
@@ -256,12 +256,12 @@ export default function ProductsIndex({ products, filters = {} }) {
                             </label>
                         </div>
 
-                        <div className="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="w-full overflow-x-auto scrollbar-thin">
+                        <div className="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden lg:overflow-visible">
+                            <div className="w-full overflow-x-auto lg:overflow-visible scrollbar-thin">
                                 <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
+                                    <thead className="sticky top-0 z-10 text-gray-700 font-semibold border-b border-gray-200">
                                         <tr>
-                                            <th className="px-4 py-4 w-12">
+                                            <th className="px-4 py-4 w-12 bg-gray-50">
                                                 <input
                                                     type="checkbox"
                                                     checked={allSelected}
@@ -269,12 +269,12 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                                 />
                                             </th>
-                                            <th className="px-4 py-4">Produit</th>
-                                            <th className="px-4 py-4">Catégorie</th>
-                                            <th className="px-4 py-4">Prix</th>
-                                            <th className="px-4 py-4">Stock</th>
-                                            <th className="px-4 py-4">Statut</th>
-                                            <th className="px-4 py-4 text-right">Actions</th>
+                                            <th className="px-4 py-4 bg-gray-50">Produit</th>
+                                            <th className="px-4 py-4 bg-gray-50">Catégorie</th>
+                                            <th className="px-4 py-4 bg-gray-50">Prix</th>
+                                            <th className="px-4 py-4 bg-gray-50">Stock</th>
+                                            <th className="px-4 py-4 bg-gray-50">Statut</th>
+                                            <th className="px-4 py-4 text-right bg-gray-50">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -295,16 +295,16 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     </td>
                                                     <td className="px-4 py-4 font-medium text-gray-900">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                                                            <Link href={`/seller/products/${product.id}`} className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden shrink-0 hover:ring-2 hover:ring-primary-300 transition-all">
                                                                 {imgPath ? (
                                                                     <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     <Package size={18} />
                                                                 )}
-                                                            </div>
-                                                            <span className="truncate max-w-[200px]" title={product.name}>
+                                                            </Link>
+                                                            <Link href={`/seller/products/${product.id}`} className="truncate max-w-[200px] hover:text-primary-600 transition-colors" title={product.name}>
                                                                 {product.name}
-                                                            </span>
+                                                            </Link>
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-4">{product.category?.name || 'Sans catégorie'}</td>
@@ -358,78 +358,56 @@ export default function ProductsIndex({ products, filters = {} }) {
                                 const isSelected = selectedIds.includes(product.id);
 
                                 return (
-                                    <div key={product.id} className={`bg-white rounded-xl border ${isSelected ? 'border-primary-300 bg-primary-50/30' : 'border-gray-200'} shadow-sm p-4`}>
-                                        <div className="flex gap-4">
-                                            <div className="flex flex-col items-center gap-3 shrink-0">
+                                    <div key={product.id} className={`bg-white rounded-xl border ${isSelected ? 'border-primary-300 bg-primary-50/30' : 'border-gray-200'} shadow-sm p-3`}>
+                                        <div className="flex gap-3">
+                                            <div className="flex items-start gap-2 shrink-0">
                                                 <input
                                                     type="checkbox"
                                                     checked={isSelected}
                                                     onChange={() => toggleProductSelection(product.id)}
-                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 mt-0.5"
                                                 />
-                                                <div className="w-24 h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                                                <Link href={`/seller/products/${product.id}`} className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden shrink-0 hover:ring-2 hover:ring-primary-300 transition-all">
                                                     {imgPath ? (
                                                         <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <Package size={28} />
+                                                        <Package size={20} />
                                                     )}
-                                                </div>
-                                                <div className="w-full space-y-1.5 text-xs text-gray-600">
-                                                    <h3 className="font-bold text-gray-900 text-sm text-center leading-tight line-clamp-2" title={product.name}>
-                                                        {product.name}
-                                                    </h3>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Folder size={12} className="text-gray-400 shrink-0" />
-                                                        <span className="line-clamp-1">
-                                                            <span className="text-gray-400">Cat: </span>
-                                                            {product.category?.name || 'Sans catégorie'}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Tag size={12} className="text-gray-400 shrink-0" />
-                                                        <span className="line-clamp-1">
-                                                            <span className="text-gray-400">Sous-cat: </span>
-                                                            {product.subcategory?.name || 'Non spécifiée'}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <DollarSign size={12} className="text-gray-400 shrink-0" />
-                                                        <span className="font-semibold text-gray-900">
-                                                            {formatCurrency(product.sale_price || product.price)}
-                                                            {product.sale_price && (
-                                                                <span className="ml-1 text-[10px] line-through text-gray-400 font-normal">
-                                                                    {formatCurrency(product.price)}
-                                                                </span>
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Layers size={12} className="text-gray-400 shrink-0" />
-                                                        <span>
-                                                            <span className="text-gray-400">Stock: </span>
-                                                            <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>
-                                                                {availableStock}
-                                                            </span>
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                                </Link>
                                             </div>
 
-                                            <div className="flex flex-col items-end justify-between self-stretch shrink-0 gap-3">
-                                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
-                                                    {statusLabels[product.status] || product.status}
-                                                </span>
-
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <Link href={`/seller/products/${product.id}`} className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors" title="Voir">
-                                                        <Eye size={16} />
-                                                    </Link>
-                                                    <Link href={`/seller/products/${product.id}/edit`} className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Modifier">
-                                                        <Edit size={16} />
-                                                    </Link>
-                                                    <button onClick={() => handleDelete(product.id)} disabled={processing} className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50" title="Supprimer">
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                            <div className="flex-1 min-w-0 flex flex-col justify-between gap-1">
+                                                <div>
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <Link href={`/seller/products/${product.id}`} className="font-bold text-gray-900 text-sm truncate hover:text-primary-600 transition-colors" title={product.name}>
+                                                            {product.name}
+                                                        </Link>
+                                                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${statusColors[product.status] || 'bg-gray-100 text-gray-800'}`}>
+                                                            {statusLabels[product.status] || product.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                                                        <span className="truncate">{product.category?.name || 'Sans catégorie'}</span>
+                                                        <span className="font-semibold text-gray-900">{formatCurrency(product.sale_price || product.price)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3 text-xs">
+                                                        <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                                                            Stock: <span className="font-semibold">{availableStock}</span>
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Link href={`/seller/products/${product.id}`} className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors" title="Voir">
+                                                            <Eye size={14} />
+                                                        </Link>
+                                                        <Link href={`/seller/products/${product.id}/edit`} className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Modifier">
+                                                            <Edit size={14} />
+                                                        </Link>
+                                                        <button onClick={() => handleDelete(product.id)} disabled={processing} className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50" title="Supprimer">
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -460,7 +438,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                                             </span>
                                         </div>
 
-                                        <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                        <Link href={`/seller/products/${product.id}`} className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden block">
                                             {imgPath ? (
                                                 <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
                                             ) : (
@@ -468,7 +446,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     <Package size={24} />
                                                 </div>
                                             )}
-                                        </div>
+                                        </Link>
 
                                         <div className="mt-2 space-y-1">
                                             <h3 className="font-bold text-gray-900 text-xs leading-tight line-clamp-2" title={product.name}>

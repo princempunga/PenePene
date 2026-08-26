@@ -43,12 +43,12 @@ export default function ImageGallery({ images, productName }) {
 
     return (
         <>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 md:gap-4 w-full max-w-[420px] mx-auto">
                 {/* Main Image */}
                 <button 
                     type="button"
                     onClick={() => setIsLightboxOpen(true)}
-                    className="aspect-square w-full bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm cursor-zoom-in"
+                    className="aspect-square w-full max-w-[360px] md:max-w-[320px] mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm cursor-zoom-in"
                 >
                     <img 
                         src={activeUrl} 
@@ -60,7 +60,7 @@ export default function ImageGallery({ images, productName }) {
 
                 {/* Thumbnails */}
                 {displayImages.length > 1 && (
-                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-4">
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
                         {displayImages.map((img, index) => {
                             const imgUrl = getImageUrl(img.image_path);
                             return (

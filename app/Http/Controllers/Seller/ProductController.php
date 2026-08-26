@@ -257,16 +257,20 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $product->load(['category', 'subcategory', 'images']);
+        $product->load(['category', 'subcategory', 'images', 'reviews.buyer.user']);
 
         return Inertia::render('Seller/Products/Show', [
             'product' => $product,
             'stats'   => [
-                'available_stock' => $product->available_stock,
-                'confirmed_sales' => $product->confirmed_sales,
-                'view_count'      => $product->view_count,
-                'average_rating'  => $product->average_rating,
-                'total_reviews'   => $product->total_reviews,
+                'available_stock'    => $product->available_stock,
+                'confirmed_sales'    => $product->confirmed_sales,
+                'initial_stock'      => $product->initial_stock,
+                'view_count'         => $product->view_count,
+                'average_rating'     => $product->average_rating,
+                'total_reviews'      => $product->total_reviews,
+                'low_stock_threshold'=> $product->low_stock_threshold,
+                'is_low_stock'       => $product->isLowStock(),
+                'discount_percentage' => $product->sale_price ? round((1 - $product->sale_price / $product->price) * 100) : 0,
             ],
         ]);
     }
