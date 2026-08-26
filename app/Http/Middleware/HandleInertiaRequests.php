@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\Notification;
@@ -112,6 +113,22 @@ class HandleInertiaRequests extends Middleware
             'active_portal_label' => session('active_portal')
                 ? app(\App\Services\PortalAccessService::class)->label(session('active_portal'))
                 : null,
+            'categories' => fn () => Category::active()
+                ->whereNull('parent_id')
+                ->with(['children' => fn ($q) => $q->active()->orderBy('sort_order')->orderBy('name')])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Category $cat) => [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'slug' => $cat->slug,
+                    'children' => $cat->children->map(fn (Category $child) => [
+                        'id' => $child->id,
+                        'name' => $child->name,
+                        'slug' => $child->slug,
+                    ])->toArray()
+                ])->toArray(),
         ]);
     }
 }
