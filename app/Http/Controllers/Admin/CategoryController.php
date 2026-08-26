@@ -63,38 +63,61 @@ class CategoryController extends Controller
     }
 
     /**
-     * Create a category by name and, optionally, one subcategory under it —
-     * both typed freehand rather than picked from a list. Typing the name of
-     * a category that already exists reuses it instead of duplicating it, so
-     * this also works as "add a subcategory to an existing category".
+     * Simplified add flow: the user either picks an existing parent category
+     * from the dropdown (category_id) or types a new parent name (name),
+     * and may optionally attach one subcategory to it.
+     *
+     * - Parent + empty subcategory -> only the main category is ensured
+     *   (created with parent_id = null if it did not exist yet).
+     * - Parent + subcategory       -> the parent category is reused (its ID,
+     *   or created first if it does not exist) and the subcategory is
+     *   attached to it with parent_id = $parentCategory->id.
      */
     public function store(Request $request)
     {
+        $categoryLabel = trim((string) $request->input('name'));
+        $categoryId = $request->filled('category_id') ? (int) $request->input('category_id') : null;
+
+        // Guard checked before validate(): ConvertEmptyStringsToNull turns ''
+        // into null (skipping nullable rules) and an empty-string category_id
+        // still counts as "present" for required_without — so neither can be
+        // relied upon to reject a fully empty submission.
+        if ($categoryId === null && $categoryLabel === '') {
+            return back()->withErrors([
+                'name' => 'Veuillez choisir une catégorie existante ou saisir un nouveau nom.',
+            ]);
+        }
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'name' => ['nullable', 'string', 'max:255'],
             'subcategory_name' => ['nullable', 'string', 'max:255'],
-            'icon' => ['nullable', 'string', 'max:255'],
-            'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $slug = Str::slug($request->name);
-
-        $category = Category::firstOrCreate(
-            ['slug' => $slug],
-            [
-                'name' => $request->name,
-                'icon' => $request->icon,
-                'parent_id' => null,
-                'is_active' => $request->boolean('is_active', true),
-            ]
-        );
-
-        if ($request->filled('subcategory_name')) {
-            Category::firstOrCreate(
-                ['slug' => $slug . '-' . Str::slug($request->subcategory_name)],
+        // Resolve the parent category: reuse the picked one, or find-or-create
+        // the one typed freehand (typing an existing name reuses its ID).
+        if ($categoryId !== null) {
+            $parentCategory = Category::findOrFail($categoryId);
+        } else {
+            $parentCategory = Category::firstOrCreate(
+                ['slug' => Str::slug($categoryLabel)],
                 [
-                    'name' => $request->subcategory_name,
-                    'parent_id' => $category->id,
+                    'name' => $categoryLabel,
+                    'parent_id' => null,
+                    'is_active' => true,
+                ]
+            );
+        }
+
+        // Attach the optional subcategory to the parent category.
+        if ($request->filled('subcategory_name')) {
+            $subName = trim((string) $request->input('subcategory_name'));
+
+            Category::firstOrCreate(
+                ['slug' => $parentCategory->slug . '-' . Str::slug($subName)],
+                [
+                    'name' => $subName,
+                    'parent_id' => $parentCategory->id,
                     'is_active' => true,
                 ]
             );
