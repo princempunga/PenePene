@@ -41,7 +41,10 @@ export default function ReportsIndex({ stats, revenueTrend, topProducts, recentO
 
     const submitRequest = (e) => {
         e.preventDefault();
-        requestForm.transform(data => ({ ...data, from: filterForm.data.from, to: filterForm.data.to }))
+        // transform() no longer returns the form in @inertiajs/react 3.x:
+        // merge filter dates into the data, then post.
+        requestForm
+            .setData({ ...requestForm.data, from: filterForm.data.from, to: filterForm.data.to })
             .post('/seller/reports/request', { preserveScroll: true });
     };
 

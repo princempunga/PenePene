@@ -29,17 +29,17 @@ export default function ProductsIndex({ products, filters }) {
         <AdminLayout>
             <Head title="Product Moderation" />
 
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Product Moderation</h1>
-                    <p className="text-gray-500 mt-1">Review and manage product listings across the platform.</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Product Moderation</h1>
+                    <p className="text-gray-500 mt-1 text-sm sm:text-base">Review and manage product listings across the platform.</p>
                 </div>
-                <div className="flex bg-white rounded-lg border border-gray-200 p-1 shadow-sm">
+                <div className="flex bg-white rounded-lg border border-gray-200 p-1 shadow-sm overflow-x-auto self-start">
                     {['pending', 'active', 'rejected', 'all'].map(status => (
                         <Link
                             key={status}
                             href={`/admin/products?status=${status}`}
-                            className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition ${
+                            className={`px-3 sm:px-4 py-1.5 rounded-md text-sm font-medium capitalize transition whitespace-nowrap ${
                                 filters.status === status
                                     ? 'bg-primary-50 text-primary-700 shadow-sm'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -57,7 +57,79 @@ export default function ProductsIndex({ products, filters }) {
                 </div>
             )}
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            {/* ── Mobile : cartes ── */}
+            <div className="md:hidden space-y-3">
+                {products.data.length > 0 ? products.data.map(product => (
+                    <div key={product.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                        <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                                {product.images && product.images[0] ? (
+                                    <img src={`/storage/${product.images[0].path}`} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    <Package size={20} className="text-gray-400" />
+                                )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-gray-900 truncate">{product.name}</p>
+                                <p className="text-xs text-gray-500 truncate">{product.category?.name} · {product.seller?.business_name || 'N/A'}</p>
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs font-semibold uppercase shrink-0 ${statusColors[product.status]}`}>
+                                {product.status}
+                            </span>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <div>
+                                <p className="font-semibold text-gray-900 text-sm">TZS {parseFloat(product.price).toLocaleString()}</p>
+                                <p className="text-xs text-gray-500">Stock: {product.initial_stock - product.confirmed_sales}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Link
+                                    href={`/admin/products/${product.id}`}
+                                    className="p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded transition"
+                                >
+                                    <Eye size={18} />
+                                </Link>
+                                {product.status === 'pending' && (
+                                    <>
+                                        <button
+                                            onClick={() => updateStatus(product.id, 'approve')}
+                                            className="p-2 text-green-600 hover:bg-green-50 rounded transition"
+                                        >
+                                            <Check size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const reason = prompt('Reason for rejection?');
+                                                if (reason) updateStatus(product.id, 'reject', reason);
+                                            }}
+                                            className="p-2 text-red-600 hover:bg-red-50 rounded transition"
+                                        >
+                                            <X size={18} />
+                                        </button>
+                                    </>
+                                )}
+                                {product.status === 'active' && (
+                                    <button
+                                        onClick={() => updateStatus(product.id, 'ban')}
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded transition"
+                                    >
+                                        <ShieldAlert size={18} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )) : (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-12 text-center text-gray-500">
+                        <Package size={40} className="mx-auto mb-3 opacity-20" />
+                        <p>No products found for this status.</p>
+                    </div>
+                )}
+            </div>
+
+            {/* ── Tablette / PC : tableau ── */}
+            <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <table className="w-full text-left text-sm text-gray-500">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                         <tr>
@@ -153,7 +225,7 @@ export default function ProductsIndex({ products, filters }) {
                     </tbody>
                 </table>
             </div>
-            
+
             {/* Simple Pagination */}
             <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
                 <div>Showing {products.from || 0} to {products.to || 0} of {products.total} results</div>

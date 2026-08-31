@@ -228,7 +228,8 @@ export default function CategoriesIndex({ categories, allCategories }) {
             subcategory_name: addForm.data.subcategory_name.trim(),
         };
 
-        addForm.transform(() => payload).post('/admin/categories', {
+        addForm.setData(payload);
+        addForm.post('/admin/categories', {
             onSuccess: () => closeModal(),
         });
     };

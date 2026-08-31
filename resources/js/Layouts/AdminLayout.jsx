@@ -59,7 +59,8 @@ export default function AdminLayout({ children, title }) {
             {/* ══════════════════════════════════════════════
                 SIDEBAR ADMIN
                 • Mobile   : drawer fixed, glisse depuis la gauche (z-[60])
-                • Desktop  : colonne statique w-72
+                • Tablette : colonne statique md:w-60 (réduite)
+                • PC       : colonne statique lg:w-80 (plus large)
                ══════════════════════════════════════════════ */}
             <aside
                 className={`
@@ -68,7 +69,8 @@ export default function AdminLayout({ children, title }) {
                     transition-transform duration-300 ease-in-out
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                     md:relative md:translate-x-0 md:shadow-sm md:z-auto
-                    md:w-72 md:bg-gray-50
+                    md:w-60 md:bg-gray-50
+                    lg:w-80
                 `}
             >
                 {/* ── En-tête drawer (mobile) ── */}
@@ -115,8 +117,8 @@ export default function AdminLayout({ children, title }) {
                 </div>
 
                 {/* ── Navigation ── */}
-                <nav className="flex-1 overflow-y-auto py-2 scrollbar-none">
-                    <div className="md:bg-white md:rounded-xl md:border md:border-gray-200 md:shadow-sm md:mx-4 md:overflow-hidden">
+                <nav className="flex-1 overflow-y-auto py-2 scrollbar-none md:pb-4">
+                    <div className="md:bg-white md:rounded-xl md:border md:border-gray-200 md:shadow-sm md:mx-4 md:overflow-hidden md:h-full md:flex md:flex-col">
                         {allowedNavItems.map(({ key, href, icon: Icon }) => {
                             const isActive = typeof currentPath === 'string' && typeof href === 'string'
                                 ? currentPath.startsWith(href)
@@ -146,7 +148,7 @@ export default function AdminLayout({ children, title }) {
                             method="post"
                             as="button"
                             onClick={closeSidebar}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 border-t border-gray-100 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 border-t border-gray-100 transition-colors mt-auto"
                         >
                             <LogOut size={18} className="shrink-0" />
                             {t('layouts.admin.sign_out')}
