@@ -59,8 +59,8 @@ export default function AdminLayout({ children, title }) {
             {/* ══════════════════════════════════════════════
                 SIDEBAR ADMIN
                 • Mobile   : drawer fixed, glisse depuis la gauche (z-[60])
-                • Tablette : colonne statique md:w-60 (réduite)
-                • PC       : colonne statique lg:w-80 (plus large)
+                • Tablette : colonne statique md:w-56 (réduite)
+                • PC       : colonne statique lg:w-72 (plus large)
                ══════════════════════════════════════════════ */}
             <aside
                 className={`
@@ -68,13 +68,13 @@ export default function AdminLayout({ children, title }) {
                     w-[280px] bg-white border-r border-gray-200 shadow-2xl
                     transition-transform duration-300 ease-in-out
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                    md:relative md:translate-x-0 md:shadow-sm md:z-auto
-                    md:w-60 md:bg-gray-50
-                    lg:w-80
+                    md:relative md:translate-x-0 md:shadow-sm md:z-auto md:shrink-0
+                    md:w-56 md:bg-gray-50
+                    lg:w-72
                 `}
             >
                 {/* ── En-tête drawer (mobile) ── */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white md:hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white md:hidden shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center font-bold text-lg text-white shrink-0">
                             {adminInitial}
@@ -98,27 +98,27 @@ export default function AdminLayout({ children, title }) {
                 </div>
 
                 {/* ── Carte profil desktop ── */}
-                <div className="hidden md:block p-4">
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center font-bold text-xl text-white shrink-0 shadow-md">
+                <div className="hidden md:block p-3 shrink-0">
+                    <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-9 h-9 lg:w-11 lg:h-11 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center font-bold text-base lg:text-xl text-white shrink-0 shadow-md">
                                 {adminInitial}
                             </div>
                             <div className="min-w-0">
-                                <p className="font-semibold text-gray-900 truncate">{auth?.user?.name ?? 'Admin'}</p>
-                                <p className="text-xs text-gray-500 truncate">{auth?.user?.email}</p>
+                                <p className="font-semibold text-gray-900 truncate text-sm">{auth?.user?.name ?? 'Admin'}</p>
+                                <p className="text-xs text-gray-500 truncate hidden lg:block">{auth?.user?.email}</p>
                             </div>
                         </div>
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-100 text-primary-700">
-                            <Gem size={11} />
+                        <span className="inline-flex items-center gap-1 lg:gap-1.5 text-[10px] lg:text-xs font-semibold px-2 py-0.5 lg:py-1 rounded-full bg-primary-100 text-primary-700">
+                            <Gem size={9} />
                             {roleLabel}
                         </span>
                     </div>
                 </div>
 
                 {/* ── Navigation ── */}
-                <nav className="flex-1 overflow-y-auto py-2 scrollbar-none md:pb-4">
-                    <div className="md:bg-white md:rounded-xl md:border md:border-gray-200 md:shadow-sm md:mx-4 md:overflow-hidden md:h-full md:flex md:flex-col">
+                <nav className="flex-1 overflow-y-auto py-2 scrollbar-none pb-4">
+                    <div className="md:bg-white md:rounded-xl md:border md:border-gray-200 md:shadow-sm md:mx-3 md:overflow-hidden md:flex md:flex-col md:h-full">
                         {allowedNavItems.map(({ key, href, icon: Icon }) => {
                             const isActive = typeof currentPath === 'string' && typeof href === 'string'
                                 ? currentPath.startsWith(href)
@@ -129,15 +129,15 @@ export default function AdminLayout({ children, title }) {
                                     key={href}
                                     href={href}
                                     onClick={closeSidebar}
-                                    className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors border-l-2 ${
+                                    className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors border-l-2 ${
                                         isActive
                                             ? 'border-primary-500 bg-primary-50 text-primary-700'
                                             : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                                 >
-                                    <Icon size={18} className="shrink-0" />
-                                    <span className="flex-1">{t(key)}</span>
-                                    {isActive && <ChevronRight size={14} className="text-primary-500 shrink-0" />}
+                                    <Icon size={16} className="shrink-0" />
+                                    <span className="flex-1 text-sm truncate">{t(key)}</span>
+                                    {isActive && <ChevronRight size={12} className="text-primary-500 shrink-0" />}
                                 </Link>
                             );
                         })}
@@ -148,9 +148,9 @@ export default function AdminLayout({ children, title }) {
                             method="post"
                             as="button"
                             onClick={closeSidebar}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 border-t border-gray-100 transition-colors mt-auto"
+                            className="w-full flex items-center gap-2.5 px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 border-t border-gray-100 transition-colors mt-auto"
                         >
-                            <LogOut size={18} className="shrink-0" />
+                            <LogOut size={16} className="shrink-0" />
                             {t('layouts.admin.sign_out')}
                         </Link>
                     </div>
@@ -161,29 +161,29 @@ export default function AdminLayout({ children, title }) {
             <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
                 {/* ── Admin Top Bar ── */}
-                <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4 gap-4 shrink-0">
+                <header className="sticky top-0 z-30 h-14 sm:h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-3 sm:px-4 gap-2 sm:gap-4 shrink-0">
                     {/* Hamburger — mobile uniquement */}
                     <button
                         type="button"
                         onClick={openSidebar}
-                        className="block md:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="block md:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
                         aria-label="Ouvrir le menu"
                     >
                         <Menu size={22} />
                     </button>
 
                     {/* Logo */}
-                    <Link href="/admin/dashboard" className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+                    <Link href="/admin/dashboard" className="text-base sm:text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-1.5 sm:gap-2 shrink-0">
                         PenePene
-                        <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] sm:text-xs font-semibold bg-primary-600 text-white px-1.5 sm:px-2 py-0.5 rounded-md">
                             {t('layouts.admin.admin_badge')}
                         </span>
                     </Link>
 
-                    <div className="flex-1" />
+                    <div className="flex-1 min-w-0" />
 
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <Link href="/" className="hidden sm:block text-sm text-gray-500 hover:text-primary-600 transition-colors">
+                    <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                        <Link href="/" className="hidden sm:block text-sm text-gray-500 hover:text-primary-600 transition-colors whitespace-nowrap">
                             {t('layouts.admin.view_site')}
                         </Link>
                         <Link
@@ -194,10 +194,10 @@ export default function AdminLayout({ children, title }) {
                         </Link>
                         <Link
                             href="/admin/dashboard"
-                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg p-1"
+                            className="flex items-center gap-1.5 sm:gap-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg p-1"
                         >
                             <span className="hidden sm:block font-medium truncate max-w-[120px]">{auth?.user?.name}</span>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center font-bold text-white text-sm shrink-0">
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center font-bold text-white text-xs sm:text-sm shrink-0">
                                 {adminInitial}
                             </div>
                         </Link>
@@ -205,9 +205,9 @@ export default function AdminLayout({ children, title }) {
                 </header>
 
                 {/* ── Main Content ── */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-6 min-w-0">
+                <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-7 pb-[76px] md:pb-6 min-w-0">
                     {title && (
-                        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                             {title}
                         </h1>
                     )}

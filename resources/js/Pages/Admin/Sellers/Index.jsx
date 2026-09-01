@@ -41,7 +41,42 @@ export default function SellersIndex({ sellers, filters }) {
 
                 {sellers.data.length > 0 ? (
                     <>
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
+                        {/* ── Mobile : cartes ── */}
+                        <div className="md:hidden space-y-3">
+                            {sellers.data.map((seller) => {
+                                const config = statusConfig[seller.status] || statusConfig.suspended;
+                                const StatusIcon = config.icon;
+                                return (
+                                    <div key={seller.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-gray-900 truncate">{seller.business_name}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">{seller.city}, {seller.country}</p>
+                                            </div>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${config.color}`}>
+                                                <StatusIcon size={11} />
+                                                {config.label}
+                                            </span>
+                                        </div>
+                                        <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{seller.user?.name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{seller.user?.email}</p>
+                                            </div>
+                                            <Link
+                                                href={`/admin/sellers/${seller.slug}`}
+                                                className="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-sm font-medium transition-colors"
+                                            >
+                                                Review
+                                            </Link>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* ── Tablette / PC : tableau ── */}
+                        <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
                             <table className="w-full text-left text-sm text-gray-600">
                                 <thead className="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
                                     <tr>
@@ -92,10 +127,10 @@ export default function SellersIndex({ sellers, filters }) {
                         <Pagination links={sellers.links} />
                     </>
                 ) : (
-                    <div className="bg-white rounded-xl border border-gray-200 p-16 text-center shadow-sm">
+                    <div className="bg-white rounded-xl border border-gray-200 p-12 sm:p-16 text-center shadow-sm">
                         <Store size={48} className="text-gray-200 mx-auto mb-4" />
                         <h3 className="text-xl font-bold text-gray-900 mb-2">No sellers found</h3>
-                        <p className="text-gray-500">There are no sellers matching this status.</p>
+                        <p className="text-gray-500 text-sm">There are no sellers matching this status.</p>
                     </div>
                 )}
             </AdminLayout>
