@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Plus, Edit, Trash2, ListTree, ChevronDown, ChevronRight, X } from 'lucide-react';
 
@@ -17,9 +17,11 @@ const CategoryItem = ({ category, onEdit, onDelete, level = 0 }) => {
                             {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                         </button>
                     ) : (
-                        <div className="w-6" /> // spacer
+                        <div className="w-6" />
                     )}
-                    <span className="font-medium text-gray-900">{category.name}</span>
+                    <Link href={`/admin/categories/${category.slug}`} className="font-medium text-gray-900 hover:text-primary-600 transition-colors">
+                        {category.name}
+                    </Link>
                     {!category.is_active && (
                         <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 text-[10px] uppercase font-bold rounded">Hidden</span>
                     )}

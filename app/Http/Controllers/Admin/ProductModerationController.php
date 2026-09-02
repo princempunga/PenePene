@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\Notification;
+use App\Models\Seller;
+use Carbon\Carbon;
 
 class ProductModerationController extends Controller
 {
@@ -14,16 +16,51 @@ class ProductModerationController extends Controller
     {
         $query = Product::with(['seller', 'category'])->withTrashed(false);
 
-        $status = $request->get('status', 'pending');
+        $status = $request->get('status', 'all');
         if ($status !== 'all') {
             $query->where('status', $status);
         }
 
-        $products = $query->latest()->paginate(20)->withQueryString();
+        // Search by seller name
+        if ($request->filled('search')) {
+            $query->whereHas('seller', function ($q) use ($request) {
+                $q->where('business_name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Date filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Sorting
+        $sort = $request->get('sort');
+        if ($sort === 'price_asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sort === 'price_desc') {
+            $query->orderBy('price', 'desc');
+        } elseif ($sort === 'stock_asc') {
+            $query->orderBy('initial_stock', 'asc')->orderBy('confirmed_sales', 'asc');
+        } elseif ($sort === 'stock_desc') {
+            $query->orderBy('initial_stock', 'desc')->orderBy('confirmed_sales', 'desc');
+        } else {
+            $query->latest();
+        }
+
+        $products = $query->paginate(20)->withQueryString();
 
         return Inertia::render('Admin/Products/Index', [
             'products' => $products,
-            'filters'  => ['status' => $status],
+            'filters'  => [
+                'status' => $status,
+                'search' => $request->search,
+                'date_from' => $request->date_from,
+                'date_to' => $request->date_to,
+                'sort' => $sort,
+            ],
         ]);
     }
 

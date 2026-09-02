@@ -6,7 +6,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import ProductCard from '@/Components/Product/ProductCard';
 import Pagination from '@/Components/UI/Pagination';
 import RatingStars from '@/Components/UI/RatingStars';
-import { MapPin, Phone, ShieldCheck, Calendar, MessageSquareText, Package, Star, Shield, Award, Zap, Flag } from 'lucide-react';
+import { MapPin, Phone, ShieldCheck, Calendar, MessageSquareText, Package, Star, Shield, Award, Zap, Flag, Search, X } from 'lucide-react';
 import ChatWindow from '@/Components/Chat/ChatWindow';
 import OnlineStatusBadge from '@/Components/Chat/OnlineStatusBadge';
 import ReportSellerModal from '@/Components/ReportSellerModal';
@@ -18,7 +18,42 @@ export default function Store({ seller, products, reviews }) {
     const [conversationId, setConversationId] = useState(null);
     const [startingChat, setStartingChat] = useState(false);
     const [reportModalOpen, setReportModalOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const [allList, setAllList] = useState(null);
+    const [isFetchingAll, setIsFetchingAll] = useState(false);
     const autoChatStarted = useRef(false);
+
+    // Au 1er caractère : charge toute la liste une seule fois, ensuite filtrage instantané côté client
+    const handleSearch = (value) => {
+        setSearch(value);
+        if (!allList && !isFetchingAll) {
+            setIsFetchingAll(true);
+            router.get(
+                window.location.pathname,
+                { all: 1 },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    only: ['products'],
+                    replace: true,
+                    onSuccess: (page) => setAllList(page.props.products),
+                    onFinish: () => setIsFetchingAll(false),
+                }
+            );
+        }
+    };
+
+    const filteredProducts = useMemo(() => {
+        if (!search) return products.data;
+        if (!allList) return [];
+        const q = search.toLowerCase().trim();
+        return allList.data.filter((p) =>
+            (p.name || '').toLowerCase().includes(q) ||
+            (p.description || '').toLowerCase().includes(q)
+        );
+    }, [search, allList, products.data]);
+
+    const totalShown = search ? filteredProducts.length : products.total;
 
     const renderTrustBadge = (badge) => {
         const badgesConfig = {
@@ -185,28 +220,93 @@ export default function Store({ seller, products, reviews }) {
 
                     {/* Main Content: Products */}
                     <div className="flex-1">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
                             <h2 className="text-2xl font-bold text-gray-900">Store Products</h2>
-                            <span className="text-gray-500 bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
-                                {products.total} items
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder="Rechercher un produit..."
+                                        className="w-56 rounded-lg border border-gray-300 bg-white pl-9 pr-8 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                                    />
+                                    {search && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSearch('')}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                                            aria-label="Effacer"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                                <span className="text-gray-500 bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
+                                    {isFetchingAll ? '...' : `${totalShown} items`}
+                                </span>
+                            </div>
                         </div>
 
-                        {products.data.length > 0 ? (
+                        {totalShown > 0 ? (
                             <>
                                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                                    {products.data.map(product => (
-                                        <ProductCard key={product.id} product={product} />
+                                    {filteredProducts.map((product, i) => (
+                                        <div
+                                            key={product.id}
+                                            className="product-anim"
+                                            style={{ animationDelay: `${Math.min(i, 12) * 50}ms` }}
+                                        >
+                                            <ProductCard product={product} />
+                                        </div>
                                     ))}
                                 </div>
-                                <Pagination links={products.links} />
+                                {!search && <Pagination links={products.links} />}
                             </>
                         ) : (
-                            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">{t('products_page.no_products')}</h3>
-                                <p className="text-gray-500">This seller currently has no active products listed.</p>
+                            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm animate-fadeIn">
+                                {search ? (
+                                    <>
+                                        <Search size={40} className="mx-auto text-gray-300 mb-4" />
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun produit trouvé</h3>
+                                        <p className="text-gray-500">
+                                            Aucun produit ne correspond à « <span className="font-semibold text-gray-700">{search}</span> »
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSearch('')}
+                                            className="mt-4 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors"
+                                        >
+                                            Réinitialiser
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{t('products_page.no_products')}</h3>
+                                        <p className="text-gray-500">This seller currently has no active products listed.</p>
+                                    </>
+                                )}
                             </div>
                         )}
+
+                        <style>{`
+                            @keyframes productPopIn {
+                                0% { opacity: 0; transform: translateY(14px) scale(0.96); }
+                                60% { opacity: 1; transform: translateY(-2px) scale(1.01); }
+                                100% { opacity: 1; transform: translateY(0) scale(1); }
+                            }
+                            @keyframes fadeInSoft {
+                                from { opacity: 0; }
+                                to { opacity: 1; }
+                            }
+                            .product-anim {
+                                animation: productPopIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+                            }
+                            .animate-fadeIn {
+                                animation: fadeInSoft 0.25s ease both;
+                            }
+                        `}</style>
                     </div>
 
                     {/* Sidebar: Reviews */}

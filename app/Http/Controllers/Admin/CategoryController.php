@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -59,6 +60,22 @@ class CategoryController extends Controller
         return Inertia::render('Admin/Categories/Index', [
             'categories' => $categories,
             'allCategories' => $allCategories,
+        ]);
+    }
+
+    public function show(Category $category)
+    {
+        $categoryIds = $category->selfAndChildrenIds();
+
+        $productsQuery = Product::with(['seller'])
+            ->whereIn('category_id', $categoryIds)
+            ->latest();
+
+        $products = $productsQuery->paginate(20)->withQueryString();
+
+        return Inertia::render('Admin/Categories/Show', [
+            'category' => $category,
+            'products' => $products,
         ]);
     }
 

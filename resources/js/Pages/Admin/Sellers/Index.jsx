@@ -1,19 +1,31 @@
-import React from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import React, { useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import Pagination from '@/Components/UI/Pagination';
-import { Store, ShieldCheck, XCircle, Clock } from 'lucide-react';
+import { Store, ShieldCheck, XCircle, Clock, CheckCircle, Ban } from 'lucide-react';
 
 const statusConfig = {
     pending:   { label: 'Pending Review', color: 'bg-amber-100 text-amber-800', icon: Clock },
     active:    { label: 'Active',         color: 'bg-green-100 text-green-800', icon: ShieldCheck },
+    verified:  { label: 'Active',         color: 'bg-green-100 text-green-800', icon: ShieldCheck },
     rejected:  { label: 'Rejected',       color: 'bg-red-100 text-red-800',     icon: XCircle },
     suspended: { label: 'Suspended',      color: 'bg-gray-100 text-gray-800',   icon: XCircle },
 };
 
 export default function SellersIndex({ sellers, filters }) {
+    const { flash } = usePage().props;
+    const [processingId, setProcessingId] = useState(null);
+
     const handleFilter = (status) => {
         router.get('/admin/sellers', { status }, { preserveState: true });
+    };
+
+    const handleQuickAction = (sellerId, sellerSlug, action) => {
+        setProcessingId(sellerId);
+        router.post(`/admin/sellers/${sellerSlug}/quick-action`, { action }, {
+            preserveState: true,
+            onFinish: () => setProcessingId(null),
+        });
     };
 
     return (
@@ -39,6 +51,12 @@ export default function SellersIndex({ sellers, filters }) {
                     </div>
                 </div>
 
+                {flash?.success && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl text-sm font-medium">
+                        {flash.success}
+                    </div>
+                )}
+
                 {sellers.data.length > 0 ? (
                     <>
                         {/* ── Mobile : cartes ── */}
@@ -46,6 +64,7 @@ export default function SellersIndex({ sellers, filters }) {
                             {sellers.data.map((seller) => {
                                 const config = statusConfig[seller.status] || statusConfig.suspended;
                                 const StatusIcon = config.icon;
+                                const isProcessing = processingId === seller.id;
                                 return (
                                     <div key={seller.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                                         <div className="flex items-start justify-between gap-3 mb-3">
@@ -58,17 +77,66 @@ export default function SellersIndex({ sellers, filters }) {
                                                 {config.label}
                                             </span>
                                         </div>
-                                        <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                                            <div className="min-w-0">
-                                                <p className="text-sm font-medium text-gray-900 truncate">{seller.user?.name}</p>
-                                                <p className="text-xs text-gray-500 truncate">{seller.user?.email}</p>
+                                        <div className="pt-3 border-t border-gray-100 space-y-2">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-medium text-gray-900 truncate">{seller.user?.name}</p>
+                                                    <p className="text-xs text-gray-500 truncate">{seller.user?.email}</p>
+                                                </div>
                                             </div>
-                                            <Link
-                                                href={`/admin/sellers/${seller.slug}`}
-                                                className="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-sm font-medium transition-colors"
-                                            >
-                                                Review
-                                            </Link>
+                                            <div className="flex items-center gap-2 pt-2">
+                                                {seller.status === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleQuickAction(seller.id, seller.slug, 'approve')}
+                                                            disabled={isProcessing}
+                                                            className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
+                                                        >
+                                                            <CheckCircle size={14} /> {isProcessing ? '...' : 'Approve'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleQuickAction(seller.id, seller.slug, 'reject')}
+                                                            disabled={isProcessing}
+                                                            className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-colors"
+                                                        >
+                                                            <XCircle size={14} /> {isProcessing ? '...' : 'Reject'}
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {(seller.status === 'active' || seller.status === 'verified') && (
+                                                    <button
+                                                        onClick={() => handleQuickAction(seller.id, seller.slug, 'suspend')}
+                                                        disabled={isProcessing}
+                                                        className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-colors"
+                                                    >
+                                                        <Ban size={14} /> {isProcessing ? '...' : 'Suspend'}
+                                                    </button>
+                                                )}
+                                                {seller.status === 'suspended' && (
+                                                    <button
+                                                        onClick={() => handleQuickAction(seller.id, seller.slug, 'activate')}
+                                                        disabled={isProcessing}
+                                                        className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
+                                                    >
+                                                        <ShieldCheck size={14} /> {isProcessing ? '...' : 'Activate'}
+                                                    </button>
+                                                )}
+                                                {seller.status === 'rejected' && (
+                                                    <button
+                                                        onClick={() => handleQuickAction(seller.id, seller.slug, 'activate')}
+                                                        disabled={isProcessing}
+                                                        className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
+                                                    >
+                                                        <ShieldCheck size={14} /> {isProcessing ? '...' : 'Activate'}
+                                                    </button>
+                                                )}
+                                                <Link
+                                                    href={`/admin/sellers/${seller.slug}`}
+                                                    className="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-sm font-medium transition-colors"
+                                                >
+                                                    Review
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -91,6 +159,7 @@ export default function SellersIndex({ sellers, filters }) {
                                     {sellers.data.map((seller) => {
                                         const config = statusConfig[seller.status] || statusConfig.suspended;
                                         const StatusIcon = config.icon;
+                                        const isProcessing = processingId === seller.id;
                                         return (
                                             <tr key={seller.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4">
@@ -111,12 +180,54 @@ export default function SellersIndex({ sellers, filters }) {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <Link
-                                                        href={`/admin/sellers/${seller.slug}`}
-                                                        className="inline-flex items-center justify-center px-3 py-1.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition-colors"
-                                                    >
-                                                        Review
-                                                    </Link>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {seller.status === 'pending' && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleQuickAction(seller.id, seller.slug, 'approve')}
+                                                                    disabled={isProcessing}
+                                                                    className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
+                                                                    title="Approve"
+                                                                >
+                                                                    <CheckCircle size={16} className="mr-1" /> {isProcessing ? '...' : 'Approve'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleQuickAction(seller.id, seller.slug, 'reject')}
+                                                                    disabled={isProcessing}
+                                                                    className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-colors"
+                                                                    title="Reject"
+                                                                >
+                                                                    <XCircle size={16} className="mr-1" /> {isProcessing ? '...' : 'Reject'}
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {(seller.status === 'active' || seller.status === 'verified') && (
+                                                            <button
+                                                                onClick={() => handleQuickAction(seller.id, seller.slug, 'suspend')}
+                                                                disabled={isProcessing}
+                                                                className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-colors"
+                                                                title="Suspend"
+                                                            >
+                                                                <Ban size={16} className="mr-1" /> {isProcessing ? '...' : 'Suspend'}
+                                                            </button>
+                                                        )}
+                                                        {(seller.status === 'suspended' || seller.status === 'rejected') && (
+                                                            <button
+                                                                onClick={() => handleQuickAction(seller.id, seller.slug, 'activate')}
+                                                                disabled={isProcessing}
+                                                                className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 text-sm font-medium transition-colors"
+                                                                title="Activate"
+                                                            >
+                                                                <ShieldCheck size={16} className="mr-1" /> {isProcessing ? '...' : 'Activate'}
+                                                            </button>
+                                                        )}
+                                                        <Link
+                                                            href={`/admin/sellers/${seller.slug}`}
+                                                            className="inline-flex items-center justify-center px-3 py-1.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition-colors"
+                                                        >
+                                                            Review
+                                                        </Link>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );

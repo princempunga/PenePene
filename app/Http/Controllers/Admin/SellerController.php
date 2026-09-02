@@ -88,4 +88,49 @@ class SellerController extends Controller
 
         return back()->with('success', 'Seller status updated.');
     }
+
+    public function quickAction(Request $request, Seller $seller)
+    {
+        $request->validate([
+            'action' => 'required|in:approve,reject,suspend,activate',
+        ]);
+
+        $action = $request->action;
+
+        switch ($action) {
+            case 'approve':
+                $seller->update([
+                    'status'      => 'verified',
+                    'verified_at' => now(),
+                    'verified_by' => $request->user()->id,
+                ]);
+                Notification::create([
+                    'user_id'    => $seller->user_id,
+                    'title'      => 'Account Verified',
+                    'body'       => 'Congratulations! Your seller account has been verified. Your store is now live.',
+                    'type'       => 'system',
+                    'action_url' => '/seller/dashboard',
+                ]);
+                return back()->with('success', 'Seller approved successfully.');
+            case 'reject':
+                $seller->update([
+                    'status'      => 'rejected',
+                    'verified_at' => null,
+                    'verified_by' => null,
+                ]);
+                Notification::create([
+                    'user_id' => $seller->user_id,
+                    'title'   => 'Verification Rejected',
+                    'body'    => 'Your seller application was rejected.',
+                    'type'    => 'system',
+                ]);
+                return back()->with('success', 'Seller rejected.');
+            case 'suspend':
+                $seller->update(['status' => 'suspended']);
+                return back()->with('success', 'Seller suspended.');
+            case 'activate':
+                $seller->update(['status' => 'verified']);
+                return back()->with('success', 'Seller activated.');
+        }
+    }
 }

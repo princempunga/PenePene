@@ -11,15 +11,16 @@ import {
     TrendingUp, ArrowRight, Inbox, CheckCircle2, Banknote, ChevronRight,
 } from 'lucide-react';
 
-function StatCard({ icon: Icon, iconBg, iconColor, label, value, subtext }) {
-    return (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+function StatCard({ icon: Icon, iconBg, iconColor, label, value, subtext, href }) {
+    const body = (
+        <>
             <div className="flex items-center justify-between mb-3">
                 <div className={`w-10 h-10 ${iconBg} rounded-lg flex items-center justify-center ${iconColor}`}>
                     <Icon size={20} />
                 </div>
+                <ArrowRight size={16} className="text-gray-300 group-hover:text-primary-500 transition-colors" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            <p className="text-2xl font-bold text-gray-900 group-hover:text-primary-700 transition-colors">{value}</p>
             <p className="text-sm text-gray-500 mt-1">{label}</p>
             {subtext && (
                 <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
@@ -27,8 +28,15 @@ function StatCard({ icon: Icon, iconBg, iconColor, label, value, subtext }) {
                     {subtext}
                 </p>
             )}
-        </div>
+        </>
     );
+
+    const classes = "group block bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:border-primary-300 hover:shadow-md transition-all";
+
+    if (href) {
+        return <Link href={href} className={classes}>{body}</Link>;
+    }
+    return <div className={classes}>{body}</div>;
 }
 
 function QuickAction({ href, icon: Icon, label, description, color }) {
@@ -128,6 +136,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                         label="Commandes totales"
                         value={stats.totalOrders.toLocaleString('fr-FR')}
                         subtext={stats.ordersThisWeek > 0 ? `${stats.ordersThisWeek} cette semaine` : null}
+                        href="/seller/orders"
                     />
                     <StatCard
                         icon={DollarSign}
@@ -136,6 +145,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                         label="Chiffre d'affaires total"
                         value={formatCurrency(stats.totalRevenue)}
                         subtext={stats.revenueThisWeek > 0 ? `${formatCurrency(stats.revenueThisWeek)} cette semaine` : null}
+                        href="/seller/reports"
                     />
                     <StatCard
                         icon={Package}
@@ -143,6 +153,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                         iconColor="text-purple-600"
                         label="Produits totaux"
                         value={stats.totalProducts.toLocaleString('fr-FR')}
+                        href="/seller/products"
                     />
                     <StatCard
                         icon={AlertTriangle}
@@ -155,6 +166,7 @@ export default function SellerDashboard({ seller, stats, recentOrders, recentRev
                                 ? `${stats.pendingOrders} commande${stats.pendingOrders !== 1 ? 's' : ''} à traiter`
                                 : null
                         }
+                        href="/seller/orders"
                     />
                 </div>
 

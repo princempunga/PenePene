@@ -1,11 +1,11 @@
 import React from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Package, Check, X, ShieldAlert, Eye } from 'lucide-react';
+import { Package, Check, X, ShieldAlert, Eye, Search, Calendar, ArrowUpDown } from 'lucide-react';
 
 export default function ProductsIndex({ products, filters }) {
     const { flash } = usePage().props;
-    const { patch } = useForm();
+    const { patch, get } = useForm();
 
     const updateStatus = (productId, action, reason = null) => {
         let msg = action === 'approve' ? 'approve this product' :
@@ -22,7 +22,16 @@ export default function ProductsIndex({ products, filters }) {
         pending: 'bg-amber-100 text-amber-800',
         active: 'bg-green-100 text-green-800',
         rejected: 'bg-red-100 text-red-800',
-        inactive: 'bg-gray-100 text-gray-800', // Banned/Inactive
+        inactive: 'bg-gray-100 text-gray-800',
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        get('/admin/products', { ...filters, search: e.target.search.value });
+    };
+
+    const handleSort = (sortValue) => {
+        get('/admin/products', { ...filters, sort: sortValue });
     };
 
     return (
@@ -35,10 +44,10 @@ export default function ProductsIndex({ products, filters }) {
                     <p className="text-gray-500 mt-1 text-sm sm:text-base">Review and manage product listings across the platform.</p>
                 </div>
                 <div className="flex bg-white rounded-lg border border-gray-200 p-1 shadow-sm overflow-x-auto self-start">
-                    {['pending', 'active', 'rejected', 'all'].map(status => (
+                    {['all', 'pending', 'active', 'rejected'].map(status => (
                         <Link
                             key={status}
-                            href={`/admin/products?status=${status}`}
+                            href={`/admin/products?status=${status}&search=${filters.search || ''}&date_from=${filters.date_from || ''}&date_to=${filters.date_to || ''}&sort=${filters.sort || ''}`}
                             className={`px-3 sm:px-4 py-1.5 rounded-md text-sm font-medium capitalize transition whitespace-nowrap ${
                                 filters.status === status
                                     ? 'bg-primary-50 text-primary-700 shadow-sm'
@@ -49,6 +58,60 @@ export default function ProductsIndex({ products, filters }) {
                         </Link>
                     ))}
                 </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
+                <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1">
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            name="search"
+                            defaultValue={filters.search || ''}
+                            placeholder="Search by seller name..."
+                            className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-slate-500 outline-none"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Calendar size={18} className="text-gray-400 shrink-0" />
+                        <input
+                            type="date"
+                            name="date_from"
+                            defaultValue={filters.date_from || ''}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-500 outline-none"
+                            placeholder="From"
+                        />
+                        <span className="text-gray-400">-</span>
+                        <input
+                            type="date"
+                            name="date_to"
+                            defaultValue={filters.date_to || ''}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-500 outline-none"
+                            placeholder="To"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <ArrowUpDown size={18} className="text-gray-400 shrink-0" />
+                        <select
+                            value={filters.sort || ''}
+                            onChange={(e) => handleSort(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-500 outline-none bg-white"
+                        >
+                            <option value="">Default Sort</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="stock_asc">Stock: Low to High</option>
+                            <option value="stock_desc">Stock: High to Low</option>
+                        </select>
+                    </div>
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition-colors"
+                    >
+                        Apply
+                    </button>
+                </form>
             </div>
 
             {flash?.success && (

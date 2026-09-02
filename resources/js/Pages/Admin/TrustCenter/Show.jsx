@@ -60,11 +60,11 @@ function EvidenceFile({ path }) {
 
 function StrikeIndicator({ count }) {
     return (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
             {[1, 2, 3].map((n) => (
                 <div
                     key={n}
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
+                    className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold border-2 ${
                         n <= count
                             ? 'bg-red-500 border-red-500 text-white'
                             : 'bg-white border-gray-300 text-gray-400'
@@ -110,7 +110,7 @@ export default function TrustCenterShow({ report }) {
             <Head title={`Signalement #${report.id}`} />
             <AdminLayout title="Détails du Signalement">
                 {/* Back */}
-                <div className="mb-5">
+                <div className="mb-4 sm:mb-5">
                     <Link href="/admin/trust-center" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
                         <ChevronLeft size={16} /> Retour au Trust Center
                     </Link>
@@ -123,47 +123,48 @@ export default function TrustCenterShow({ report }) {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 sm:gap-6">
 
                     {/* === MAIN COLUMN === */}
-                    <div className="xl:col-span-2 space-y-6">
+                    <div className="xl:col-span-2 space-y-5 sm:space-y-6">
 
                         {/* Report Header */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                            <div className="flex items-start justify-between gap-4 mb-4">
-                                <div>
-                                    <h1 className="text-lg font-bold text-gray-900">
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
+                            <div className="flex items-start justify-between gap-3 mb-4">
+                                <div className="min-w-0">
+                                    <h1 className="text-base sm:text-lg font-bold text-gray-900">
                                         Signalement #{report.id}
                                     </h1>
-                                    <p className="text-sm text-gray-500 mt-0.5">
+                                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
                                         Soumis le {new Date(report.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </p>
                                 </div>
-                                <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${cfg.color}`}>
-                                    <StatusIcon size={13} />
+                                <span className={`shrink-0 flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full ${cfg.color}`}>
+                                    <StatusIcon size={12} />
                                     {cfg.label}
                                 </span>
                             </div>
 
                             {/* Reporter → Seller */}
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
                                         {report.reporter?.name?.charAt(0)?.toUpperCase() || '?'}
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-gray-400">Signalé par</p>
-                                        <p className="text-sm font-semibold text-gray-800">{report.reporter?.name || 'Anonyme'}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] sm:text-xs text-gray-400">Signalé par</p>
+                                        <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{report.reporter?.name || 'Anonyme'}</p>
                                     </div>
                                 </div>
-                                <ArrowRight size={16} className="text-gray-400 flex-shrink-0" />
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center font-bold text-sm">
+                                <ArrowRight size={16} className="text-gray-400 flex-shrink-0 hidden sm:block" />
+                                <div className="block sm:hidden text-gray-300 text-center">↓</div>
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
                                         {seller?.business_name?.charAt(0)?.toUpperCase() || '?'}
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-gray-400">Signalement contre</p>
-                                        <p className="text-sm font-semibold text-gray-800">{seller?.business_name || 'Vendeur inconnu'}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] sm:text-xs text-gray-400">Signalement contre</p>
+                                        <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">{seller?.business_name || 'Vendeur inconnu'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -171,7 +172,7 @@ export default function TrustCenterShow({ report }) {
                             {/* Category */}
                             <div className="mt-4">
                                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Catégorie</p>
-                                <span className="text-sm px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full font-medium">
+                                <span className="text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5 bg-orange-100 text-orange-700 rounded-full font-medium">
                                     {CATEGORY_LABELS[report.category] || report.category}
                                 </span>
                             </div>
@@ -179,7 +180,7 @@ export default function TrustCenterShow({ report }) {
                             {/* Description */}
                             <div className="mt-4">
                                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description</p>
-                                <p className="text-sm text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-100 whitespace-pre-wrap leading-relaxed">
+                                <p className="text-sm text-gray-700 bg-gray-50 p-3 sm:p-4 rounded-xl border border-gray-100 whitespace-pre-wrap leading-relaxed break-words">
                                     {report.description}
                                 </p>
                             </div>
@@ -187,8 +188,8 @@ export default function TrustCenterShow({ report }) {
 
                         {/* Evidence */}
                         {report.evidence_files?.length > 0 && (
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                                <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6">
+                                <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2 text-sm sm:text-base">
                                     <ImageIcon size={16} className="text-gray-400" />
                                     Preuves ({report.evidence_files.length})
                                 </h2>
@@ -202,8 +203,8 @@ export default function TrustCenterShow({ report }) {
 
                         {/* Previous Reports on Same Seller */}
                         {seller?.reports?.length > 1 && (
-                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                                <h2 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 sm:p-5">
+                                <h2 className="font-semibold text-amber-800 mb-3 flex items-center gap-2 text-sm sm:text-base">
                                     <AlertTriangle size={16} />
                                     Signalements précédents ({seller.reports.length - 1} autre(s))
                                 </h2>
@@ -214,10 +215,10 @@ export default function TrustCenterShow({ report }) {
                                             <Link
                                                 key={r.id}
                                                 href={`/admin/trust-center/${r.id}`}
-                                                className="flex items-center justify-between text-sm bg-white px-3 py-2 rounded-lg border border-amber-100 hover:border-primary-300 transition-colors"
+                                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm bg-white px-3 py-2 rounded-lg border border-amber-100 hover:border-primary-300 transition-colors gap-1"
                                             >
-                                                <span className="text-gray-600">#{r.id} — {CATEGORY_LABELS[r.category] || r.category}</span>
-                                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${rCfg.color}`}>{rCfg.label}</span>
+                                                <span className="text-gray-600 truncate">#{r.id} — {CATEGORY_LABELS[r.category] || r.category}</span>
+                                                <span className={`text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full self-start sm:self-auto ${rCfg.color}`}>{rCfg.label}</span>
                                             </Link>
                                         );
                                     })}
@@ -227,11 +228,11 @@ export default function TrustCenterShow({ report }) {
                     </div>
 
                     {/* === SIDEBAR === */}
-                    <div className="space-y-5">
+                    <div className="space-y-4 sm:space-y-5">
 
                         {/* Update Status Form */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                            <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
+                            <h2 className="font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
                                 <FileText size={16} className="text-gray-400" />
                                 Mise à jour du statut
                             </h2>
@@ -270,31 +271,31 @@ export default function TrustCenterShow({ report }) {
 
                         {/* Seller Info Card */}
                         {seller && (
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                                <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
+                                <h2 className="font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
                                     <User size={16} className="text-gray-400" />
                                     Vendeur signalé
                                 </h2>
                                 <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center font-bold text-white text-lg">
+                                    <div className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center font-bold text-white text-base sm:text-lg shrink-0">
                                         {seller.business_name?.charAt(0)?.toUpperCase() || '?'}
                                     </div>
-                                    <div>
-                                        <p className="font-semibold text-gray-900">{seller.business_name}</p>
-                                        <p className="text-xs text-gray-400">{seller.user?.email || 'Email non disponible'}</p>
+                                    <div className="min-w-0">
+                                        <p className="font-semibold text-gray-900 text-sm truncate">{seller.business_name}</p>
+                                        <p className="text-xs text-gray-400 truncate">{seller.user?.email || 'Email non disponible'}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-2">
                                         <span className="text-gray-500">Note moyenne</span>
-                                        <span className="font-semibold">⭐ {seller.average_rating || 'N/A'}</span>
+                                        <span className="font-semibold whitespace-nowrap">⭐ {seller.average_rating || 'N/A'}</span>
                                     </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-2">
                                         <span className="text-gray-500">Nombre d'avis</span>
                                         <span className="font-semibold">{seller.total_reviews || 0}</span>
                                     </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-2">
                                         <span className="text-gray-500">Statut du compte</span>
                                         <span className={`font-semibold capitalize px-2 py-0.5 rounded-full text-xs ${seller.status === 'verified' ? 'bg-green-100 text-green-700' : seller.status === 'suspended' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
                                             {seller.status}

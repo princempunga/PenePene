@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Megaphone, Save, Trash2, AlertCircle, ChevronLeft, ChevronRight, Eye, ShoppingBag, Loader2 } from 'lucide-react';
+import { Megaphone, Save, Trash2, AlertCircle, ChevronLeft, ChevronRight, ChevronDown, Eye, ShoppingBag, Loader2 } from 'lucide-react';
 
 const HERO_SLOTS = [1, 2, 3, 4];
 const EXTRA_SLOTS = [5, 6, 7, 8, 9, 10];
@@ -174,6 +174,85 @@ function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelec
     );
 }
 
+function SellerSelect({ sellers, value, onChange }) {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const ref = React.useRef(null);
+
+    useEffect(() => {
+        const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const filtered = sellers.filter((s) =>
+        `${s.business_name} ${s.user_name || ''}`.toLowerCase().includes(search.toLowerCase())
+    );
+    const selected = sellers.find((s) => String(s.id) === String(value));
+
+    return (
+        <div ref={ref} className="relative">
+            <button
+                type="button"
+                onClick={() => setOpen(!open)}
+                className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm hover:border-primary-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            >
+                <span className={selected ? 'text-gray-900 font-medium' : 'text-gray-500'}>
+                    {selected ? `${selected.business_name} (${selected.user_name})` : '— Sélectionner —'}
+                </span>
+                <ChevronDown size={16} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+            </button>
+            {open && (
+                <div className="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+                    <div className="p-2 border-b border-gray-100">
+                        <input
+                            autoFocus
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Rechercher un vendeur..."
+                            className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500"
+                        />
+                    </div>
+                    <div className="max-h-56 overflow-y-auto">
+                        <button
+                            type="button"
+                            onClick={() => { onChange(''); setOpen(false); }}
+                            className="w-full px-3 py-2 text-left text-sm text-gray-500 hover:bg-gray-50"
+                        >
+                            — Aucun —
+                        </button>
+                        {filtered.map((s) => (
+                            <button
+                                key={s.id}
+                                type="button"
+                                onClick={() => { onChange(String(s.id)); setOpen(false); setSearch(''); }}
+                                className={`w-full px-3 py-2 text-left text-sm hover:bg-primary-50 ${
+                                    String(s.id) === String(value) ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-800'
+                                }`}
+                            >
+                                <div className="font-medium">{s.business_name}</div>
+                                <div className="text-xs text-gray-500">
+                                    {s.user_name}
+                                    {s.status && s.status !== 'verified' && (
+                                        <span className="ml-2 text-red-500">({s.status})</span>
+                                    )}
+                                </div>
+                            </button>
+                        ))}
+                        {filtered.length === 0 && (
+                            <div className="px-3 py-3 text-sm text-gray-400">Aucun vendeur trouvé</div>
+                        )}
+                    </div>
+                    <div className="border-t border-gray-100 px-3 py-1.5 text-xs text-gray-500">
+                        {filtered.length} vendeur(s) sur {sellers.length}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 function PromotionSlotCard({
     promo,
     sellers,
@@ -226,16 +305,11 @@ function PromotionSlotCard({
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Vendeur</label>
-                    <select
+                    <SellerSelect
+                        sellers={sellers}
                         value={promo.seller_id}
-                        onChange={(e) => onUpdate(promo.promotion_order, 'seller_id', e.target.value)}
-                        className="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-                    >
-                        <option value="">— Sélectionner —</option>
-                        {sellers.map((s) => (
-                            <option key={s.id} value={s.id}>{s.business_name} ({s.user_name})</option>
-                        ))}
-                    </select>
+                        onChange={(val) => onUpdate(promo.promotion_order, 'seller_id', val)}
+                    />
                 </div>
 
                 {promo.seller_id && (

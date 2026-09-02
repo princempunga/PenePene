@@ -24,13 +24,13 @@ class HomepagePromotionController extends Controller
         ->map(fn ($promo) => $this->formatPromotion($promo));
 
         $sellers = Seller::with('user')
-            ->active()
             ->orderBy('business_name')
             ->get()
             ->map(fn ($s) => [
                 'id'            => $s->id,
                 'business_name' => $s->business_name,
                 'user_name'     => $s->user?->name,
+                'status'        => $s->status,
             ]);
 
         $allProducts = Product::where('status', 'active')

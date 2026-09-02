@@ -361,6 +361,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/sellers/{seller}/verify',    [\App\Http\Controllers\Admin\SellerController::class, 'verify'])->name('sellers.verify');
         Route::patch('/sellers/{seller}/reject',    [\App\Http\Controllers\Admin\SellerController::class, 'reject'])->name('sellers.reject');
         Route::patch('/sellers/{seller}/status',    [\App\Http\Controllers\Admin\SellerController::class, 'updateStatus'])->name('sellers.status');
+        Route::post('/sellers/{seller}/quick-action', [\App\Http\Controllers\Admin\SellerController::class, 'quickAction'])->name('sellers.quick-action');
 
         // Product Moderation
         Route::get('/products',                       [\App\Http\Controllers\Admin\ProductModerationController::class, 'index'])->name('products.index');
@@ -386,6 +387,7 @@ Route::middleware('auth')->group(function () {
 
         // Categories
         Route::get('/categories',              [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
+        Route::get('/categories/{category:slug}', [\App\Http\Controllers\Admin\CategoryController::class, 'show'])->name('categories.show');
         Route::post('/categories',             [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('categories.store');
         Route::put('/categories/{id}',   [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{id}',[\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
