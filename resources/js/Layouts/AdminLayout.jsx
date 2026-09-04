@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Users, UserCheck, Shield,
     ListTree, LogOut, ChevronRight, Package, ShoppingCart,
-    Megaphone, Ticket, FileDown, Settings, Star, Menu, X, Bell, Gem, BarChart3
+    Megaphone, Ticket, FileDown, Settings, Star, Menu, X, Bell, Gem, BarChart3, TrendingUp
 } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import PageTransition from '@/Components/UI/PageTransition';
@@ -12,9 +12,11 @@ import AdminMobileBottomNav from '@/Components/Layout/AdminMobileBottomNav';
 const ALL_NAV_ITEMS = [
     { key: 'layouts.admin.dashboard',           href: '/admin/dashboard',       icon: LayoutDashboard, roles: ['super_admin', 'admin'] },
     { key: 'Statistiques',                      href: '/admin/statistics',      icon: BarChart3,       roles: ['super_admin', 'admin'] },
+    { key: 'Ventes Globales',                   href: '/admin/sales',           icon: TrendingUp,      roles: ['super_admin', 'admin'] },
     { key: 'layouts.admin.products',            href: '/admin/products',        icon: Package,         roles: ['super_admin', 'admin'] },
     { key: 'layouts.admin.orders',              href: '/admin/orders',          icon: ShoppingCart,    roles: ['super_admin', 'admin'] },
     { key: 'layouts.admin.sellers',             href: '/admin/sellers',         icon: UserCheck,       roles: ['super_admin', 'admin'] },
+    { key: 'Acheteurs',                         href: '/admin/buyers',          icon: Users,           roles: ['super_admin', 'admin'] },
     { key: 'layouts.admin.categories',          href: '/admin/categories',      icon: ListTree,        roles: ['super_admin', 'admin'] },
     { key: 'layouts.admin.reviews',             href: '/admin/reviews',         icon: Star,            roles: ['super_admin', 'admin'] },
     { key: 'Homepage Promotions',               href: '/admin/promotions',      icon: Megaphone,       roles: ['super_admin', 'admin'] },

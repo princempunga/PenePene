@@ -35,7 +35,6 @@ class SellerController extends Controller
             return Inertia::render('Sellers/Store', [
                 'seller'   => $seller,
                 'products' => ['data' => $all, 'total' => $all->count(), 'links' => []],
-                'reviews'  => $reviews,
             ]);
         }
 

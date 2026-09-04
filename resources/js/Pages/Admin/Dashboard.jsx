@@ -47,7 +47,7 @@ export default function Dashboard({ stats, pendingSellers, recentOrders }) {
                         </div>
                     </Link>
 
-                    <Link href="/admin/statistics" className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-primary-300 hover:shadow-md transition-all group">
+                    <Link href="/admin/sales" className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-primary-300 hover:shadow-md transition-all group">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 shrink-0 group-hover:bg-green-200 transition-colors">
                             <DollarSign size={20} className="sm:hidden" />
                             <DollarSign size={24} className="hidden sm:block" />

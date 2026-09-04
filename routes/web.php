@@ -356,19 +356,26 @@ Route::middleware('auth')->group(function () {
         Route::patch('/stats-requests/{statsRequest}/reject', [\App\Http\Controllers\Admin\StatsDownloadRequestController::class, 'reject'])->name('stats-requests.reject');
 
         // Sellers (Verification & Management)
-        Route::get('/sellers',                      [\App\Http\Controllers\Admin\SellerController::class, 'index'])->name('sellers.index');
-        Route::get('/sellers/{seller}',             [\App\Http\Controllers\Admin\SellerController::class, 'show'])->name('sellers.show');
-        Route::patch('/sellers/{seller}/verify',    [\App\Http\Controllers\Admin\SellerController::class, 'verify'])->name('sellers.verify');
-        Route::patch('/sellers/{seller}/reject',    [\App\Http\Controllers\Admin\SellerController::class, 'reject'])->name('sellers.reject');
-        Route::patch('/sellers/{seller}/status',    [\App\Http\Controllers\Admin\SellerController::class, 'updateStatus'])->name('sellers.status');
-        Route::post('/sellers/{seller}/quick-action', [\App\Http\Controllers\Admin\SellerController::class, 'quickAction'])->name('sellers.quick-action');
+        // NOTE: static routes (bulk-action) MUST come before wildcard routes ({seller})
+        Route::get('/sellers',                         [\App\Http\Controllers\Admin\SellerController::class, 'index'])->name('sellers.index');
+        Route::post('/sellers/bulk-action',            [\App\Http\Controllers\Admin\SellerController::class, 'bulkAction'])->name('sellers.bulk-action');
+        Route::get('/sellers/{seller}',                [\App\Http\Controllers\Admin\SellerController::class, 'show'])->name('sellers.show');
+        Route::get('/sellers/{seller}/statistics',     [\App\Http\Controllers\Admin\SellerController::class, 'statistics'])->name('sellers.statistics');
+        Route::patch('/sellers/{seller}/verify',       [\App\Http\Controllers\Admin\SellerController::class, 'verify'])->name('sellers.verify');
+        Route::patch('/sellers/{seller}/reject',       [\App\Http\Controllers\Admin\SellerController::class, 'reject'])->name('sellers.reject');
+        Route::patch('/sellers/{seller}/status',       [\App\Http\Controllers\Admin\SellerController::class, 'updateStatus'])->name('sellers.status');
+        Route::post('/sellers/{seller}/quick-action',  [\App\Http\Controllers\Admin\SellerController::class, 'quickAction'])->name('sellers.quick-action');
 
         // Product Moderation
+        // NOTE: static routes (bulk-action) MUST come before wildcard routes ({product})
         Route::get('/products',                       [\App\Http\Controllers\Admin\ProductModerationController::class, 'index'])->name('products.index');
+        Route::post('/products/bulk-action',          [\App\Http\Controllers\Admin\ProductModerationController::class, 'bulkAction'])->name('products.bulk-action');
         Route::get('/products/{product}',             [\App\Http\Controllers\Admin\ProductModerationController::class, 'show'])->name('products.show');
         Route::patch('/products/{product}/approve',   [\App\Http\Controllers\Admin\ProductModerationController::class, 'approve'])->name('products.approve');
         Route::patch('/products/{product}/reject',    [\App\Http\Controllers\Admin\ProductModerationController::class, 'reject'])->name('products.reject');
         Route::patch('/products/{product}/ban',       [\App\Http\Controllers\Admin\ProductModerationController::class, 'ban'])->name('products.ban');
+        Route::patch('/products/{product}/block',     [\App\Http\Controllers\Admin\ProductModerationController::class, 'block'])->name('products.block');
+        Route::patch('/products/{product}/unblock',   [\App\Http\Controllers\Admin\ProductModerationController::class, 'unblock'])->name('products.unblock');
 
         // Order Oversight
         Route::get('/orders',         [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
@@ -428,6 +435,15 @@ Route::middleware('auth')->group(function () {
             Route::post('/admins',           [\App\Http\Controllers\Admin\SubAdminController::class, 'store'])->name('admins.store');
             Route::delete('/admins/{user}',  [\App\Http\Controllers\Admin\SubAdminController::class, 'destroy'])->name('admins.destroy');
         });
+
+        // Buyers management (new – bug fix: filter only buyers)
+        Route::get('/buyers',                    [\App\Http\Controllers\Admin\BuyerController::class, 'index'])->name('buyers.index');
+        Route::post('/buyers/bulk-action',       [\App\Http\Controllers\Admin\BuyerController::class, 'bulkAction'])->name('buyers.bulk-action');
+        Route::patch('/buyers/{user}/toggle',    [\App\Http\Controllers\Admin\BuyerController::class, 'toggleActive'])->name('buyers.toggle');
+
+        // Global Sales Report (new)
+        Route::get('/sales',        [\App\Http\Controllers\Admin\GlobalSalesController::class, 'index'])->name('sales.index');
+        Route::get('/sales/export', [\App\Http\Controllers\Admin\GlobalSalesController::class, 'export'])->name('sales.export');
     });
 });
 

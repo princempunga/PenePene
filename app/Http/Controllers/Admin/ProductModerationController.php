@@ -14,7 +14,7 @@ class ProductModerationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['seller', 'category'])->withTrashed(false);
+        $query = Product::with(['seller', 'category', 'images'])->withTrashed(false);
 
         $status = $request->get('status', 'all');
         if ($status !== 'all') {
@@ -114,5 +114,67 @@ class ProductModerationController extends Controller
         ]);
 
         return back()->with('success', 'Product banned from the marketplace.');
+    }
+
+    /**
+     * Block a product due to illegal / policy-violating sales.
+     * Sets status to 'blocked' and notifies the seller with the given reason.
+     */
+    public function block(Request $request, Product $product)
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $reason = $request->reason ?: 'violation of platform policies';
+
+        $product->update(['status' => 'blocked']);
+
+        Notification::create([
+            'user_id' => $product->seller->user_id,
+            'title'   => 'Product Blocked',
+            'body'    => "Your product \"{$product->name}\" has been blocked due to {$reason}. If you believe this is an error, please contact support.",
+            'type'    => 'system',
+        ]);
+
+        return back()->with('success', "Product \"{$product->name}\" has been blocked due to {$reason}.");
+    }
+
+    /**
+     * Unblock a previously blocked product.
+     */
+    public function unblock(Request $request, Product $product)
+    {
+        $product->update(['status' => 'inactive']);
+
+        Notification::create([
+            'user_id' => $product->seller->user_id,
+            'title'   => 'Product Unblocked',
+            'body'    => "Your product \"{$product->name}\" has been unblocked by an administrator. You may re-submit it for review.",
+            'type'    => 'system',
+        ]);
+
+        return back()->with('success', 'Product unblocked successfully.');
+    }
+
+    /**
+     * Bulk block or unblock products (admin action).
+     */
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer|exists:products,id',
+            'action' => 'required|in:block,unblock',
+        ]);
+
+        $newStatus = $request->action === 'block' ? 'inactive' : 'active';
+
+        Product::whereIn('id', $request->ids)->update(['status' => $newStatus]);
+
+        $count = count($request->ids);
+        $label = $request->action === 'block' ? 'blocked' : 'unblocked';
+
+        return back()->with('success', "{$count} product(s) {$label} successfully.");
     }
 }
