@@ -264,17 +264,113 @@ export default function SellerShow({ seller }) {
                             Produits du vendeur ({seller.products?.length || 0})
                         </h2>
                     </div>
-                    <div className="overflow-x-auto">
+
+                    {/* Mobile: cards */}
+                    <div className="md:hidden">
+                        {seller.products && seller.products.length > 0 ? (
+                            <div className="divide-y divide-gray-100">
+                                {seller.products.map((product) => {
+                                    const config = productStatusConfig[product.status] || productStatusConfig.inactive;
+                                    const Icon = config.icon;
+                                    const isProcessing = processingProductId === product.id;
+                                    const available = product.initial_stock - product.confirmed_sales;
+
+                                    return (
+                                        <div key={product.id} className="p-4 hover:bg-gray-50">
+                                            <div className="flex items-start gap-3 mb-3">
+                                                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                                                    {product.images && product.images[0]?.image_path ? (
+                                                        <img
+                                                            src={`/storage/${product.images[0].image_path}`}
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <Package size={22} className="text-gray-400" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-gray-900 text-sm truncate">
+                                                        {product.name}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {product.category?.name || 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase shrink-0 ${config.color}`}>
+                                                    <Icon size={10} />
+                                                    {config.label}
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                                                <div>
+                                                    <span className="text-gray-500">Prix</span>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {new Date().getFullYear() > 2024
+                                                            ? `${parseFloat(product.price).toLocaleString()} FC`
+                                                            : `TZS ${parseFloat(product.price).toLocaleString()}`}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-gray-500">Stock dispo.</span>
+                                                    <p className="font-semibold text-gray-900">{available}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-end gap-2">
+                                                {product.status === 'active' && (
+                                                    <Link
+                                                        href={`/products/${product.slug}`}
+                                                        target="_blank"
+                                                        className="p-2 text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
+                                                        title="Voir le produit"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </Link>
+                                                )}
+                                                {product.status === 'blocked' ? (
+                                                    <button
+                                                        onClick={() => handleUnblockProduct(product.id)}
+                                                        disabled={isProcessing}
+                                                        className="p-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors disabled:opacity-50"
+                                                        title="Débloquer"
+                                                    >
+                                                        <Award size={16} />
+                                                    </button>
+                                                ) : product.status !== 'inactive' && product.status !== 'rejected' && (
+                                                    <button
+                                                        onClick={() => handleBlockProduct(product.id)}
+                                                        disabled={isProcessing}
+                                                        className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
+                                                        title="Bloquer (vente illégale)"
+                                                    >
+                                                        <ShieldAlert size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center text-gray-500">
+                                <Package size={36} className="mx-auto mb-3 opacity-20" />
+                                <p className="text-sm">Ce vendeur n'a pas encore de produits.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop: table */}
+                    <div className="hidden md:block overflow-x-auto">
                         {seller.products && seller.products.length > 0 ? (
                             <table className="w-full text-left text-sm text-gray-600">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="px-3 sm:px-6 py-4">Produit</th>
-                                        <th className="px-3 sm:px-6 py-4">Catégorie</th>
-                                        <th className="px-3 sm:px-6 py-4">Prix</th>
-                                        <th className="px-3 sm:px-6 py-4">Stock</th>
-                                        <th className="px-3 sm:px-6 py-4">Statut</th>
-                                        <th className="px-3 sm:px-6 py-4 text-right">Actions</th>
+                                        <th className="px-6 py-4">Produit</th>
+                                        <th className="px-6 py-4">Catégorie</th>
+                                        <th className="px-6 py-4">Prix</th>
+                                        <th className="px-6 py-4">Stock</th>
+                                        <th className="px-6 py-4">Statut</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -286,7 +382,7 @@ export default function SellerShow({ seller }) {
 
                                         return (
                                             <tr key={product.id} className="hover:bg-gray-50">
-                                                <td className="px-3 sm:px-6 py-4">
+                                                <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
                                                             {product.images && product.images[0]?.image_path ? (
@@ -299,31 +395,31 @@ export default function SellerShow({ seller }) {
                                                                 <Package size={20} className="text-gray-400" />
                                                             )}
                                                         </div>
-                                                        <div className="min-w-0 max-w-[180px] sm:max-w-[250px]">
+                                                        <div className="min-w-0 max-w-[250px]">
                                                             <p className="font-semibold text-gray-900 truncate">
                                                                 {product.name}
                                                             </p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-4 text-gray-700">
+                                                <td className="px-6 py-4 text-gray-700">
                                                     {product.category?.name || 'N/A'}
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+                                                <td className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
                                                     {new Date().getFullYear() > 2024
                                                         ? `${parseFloat(product.price).toLocaleString()} FC`
                                                         : `TZS ${parseFloat(product.price).toLocaleString()}`}
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-4 text-gray-700">
+                                                <td className="px-6 py-4 text-gray-700">
                                                     {available}
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-4">
+                                                <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold uppercase ${config.color}`}>
                                                         <Icon size={10} />
                                                         {config.label}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-4 text-right">
+                                                <td className="px-6 py-4 text-right">
                                                     <div className="flex items-center justify-end gap-1.5">
                                                         {product.status === 'active' && (
                                                             <Link

@@ -10,8 +10,7 @@ class SellerController extends Controller
 {
     public function publicStore(\Illuminate\Http\Request $request, Seller $seller)
     {
-        // Only block explicitly rejected or banned sellers
-        if (in_array($seller->status, ['rejected', 'banned'])) {
+        if (in_array($seller->status, ['rejected', 'banned', 'suspended', 'blocked'])) {
             abort(404);
         }
 

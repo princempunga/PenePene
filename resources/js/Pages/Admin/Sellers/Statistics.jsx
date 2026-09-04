@@ -284,8 +284,16 @@ export default function SellerStatistics({
                 {/* ── Seller Info Header ── */}
                 <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-4 sm:p-6 text-white mb-6 shadow-lg">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center text-2xl font-bold shrink-0">
-                            {seller.business_name?.[0]?.toUpperCase() ?? 'S'}
+                        <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center text-2xl font-bold shrink-0 overflow-hidden">
+                            {seller.logo ? (
+                                <img
+                                    src={`/storage/${seller.logo}`}
+                                    alt={seller.business_name}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                seller.business_name?.[0]?.toUpperCase() ?? 'S'
+                            )}
                         </div>
                         <div className="min-w-0 flex-1">
                             <h2 className="text-xl font-bold truncate">{seller.business_name}</h2>
