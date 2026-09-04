@@ -209,15 +209,41 @@ class SellerController extends Controller
         $topProducts    = $allProducts->sortByDesc('confirmed_sales')->take(5)->values();
         $bottomProducts = $allProducts->sortBy('confirmed_sales')->take(5)->values();
 
-        // Top-selling products breakdown by category
+        // Top-selling products breakdown by category and subcategory
         $byCategory = $allProducts
-            ->groupBy('category.name')
-            ->map(fn ($group) => [
-                'name'      => $group->first()->category->name ?? 'N/A',
-                'products'  => $group->count(),
-                'sales'     => $group->sum('confirmed_sales'),
-                'revenue'   => $group->sum(fn ($p) => $p->price * $p->confirmed_sales),
-            ])
+            ->groupBy(fn ($p) => $p->category->name ?? 'Sans catégorie')
+            ->map(function ($group) {
+                $subcategories = $group
+                    ->groupBy(fn ($p) => $p->subcategory->name ?? 'Sans sous-catégorie')
+                    ->map(function ($subGroup) {
+                        return [
+                            'name'      => $subGroup->first()->subcategory->name ?? 'Sans sous-catégorie',
+                            'products'  => $subGroup->count(),
+                            'sales'     => $subGroup->sum('confirmed_sales'),
+                            'revenue'   => $subGroup->sum(fn ($p) => $p->price * $p->confirmed_sales),
+                            'items'     => $subGroup->map(fn ($p) => [
+                                'id'          => $p->id,
+                                'name'        => $p->name,
+                                'price'       => (float) $p->price,
+                                'sales'       => (int) $p->confirmed_sales,
+                                'stock'       => (int) ($p->initial_stock - $p->confirmed_sales),
+                                'status'      => $p->status,
+                                'image'       => $p->images->first()?->image_path,
+                                'slug'        => $p->slug,
+                            ])->values(),
+                        ];
+                    })
+                    ->sortByDesc('sales')
+                    ->values();
+
+                return [
+                    'name'            => $group->first()->category->name ?? 'Sans catégorie',
+                    'products'        => $group->count(),
+                    'sales'           => $group->sum('confirmed_sales'),
+                    'revenue'         => $group->sum(fn ($p) => $p->price * $p->confirmed_sales),
+                    'subcategories'   => $subcategories,
+                ];
+            })
             ->sortByDesc('sales')
             ->values();
 

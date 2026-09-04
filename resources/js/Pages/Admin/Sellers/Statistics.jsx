@@ -130,6 +130,17 @@ export default function SellerStatistics({
 }) {
     const { flash } = usePage().props;
     const [activeTab, setActiveTab] = useState('overview');
+    const [expandedCategories, setExpandedCategories] = useState({});
+    const [expandedSubcategories, setExpandedSubcategories] = useState({});
+
+    const toggleCategory = (index) => {
+        setExpandedCategories(prev => ({ ...prev, [index]: !prev[index] }));
+    };
+
+    const toggleSubcategory = (catIndex, subIndex) => {
+        const key = `${catIndex}-${subIndex}`;
+        setExpandedSubcategories(prev => ({ ...prev, [key]: !prev[key] }));
+    };
 
     const handleOrderFilter = (status) => {
         router.get(`/admin/sellers/${seller.slug}/statistics`, { order_status: status }, {
@@ -445,28 +456,113 @@ export default function SellerStatistics({
                                 <PieChart size={16} className="text-blue-500" />
                                 <h3 className="font-bold text-gray-900">Ventes par Catégorie</h3>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div>
                                 {byCategory.length > 0 ? (
-                                    <table className="w-full text-sm text-left text-gray-600">
-                                        <thead className="bg-gray-50 text-xs text-gray-700 uppercase border-b border-gray-200">
-                                            <tr>
-                                                <th className="px-4 py-3">Catégorie</th>
-                                                <th className="px-4 py-3 text-right">Produits</th>
-                                                <th className="px-4 py-3 text-right">Ventes</th>
-                                                <th className="px-4 py-3 text-right">Revenu</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100">
-                                            {byCategory.map((cat, i) => (
-                                                <tr key={i} className="hover:bg-gray-50">
-                                                    <td className="px-4 py-3 font-medium text-gray-900">{cat.name}</td>
-                                                    <td className="px-4 py-3 text-right">{cat.products}</td>
-                                                    <td className="px-4 py-3 text-right">{cat.sales}</td>
-                                                    <td className="px-4 py-3 text-right font-semibold">{fmt(cat.revenue)} FC</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    <div className="divide-y divide-gray-100">
+                                        {byCategory.map((cat, catIndex) => {
+                                            const isExpanded = expandedCategories[catIndex];
+                                            return (
+                                                <div key={catIndex}>
+                                                    <div
+                                                        className="px-4 sm:px-5 py-3.5 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                                                        onClick={() => toggleCategory(catIndex)}
+                                                    >
+                                                        <button className="shrink-0 text-gray-400 hover:text-slate-700 transition-colors">
+                                                            {isExpanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+                                                        </button>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-semibold text-gray-900 text-sm">{cat.name}</p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {cat.products} produit(s) · {cat.sales} ventes
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-right shrink-0">
+                                                            <p className="text-sm font-bold text-gray-900">{fmt(cat.revenue)} FC</p>
+                                                        </div>
+                                                    </div>
+
+                                                    {isExpanded && (
+                                                        <div className="bg-gray-50/50">
+                                                            {cat.subcategories?.map((sub, subIndex) => {
+                                                                const subKey = `${catIndex}-${subIndex}`;
+                                                                const isSubExpanded = expandedSubcategories[subKey];
+                                                                return (
+                                                                    <div key={subIndex}>
+                                                                        <div
+                                                                            className="px-4 sm:px-5 py-3 ml-4 sm:ml-8 flex items-center gap-3 cursor-pointer hover:bg-gray-100/50 transition-colors border-l-2 border-gray-200"
+                                                                            onClick={() => toggleSubcategory(catIndex, subIndex)}
+                                                                        >
+                                                                            <button className="shrink-0 text-gray-400 hover:text-slate-700 transition-colors">
+                                                                                {isSubExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+                                                                            </button>
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <p className="font-medium text-gray-800 text-sm">{sub.name}</p>
+                                                                                <p className="text-xs text-gray-500">
+                                                                                    {sub.products} produit(s) · {sub.sales} ventes
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="text-right shrink-0">
+                                                                                <p className="text-sm font-semibold text-gray-800">{fmt(sub.revenue)} FC</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {isSubExpanded && (
+                                                                            <div className="ml-4 sm:ml-16 divide-y divide-gray-100">
+                                                                                {sub.items?.map((product) => {
+                                                                                    const imageUrl = product.image
+                                                                                        ? `/storage/${product.image}`
+                                                                                        : null;
+                                                                                    return (
+                                                                                        <div
+                                                                                            key={product.id}
+                                                                                            className="px-4 sm:px-5 py-3 flex items-center gap-3 hover:bg-gray-50"
+                                                                                        >
+                                                                                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                                                                                {imageUrl ? (
+                                                                                                    <img
+                                                                                                        src={imageUrl}
+                                                                                                        alt=""
+                                                                                                        className="w-full h-full object-cover"
+                                                                                                    />
+                                                                                                ) : (
+                                                                                                    <Package size={16} className="text-gray-400" />
+                                                                                                )}
+                                                                                            </div>
+                                                                                            <div className="flex-1 min-w-0">
+                                                                                                <p className="font-medium text-gray-900 text-sm truncate">
+                                                                                                    {product.name}
+                                                                                                </p>
+                                                                                                <p className="text-xs text-gray-500">
+                                                                                                    {product.sales} ventes · Stock: {product.stock}
+                                                                                                </p>
+                                                                                            </div>
+                                                                                            <div className="text-right shrink-0">
+                                                                                                <p className="text-sm font-semibold text-gray-900">
+                                                                                                    {fmt(product.price)} FC
+                                                                                                </p>
+                                                                                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                                                                                                    product.status === 'active' ? 'bg-green-100 text-green-800' :
+                                                                                                    product.status === 'pending' ? 'bg-amber-100 text-amber-800' :
+                                                                                                    product.status === 'blocked' ? 'bg-red-200 text-red-900' :
+                                                                                                    'bg-gray-100 text-gray-800'
+                                                                                                }`}>
+                                                                                                    {product.status}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    );
+                                                                                })}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 ) : (
                                     <div className="py-8 text-center text-gray-400 text-sm">Aucune donnée disponible.</div>
                                 )}
