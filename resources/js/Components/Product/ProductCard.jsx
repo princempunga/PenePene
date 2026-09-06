@@ -172,17 +172,20 @@ export default function ProductCard({ product, badge, showActions = true, compac
                 </div>
             )}
 
-            <Link
-                href={productUrl}
+            <div
                 className="block relative overflow-hidden bg-gray-50 cursor-pointer h-32 sm:h-36 md:h-auto md:aspect-[4/3]"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                    if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+                        router.visit(productUrl);
+                    }
+                }}
             >
                 <ImageLightbox
                     images={product.images}
                     productName={product.name}
                     triggerImageUrl={imageUrl}
                 />
-            </Link>
+            </div>
 
             <div className="p-3 md:p-4 flex flex-col flex-grow min-w-0">
                 {product.category && (
