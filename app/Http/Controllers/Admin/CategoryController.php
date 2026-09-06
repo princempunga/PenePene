@@ -68,7 +68,7 @@ class CategoryController extends Controller
     {
         $categoryIds = $category->selfAndChildrenIds();
 
-        $productsQuery = Product::with(['seller'])
+        $productsQuery = Product::with(['seller', 'images'])
             ->whereIn('category_id', $categoryIds)
             ->latest();
 
