@@ -7,7 +7,6 @@ import { EASE_OUT_EXPO } from '@/lib/motion';
 import { RevealAfterSplash } from '@/Components/UI/RevealAfterSplash';
 
 const HERO_AUTOPLAY_MS = 7000;
-const DEFAULT_HERO_IMAGE = '/images/demo-products/default.jpg';
 
 // ── Animation configs per card slot ──────────────────────────────────────────
 const CARD_ANIMATIONS = [
@@ -47,15 +46,15 @@ const CARD_ANIMATIONS = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const CATEGORY_HERO_IMAGES = {
-    electronics: '/images/demo-products/iphone.jpg',
-    fashion: '/images/demo-products/default.jpg',
-    'home-living': '/images/demo-products/default.jpg',
-    vehicles: '/images/demo-products/default.jpg',
-    'health-beauty': '/images/demo-products/default.jpg',
+    electronics: '/images/categories/default.jpg',
+    fashion: '/images/categories/default.jpg',
+    'home-living': '/images/categories/default.jpg',
+    vehicles: '/images/categories/default.jpg',
+    'health-beauty': '/images/categories/default.jpg',
 };
 
 function getCategoryFallback(product) {
-    return CATEGORY_HERO_IMAGES[product?.category?.slug] || DEFAULT_HERO_IMAGE;
+    return CATEGORY_HERO_IMAGES[product?.category?.slug] || '/images/categories/default.jpg';
 }
 
 // ── Promo Slide content ───────────────────────────────────────────────────────
@@ -63,7 +62,7 @@ function PromoContent({ promo, t }) {
     const [currentProductIndex, setCurrentProductIndex] = useState(0);
     const products      = promo?.products || [];
     const currentProduct = products[currentProductIndex] || null;
-    const imageSrc      = currentProduct?.image_url || promo?.custom_image_url || promo?.product_image || DEFAULT_HERO_IMAGE;
+    const imageSrc      = currentProduct?.image_url || promo?.custom_image_url || promo?.product_image || '/images/categories/default.jpg';
     const productName   = currentProduct?.name    || promo?.product_name    || 'Promotion';
     const productSlug   = currentProduct?.slug    || promo?.product_slug;
     const productCurrency = currentProduct?.currency || promo?.product_currency || 'CDF';
@@ -95,7 +94,7 @@ function PromoContent({ promo, t }) {
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             loading="eager"
                             decoding="async"
-                            onError={e => { e.currentTarget.src = DEFAULT_HERO_IMAGE; }}
+                            onError={e => { e.currentTarget.src = '/images/categories/default.jpg'; }}
                             initial={{ opacity: 0, scale: 1.04 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
@@ -136,13 +135,30 @@ function PromoContent({ promo, t }) {
 }
 
 // ── One animated card slot ────────────────────────────────────────────────────
-function HeroAnimatedCard({ promos, startOffset, animConfig, prefersReducedMotion, glowColor }) {
+function HeroAnimatedCard({ promos, startOffset, animConfig, prefersReducedMotion, glowColor, onPrev, onNext }) {
     const total = promos.length;
     const [idx, setIdx] = useState(0);
 
+    const goTo = (newIndex) => {
+        setIdx((newIndex + total) % total);
+    };
+
+    const handlePrev = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onPrev) onPrev();
+        goTo(idx - 1);
+    };
+
+    const handleNext = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onNext) onNext();
+        goTo(idx + 1);
+    };
+
     useEffect(() => {
         if (total <= 1) return;
-        // Stagger each card's start time so they don't all cycle at once
         const staggerMs = startOffset * (HERO_AUTOPLAY_MS / 4);
         let iv;
         const timer = setTimeout(() => {
@@ -162,6 +178,28 @@ function HeroAnimatedCard({ promos, startOffset, animConfig, prefersReducedMotio
             {/* Glow border */}
             <div className="absolute inset-0 rounded-xl pointer-events-none" style={{ zIndex: 10,
                 boxShadow: `0 0 0 1.5px ${glowColor}80, 0 0 20px 4px ${glowColor}30` }} />
+
+            {/* Navigation arrows */}
+            {total > 1 && (
+                <>
+                    <button
+                        type="button"
+                        onClick={handlePrev}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 text-white/80 hover:text-white backdrop-blur-sm transition-colors"
+                        aria-label="Previous"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleNext}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 text-white/80 hover:text-white backdrop-blur-sm transition-colors"
+                        aria-label="Next"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </>
+            )}
 
             {/* Animated content */}
             <AnimatePresence initial={false}>

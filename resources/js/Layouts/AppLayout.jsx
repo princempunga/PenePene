@@ -7,11 +7,13 @@ import MobileMenu from '@/Components/Layout/MobileMenu';
 import Toast from '@/Components/UI/Toast';
 import PageTransition from '@/Components/UI/PageTransition';
 import WebMotionProvider from '@/Components/UI/WebMotionProvider';
+import { CurrencyProvider } from '@/context/CurrencyContext';
 
 export default function AppLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
+        <CurrencyProvider>
         <WebMotionProvider>
         <div className="min-h-screen flex flex-col bg-gray-50 pb-[60px] md:pb-0 web-page">
             <Toast />
@@ -35,5 +37,6 @@ export default function AppLayout({ children }) {
             </div>
         </div>
         </WebMotionProvider>
+        </CurrencyProvider>
     );
 }

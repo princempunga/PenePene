@@ -9,7 +9,7 @@ import useTranslation from '@/hooks/useTranslation';
 export default function BuyerLayout({ children, title, subtitle, civicMode = false }) {
     const { t } = useTranslation();
     const page = usePage();
-    const { auth, unread_notifications, demo_enabled, active_portal, active_portal_label } = page.props;
+    const { auth, unread_notifications, active_portal, active_portal_label } = page.props;
     const user = auth?.user;
     const isCitizenPortal = civicMode || active_portal === 'citizen';
 
@@ -74,8 +74,6 @@ export default function BuyerLayout({ children, title, subtitle, civicMode = fal
             headerHomeHref="/"
             dashboardHref={isCitizenPortal ? '/projects' : '/buyer/orders'}
             brandVariant={isCitizenPortal ? 'rdc' : 'default'}
-            demoHref={demo_enabled ? '/demo/buyer-panel' : null}
-            demoLabelKey="layouts.demo.buyer_panel"
             badges={badges}
             profile={{
                 name: user?.name || t('buyer.buyer_account'),

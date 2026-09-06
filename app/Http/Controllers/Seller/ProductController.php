@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Category;
+use App\Models\Subcategory;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -135,6 +136,27 @@ class ProductController extends Controller
         return $isValidChild ? (int) $subcategoryId : $categoryId;
     }
 
+    /**
+     * Resolve the subcategory ID for the subcategories table.
+     * Returns null if no subcategory was selected.
+     */
+    private function resolveSubcategoryId($subcategoryId): ?int
+    {
+        if (empty($subcategoryId)) {
+            return null;
+        }
+
+        $category = Category::find($subcategoryId);
+
+        if (!$category || !$category->parent_id) {
+            return null;
+        }
+
+        $subcategory = Subcategory::where('slug', $category->slug)->first();
+
+        return $subcategory?->id;
+    }
+
     public function store(Request $request)
     {
         $seller = $request->user()->seller;
@@ -153,9 +175,13 @@ class ProductController extends Controller
             'initial_stock.min' => 'Le stock initial doit être d\'au moins 1.',
         ]));
 
+        $resolvedCategoryId = $this->resolveCategoryId((int) $request->category_id, $request->subcategory_id);
+        $subcategoryId = $this->resolveSubcategoryId($request->subcategory_id);
+
         $product = Product::create([
             'seller_id'       => $seller->id,
-            'category_id'     => $this->resolveCategoryId((int) $request->category_id, $request->subcategory_id),
+            'category_id'     => $resolvedCategoryId,
+            'subcategory_id'  => $subcategoryId,
             'name'            => $request->name,
             'slug'            => Str::slug($request->name) . '-' . uniqid(),
             'description'     => $request->description,
@@ -215,9 +241,13 @@ class ProductController extends Controller
             $created = 0;
 
             foreach ($validated['products'] as $index => $item) {
+                $resolvedCategoryId = $this->resolveCategoryId((int) $item['category_id'], $item['subcategory_id'] ?? null);
+                $subcategoryId = $this->resolveSubcategoryId($item['subcategory_id'] ?? null);
+
                 $product = Product::create([
                     'seller_id'       => $seller->id,
-                    'category_id'     => $this->resolveCategoryId((int) $item['category_id'], $item['subcategory_id'] ?? null),
+                    'category_id'     => $resolvedCategoryId,
+                    'subcategory_id'  => $subcategoryId,
                     'name'            => $item['name'],
                     'slug'            => Str::slug($item['name']) . '-' . uniqid(),
                     'description'     => $item['description'],
@@ -331,6 +361,7 @@ class ProductController extends Controller
 
         $data = [
             'category_id'   => $this->resolveCategoryId((int) $request->category_id, $request->subcategory_id),
+            'subcategory_id'=> $this->resolveSubcategoryId($request->subcategory_id),
             'name'          => $request->name,
             'description'   => $request->description,
             'price'         => $request->price,
@@ -428,6 +459,25 @@ class ProductController extends Controller
         $image->update(['is_primary' => true]);
 
         return back()->with('success', 'Image principale mise à jour.');
+    }
+
+    public function toggleStatus(Request $request, Product $product)
+    {
+        $seller = $request->user()->seller;
+
+        if ($product->seller_id !== $seller->id) {
+            abort(403);
+        }
+
+        if (! in_array($product->status, ['active', 'inactive'])) {
+            return back()->with('error', 'Ce produit ne peut pas être activé/désactivé dans son état actuel.');
+        }
+
+        $newStatus = $product->status === 'active' ? 'inactive' : 'active';
+        $product->update(['status' => $newStatus]);
+
+        $label = $newStatus === 'active' ? 'activé' : 'désactivé';
+        return back()->with('success', "Produit {$label} avec succès.");
     }
 
     public function destroyBulk(Request $request)

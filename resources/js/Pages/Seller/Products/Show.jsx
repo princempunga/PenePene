@@ -4,7 +4,7 @@ import { formatCurrency } from '@/lib/formatCurrency';
 import SellerLayout from '@/Layouts/SellerLayout';
 import ImageGallery from '@/Components/Product/ImageGallery';
 import RatingStars from '@/Components/UI/RatingStars';
-import { Edit, Trash2, Eye, Package, ShoppingCart, BarChart3, MapPin, Tag, Layers, Calendar, TrendingUp, Star, MessageSquare } from 'lucide-react';
+import { Edit, Trash2, Eye, Package, ShoppingCart, BarChart3, MapPin, Tag, Layers, Calendar, TrendingUp, Star, MessageSquare, ToggleLeft, ToggleRight, Power } from 'lucide-react';
 
 const statusColors = {
     pending:  'bg-amber-100 text-amber-800',
@@ -41,11 +41,20 @@ function MetricBox({ label, value, color = 'text-gray-900' }) {
 export default function ProductShow({ product, stats }) {
     const { flash } = usePage().props;
     const { delete: destroy, processing } = useForm({});
+    const [toggling, setToggling] = useState(false);
 
     const handleDelete = () => {
         if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.')) {
             destroy(`/seller/products/${product.id}`);
         }
+    };
+
+    const handleToggleStatus = () => {
+        if (!confirm(`Voulez-vous ${product.status === 'active' ? 'désactiver' : 'activer'} ce produit ?`)) return;
+        setToggling(true);
+        router.patch(`/seller/products/${product.id}/toggle`, {}, {
+            onFinish: () => setToggling(false),
+        });
     };
 
     const effectivePrice = product.sale_price || product.price;
@@ -64,6 +73,18 @@ export default function ProductShow({ product, stats }) {
                                 <Eye size={14} />
                             </a>
                         )}
+                        <button
+                            onClick={handleToggleStatus}
+                            disabled={toggling}
+                            className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                                product.status === 'active'
+                                    ? 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                                    : 'text-green-600 bg-green-50 hover:bg-green-100'
+                            }`}
+                            title={product.status === 'active' ? 'Désactiver' : 'Activer'}
+                        >
+                            {product.status === 'active' ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                        </button>
                         <Link href={`/seller/products/${product.id}/edit`} className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title="Modifier">
                             <Edit size={14} />
                         </Link>

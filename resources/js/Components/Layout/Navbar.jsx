@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Search, ShoppingCart, User, Bell, Heart, MapPin, ChevronDown, Package, MessageSquare, LogOut, Settings } from 'lucide-react';
 import Logo from '@/Components/Brand/Logo';
 import LanguageSwitcher from '@/Components/Layout/LanguageSwitcher';
+import CurrencySwitcher from '@/Components/Layout/CurrencySwitcher';
 import useTranslation from '@/hooks/useTranslation';
 
 // Returns the correct dashboard URL based on user role
@@ -144,6 +145,7 @@ export default function Navbar({ onMenuClick }) {
                     </Link>
 
                     <div className="flex items-center gap-1 sm:gap-3 text-gray-600">
+                        <CurrencySwitcher />
                         <LanguageSwitcher />
                         {auth?.user ? (
                             <>

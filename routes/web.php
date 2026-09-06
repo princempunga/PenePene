@@ -8,8 +8,6 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutSimulationController;
-use App\Http\Controllers\DemoSellerPanelController;
 
 // ─── Locale ──────────────────────────────────────────────────────────────────
 Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
@@ -60,25 +58,6 @@ Route::patch('/cart/update',  [CartController::class, 'update'])->name('cart.upd
 Route::delete('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
-// Demo / simulation (testing only)
-Route::middleware('auth')->group(function () {
-    Route::get('/checkout/simulate', [CheckoutSimulationController::class, 'show'])->name('checkout.simulate');
-    Route::post('/checkout/simulate/pay', [CheckoutSimulationController::class, 'pay'])->name('checkout.simulate.pay');
-
-        Route::prefix('demo')->name('demo.')->group(function () {
-        Route::get('/seller-panel', [DemoSellerPanelController::class, 'index'])->name('seller-panel');
-        Route::post('/seller-panel/online', [DemoSellerPanelController::class, 'toggleOnline'])->name('seller-panel.online');
-        Route::get('/seller-panel/conversations/{conversation}/messages', [DemoSellerPanelController::class, 'messages'])->name('seller-panel.messages');
-        Route::post('/seller-panel/conversations/{conversation}/reply', [DemoSellerPanelController::class, 'reply'])->name('seller-panel.reply');
-        Route::patch('/seller-panel/orders/{order}/status', [DemoSellerPanelController::class, 'updateOrderStatus'])->name('seller-panel.order-status');
-
-        Route::get('/admin-panel', [\App\Http\Controllers\DemoAdminPanelController::class, 'index'])->name('admin-panel');
-        Route::post('/admin-panel/maintenance', [\App\Http\Controllers\DemoAdminPanelController::class, 'toggleMaintenance'])->name('admin-panel.maintenance');
-
-        Route::get('/buyer-panel', [\App\Http\Controllers\DemoBuyerPanelController::class, 'index'])->name('buyer-panel');
-    });
-});
-
 // Static Pages
 Route::get('/about',           [PageController::class, 'about'])->name('about');
 Route::get('/contact',         [PageController::class, 'contact'])->name('contact');
@@ -106,7 +85,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/buyer/register',     [\App\Http\Controllers\Auth\RegisterController::class, 'store']);
     Route::get('/login',               [\App\Http\Controllers\Auth\LoginController::class, 'create'])->name('login');
     Route::post('/login',              [\App\Http\Controllers\Auth\LoginController::class, 'store']);
-    Route::post('/login/demo',         [\App\Http\Controllers\Auth\LoginController::class, 'demoLogin'])->name('login.demo');
     Route::get('/forgot-password',     [\App\Http\Controllers\Auth\PasswordController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password',    [\App\Http\Controllers\Auth\PasswordController::class, 'sendResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\PasswordController::class, 'resetForm'])->name('password.reset');
@@ -250,6 +228,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders/{order}',         [\App\Http\Controllers\Buyer\OrderController::class, 'show'])->name('orders.show');
         Route::post('/orders/{order}/contact-seller', [\App\Http\Controllers\Buyer\OrderController::class, 'contactSeller'])->name('orders.contact-seller');
         Route::patch('/orders/{order}/cancel',[\App\Http\Controllers\Buyer\OrderController::class, 'cancel'])->name('orders.cancel');
+        Route::get('/orders/{order}/review',  [\App\Http\Controllers\Buyer\OrderController::class, 'review'])->name('orders.review');
 
 
         // Reviews
@@ -291,6 +270,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'show'])->name('products.show');
         Route::get('/products/{product:id}/edit',    [\App\Http\Controllers\Seller\ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product:id}',         [\App\Http\Controllers\Seller\ProductController::class, 'update'])->name('products.update');
+        Route::patch('/products/{product:id}/toggle',    [\App\Http\Controllers\Seller\ProductController::class, 'toggleStatus'])->name('products.toggle');
         Route::delete('/products/{product:id}',      [\App\Http\Controllers\Seller\ProductController::class, 'destroy'])->name('products.destroy');
         Route::post('/products/{product:id}/images', [\App\Http\Controllers\Seller\ProductController::class, 'uploadImage'])->name('products.images.upload');
         Route::delete('/images/{image}',           [\App\Http\Controllers\Seller\ProductController::class, 'deleteImage'])->name('products.images.destroy');
@@ -300,6 +280,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders',                [\App\Http\Controllers\Seller\OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}',        [\App\Http\Controllers\Seller\OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/status', [\App\Http\Controllers\Seller\OrderController::class, 'updateStatus'])->name('orders.status');
+        Route::patch('/orders/{order}/payment', [\App\Http\Controllers\Seller\OrderController::class, 'markAsPaid'])->name('orders.payment');
 
         // Messages
         Route::get('/messages', [\App\Http\Controllers\Seller\MessageController::class, 'index'])->name('messages.index');
@@ -337,6 +318,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/reports/request',  [\App\Http\Controllers\Seller\ReportController::class, 'requestDownload'])->name('reports.request');
         Route::get('/reports/download/{statsRequest}', [\App\Http\Controllers\Seller\ReportController::class, 'download'])->name('reports.download');
 
+        // Sponsored Campaigns
+        Route::get('/sponsored',                [\App\Http\Controllers\Seller\SponsoredProductController::class, 'index'])->name('sponsored.index');
+        Route::get('/sponsored/create',         [\App\Http\Controllers\Seller\SponsoredProductController::class, 'create'])->name('sponsored.create');
+        Route::post('/sponsored',               [\App\Http\Controllers\Seller\SponsoredProductController::class, 'store'])->name('sponsored.store');
+        Route::delete('/sponsored/{sponsored}', [\App\Http\Controllers\Seller\SponsoredProductController::class, 'destroy'])->name('sponsored.destroy');
+
         // Support Tickets (Seller)
         Route::get('/support',                     [\App\Http\Controllers\Buyer\SupportController::class, 'index'])->name('support.index');
         Route::get('/support/create',              [\App\Http\Controllers\Buyer\SupportController::class, 'create'])->name('support.create');
@@ -365,17 +352,20 @@ Route::middleware('auth')->group(function () {
         Route::patch('/sellers/{seller}/reject',       [\App\Http\Controllers\Admin\SellerController::class, 'reject'])->name('sellers.reject');
         Route::patch('/sellers/{seller}/status',       [\App\Http\Controllers\Admin\SellerController::class, 'updateStatus'])->name('sellers.status');
         Route::post('/sellers/{seller}/quick-action',  [\App\Http\Controllers\Admin\SellerController::class, 'quickAction'])->name('sellers.quick-action');
+        Route::patch('/sellers/{seller}/toggle',       [\App\Http\Controllers\Admin\SellerController::class, 'toggleStatus'])->name('sellers.toggle');
 
         // Product Moderation
         // NOTE: static routes (bulk-action) MUST come before wildcard routes ({product})
         Route::get('/products',                       [\App\Http\Controllers\Admin\ProductModerationController::class, 'index'])->name('products.index');
         Route::post('/products/bulk-action',          [\App\Http\Controllers\Admin\ProductModerationController::class, 'bulkAction'])->name('products.bulk-action');
-        Route::get('/products/{product}',             [\App\Http\Controllers\Admin\ProductModerationController::class, 'show'])->name('products.show');
-        Route::patch('/products/{product}/approve',   [\App\Http\Controllers\Admin\ProductModerationController::class, 'approve'])->name('products.approve');
-        Route::patch('/products/{product}/reject',    [\App\Http\Controllers\Admin\ProductModerationController::class, 'reject'])->name('products.reject');
-        Route::patch('/products/{product}/ban',       [\App\Http\Controllers\Admin\ProductModerationController::class, 'ban'])->name('products.ban');
-        Route::patch('/products/{product}/block',     [\App\Http\Controllers\Admin\ProductModerationController::class, 'block'])->name('products.block');
-        Route::patch('/products/{product}/unblock',   [\App\Http\Controllers\Admin\ProductModerationController::class, 'unblock'])->name('products.unblock');
+        Route::get('/products/{product:id}',          [\App\Http\Controllers\Admin\ProductModerationController::class, 'show'])->name('products.show');
+        Route::patch('/products/{product:id}/approve',[\App\Http\Controllers\Admin\ProductModerationController::class, 'approve'])->name('products.approve');
+        Route::patch('/products/{product:id}/reject', [\App\Http\Controllers\Admin\ProductModerationController::class, 'reject'])->name('products.reject');
+        Route::patch('/products/{product:id}/ban',    [\App\Http\Controllers\Admin\ProductModerationController::class, 'ban'])->name('products.ban');
+        Route::patch('/products/{product:id}/block',  [\App\Http\Controllers\Admin\ProductModerationController::class, 'block'])->name('products.block');
+        Route::patch('/products/{product:id}/unblock',[\App\Http\Controllers\Admin\ProductModerationController::class, 'unblock'])->name('products.unblock');
+        Route::patch('/products/{product:id}/activate', [\App\Http\Controllers\Admin\ProductModerationController::class, 'activate'])->name('products.activate');
+        Route::patch('/products/{product:id}/deactivate', [\App\Http\Controllers\Admin\ProductModerationController::class, 'deactivate'])->name('products.deactivate');
 
         // Order Oversight
         Route::get('/orders',         [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
@@ -396,8 +386,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/categories',              [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/{category:slug}', [\App\Http\Controllers\Admin\CategoryController::class, 'show'])->name('categories.show');
         Route::post('/categories',             [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('categories.store');
-        Route::put('/categories/{id}',   [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');
-        Route::delete('/categories/{id}',[\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
+        Route::put('/categories/{category}',   [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}',[\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
 
         // Subscription Plans
         Route::get('/plans',            [\App\Http\Controllers\Admin\SubscriptionPlanController::class, 'index'])->name('plans.index');

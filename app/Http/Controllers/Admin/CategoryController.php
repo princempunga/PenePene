@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Subcategory;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -130,11 +131,21 @@ class CategoryController extends Controller
         if ($request->filled('subcategory_name')) {
             $subName = trim((string) $request->input('subcategory_name'));
 
-            Category::firstOrCreate(
+            $subCategory = Category::firstOrCreate(
                 ['slug' => $parentCategory->slug . '-' . Str::slug($subName)],
                 [
                     'name' => $subName,
                     'parent_id' => $parentCategory->id,
+                    'is_active' => true,
+                ]
+            );
+
+            Subcategory::updateOrCreate(
+                ['slug' => $subCategory->slug],
+                [
+                    'category_id' => $parentCategory->id,
+                    'name' => $subName,
+                    'slug' => $subCategory->slug,
                     'is_active' => true,
                 ]
             );
@@ -143,7 +154,7 @@ class CategoryController extends Controller
         return back()->with('success', 'Category created successfully.');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Category $category)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -151,8 +162,6 @@ class CategoryController extends Controller
             'icon' => ['nullable', 'string', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
         ]);
-
-        $category = Category::findOrFail($id);
 
         if ($request->filled('parent_id')) {
             $parentId = (int) $request->parent_id;
@@ -169,18 +178,33 @@ class CategoryController extends Controller
             'is_active' => $request->boolean('is_active', $category->is_active),
         ]);
 
+        // Sync subcategories table when a category becomes a subcategory or vice versa
+        if ($request->filled('parent_id') && !$category->wasRecentlyCreated) {
+            Subcategory::updateOrCreate(
+                ['slug' => $category->slug],
+                [
+                    'category_id' => (int) $request->parent_id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'is_active' => $category->is_active,
+                ]
+            );
+        } elseif (!$request->filled('parent_id') && !$category->wasRecentlyCreated) {
+            Subcategory::where('slug', $category->slug)->delete();
+        }
+
         return back()->with('success', 'Category updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $category = Category::findOrFail($id);
-
         if ($category->products()->count() > 0 || $category->children()->count() > 0) {
             return back()->withErrors(['error' => 'Cannot delete a category with attached products or child categories.']);
         }
 
         $category->delete();
+
+        Subcategory::where('slug', $category->slug)->delete();
 
         return back()->with('success', 'Category deleted successfully.');
     }

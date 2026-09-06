@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Services\CheckoutService;
-use App\Services\DemoProductService;
-use App\Services\DemoSimulationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use RuntimeException;
@@ -27,39 +25,12 @@ class CartController extends Controller
         return (int) collect($cart)->sum('quantity');
     }
 
-    private function isDemoCartKey(string $key): bool
-    {
-        return str_starts_with($key, 'demo-');
-    }
-
     public function index()
     {
         $cart = $this->getCart();
         $items = [];
 
         foreach ($cart as $cartKey => $item) {
-            if ($this->isDemoCartKey($cartKey)) {
-                $price = (float) ($item['sale_price'] ?? $item['price']);
-                $quantity = (int) ($item['quantity'] ?? 1);
-
-                $items[] = [
-                    'id'             => $cartKey,
-                    'is_demo'        => true,
-                    'name'           => $item['name'],
-                    'slug'           => $item['slug'],
-                    'price'          => $price,
-                    'original_price' => (float) $item['price'],
-                    'sale_price'     => $item['sale_price'] ?? null,
-                    'quantity'       => $quantity,
-                    'subtotal'       => $price * $quantity,
-                    'image_url'      => $item['image'] ?? DemoProductService::defaultImage(),
-                    'stock'          => 99,
-                    'seller_name'    => $item['seller_name'] ?? 'Verified Seller',
-                ];
-
-                continue;
-            }
-
             $product = Product::with('seller', 'images')->find($cartKey);
 
             if ($product) {
@@ -70,7 +41,6 @@ class CartController extends Controller
 
                 $items[] = [
                     'id'             => $product->id,
-                    'is_demo'        => false,
                     'name'           => $product->name,
                     'slug'           => $product->slug,
                     'price'          => $price,
@@ -95,10 +65,6 @@ class CartController extends Controller
 
     public function add(Request $request)
     {
-        if ($request->filled('demo_slug')) {
-            return $this->addDemo($request);
-        }
-
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity'   => 'sometimes|integer|min:1|max:100',
@@ -132,37 +98,6 @@ class CartController extends Controller
         return back()->with('success', 'Product added to cart');
     }
 
-    private function addDemo(Request $request)
-    {
-        $request->validate([
-            'demo_slug' => 'required|string|max:255',
-            'quantity'  => 'sometimes|integer|min:1|max:10',
-        ]);
-
-        $demo = DemoProductService::findBySlug($request->demo_slug);
-
-        if (! $demo) {
-            return back()->withErrors(['cart' => 'This preview product could not be found.']);
-        }
-
-        $quantity = (int) $request->input('quantity', 1);
-        $cartKey = $demo['slug'];
-        $cart = $this->getCart();
-
-        if (isset($cart[$cartKey])) {
-            $cart[$cartKey]['quantity'] = min(($cart[$cartKey]['quantity'] ?? 0) + $quantity, 10);
-        } else {
-            $cart[$cartKey] = array_merge(
-                DemoProductService::cartSnapshot($demo),
-                ['quantity' => $quantity]
-            );
-        }
-
-        $this->saveCart($cart);
-
-        return back()->with('success', 'Product added to cart');
-    }
-
     public function update(Request $request)
     {
         $request->validate([
@@ -176,14 +111,10 @@ class CartController extends Controller
         if ($request->quantity <= 0) {
             unset($cart[$cartKey]);
         } elseif (isset($cart[$cartKey])) {
-            if ($this->isDemoCartKey($cartKey)) {
-                $maxQty = 10;
-            } else {
-                $product = Product::find($cartKey);
-                $maxQty = $product
-                    ? max(0, ($product->initial_stock ?? 0) - ($product->confirmed_sales ?? 0))
-                    : 0;
-            }
+            $product = Product::find($cartKey);
+            $maxQty = $product
+                ? max(0, ($product->initial_stock ?? 0) - ($product->confirmed_sales ?? 0))
+                : 0;
 
             $cart[$cartKey]['quantity'] = min($request->quantity, max($maxQty, 1));
         }
@@ -235,14 +166,7 @@ class CartController extends Controller
         $lineItems = [];
         foreach ($cart as $cartKey => $item) {
             $quantity = max(1, (int) ($item['quantity'] ?? 1));
-
-            if ($this->isDemoCartKey($cartKey)) {
-                $demo = DemoProductService::findBySlug($cartKey);
-                if (! $demo) continue;
-                $product = DemoProductService::ensureDatabaseProduct($demo);
-            } else {
-                $product = Product::with('seller')->active()->find($cartKey);
-            }
+            $product = Product::with('seller')->active()->find($cartKey);
 
             if (! $product || ! $product->seller_id) {
                 continue;

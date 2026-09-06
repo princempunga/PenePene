@@ -3,7 +3,7 @@ import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import {
     Store, User, MapPin, FileText, CheckCircle, XCircle, FileWarning,
-    Package, Eye, BarChart3, ShieldAlert, Award, Clock,
+    Package, Eye, BarChart3, ShieldAlert, Award, Clock, Power,
 } from 'lucide-react';
 
 const statusConfig = {
@@ -214,16 +214,28 @@ export default function SellerShow({ seller }) {
                                     </button>
                                 </div>
                             ) : (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Changer le statut du compte</label>
-                                    <select
-                                        value={statusForm.data.status}
-                                        onChange={handleStatusChange}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white font-medium"
+                                <div className="space-y-3">
+                                    <button
+                                        onClick={() => router.patch(`/admin/sellers/${seller.slug}/toggle`)}
+                                        className={`w-full flex items-center justify-center gap-2 font-bold py-3 px-4 rounded-xl shadow-sm transition-colors ${
+                                            seller.status === 'suspended'
+                                                ? 'bg-green-600 text-white hover:bg-green-700'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
                                     >
-                                        <option value="verified">Vérifié (actif)</option>
-                                        <option value="suspended">Suspendu</option>
-                                    </select>
+                                        <Power size={18} /> {seller.status === 'suspended' ? 'Réactiver' : 'Suspendre'}
+                                    </button>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Changer le statut du compte</label>
+                                        <select
+                                            value={statusForm.data.status}
+                                            onChange={handleStatusChange}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white font-medium"
+                                        >
+                                            <option value="verified">Vérifié (actif)</option>
+                                            <option value="suspended">Suspendu</option>
+                                        </select>
+                                    </div>
                                 </div>
                             )}
                         </div>

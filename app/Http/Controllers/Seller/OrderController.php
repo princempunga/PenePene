@@ -126,4 +126,47 @@ class OrderController extends Controller
 
         return back()->with('success', 'Le statut de la commande a été mis à jour avec succès.');
     }
+
+    /**
+     * Le vendeur confirme qu'il a reçu le paiement en espèces (cash)
+     * à la livraison. Applicable uniquement aux commandes livrées.
+     */
+    public function markAsPaid(Request $request, Order $order)
+    {
+        $seller = $request->user()->seller;
+
+        if ($order->seller_id !== $seller->id) {
+            abort(403);
+        }
+
+        if ($order->status !== 'delivered') {
+            return back()->withErrors([
+                'status' => 'Le paiement ne peut être confirmé que pour une commande livrée.',
+            ]);
+        }
+
+        if ($order->payment_status === 'paid') {
+            return back()->withErrors([
+                'status' => 'Cette commande est déjà marquée comme payée.',
+            ]);
+        }
+
+        $order->update([
+            'payment_status' => 'paid',
+            'payment_method' => 'cash',
+            'paid_at'        => now(),
+        ]);
+
+        $order->load('buyer.user');
+
+        Notification::create([
+            'user_id'    => $order->buyer->user->id,
+            'type'       => 'order',
+            'title'      => 'Paiement confirmé',
+            'body'       => "Votre paiement en espèces pour la commande {$order->order_number} a été confirmé par le vendeur.",
+            'action_url' => "/buyer/orders/{$order->id}",
+        ]);
+
+        return back()->with('success', 'Le paiement en espèces a été confirmé avec succès.');
+    }
 }

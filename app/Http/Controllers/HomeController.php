@@ -7,7 +7,7 @@ use Inertia\Inertia;
 use App\Models\Category;
 use App\Models\HomepagePromotion;
 use App\Models\Product;
-use App\Services\DemoProductService;
+
 use App\Services\ProductPromotionService;
 
 class HomeController extends Controller
@@ -34,16 +34,8 @@ class HomeController extends Controller
             ->get()
             ->each(fn (Product $product) => $product->setAttribute(
                 'image_url',
-                DemoProductService::productImageUrl($product),
+                $this->productImageUrl($product),
             ));
-
-        if ($heroProducts->isEmpty()) {
-            $heroProducts = collect(DemoProductService::heroProducts(2));
-        } elseif ($heroProducts->count() < 2) {
-            $heroProducts = $heroProducts->concat(
-                DemoProductService::heroProducts(2 - $heroProducts->count()),
-            );
-        }
 
         // 4 carrousels × 10 produits (mise en avant par priorité sous-catégorie)
         $productSliders = $promotionService->homepageSliders();
@@ -66,15 +58,6 @@ class HomeController extends Controller
                         ->with(['images', 'category'])
                         ->get()
                         ->map(function ($product) {
-                            $image = $product->images?->where('is_primary', true)->first()
-                                ?? $product->images?->first();
-
-                            $productImage = $image ? (
-                                str_starts_with($image->image_path, 'images/')
-                                    ? '/' . $image->image_path
-                                    : '/storage/' . $image->image_path
-                            ) : null;
-
                             return [
                                 'id'            => $product->id,
                                 'name'          => $product->name,
@@ -82,7 +65,7 @@ class HomeController extends Controller
                                 'price'         => $product->sale_price ?? $product->price,
                                 'currency'      => $product->currency ?? 'CDF',
                                 'category_name' => $product->category?->name,
-                                'image_url'     => $productImage,
+                                'image_url'     => $this->productImageUrl($product),
                             ];
                         })
                     : collect([]);
@@ -91,13 +74,7 @@ class HomeController extends Controller
 
                 $productImage = ($selectedProducts->first() ?: [])['image_url'] ?? null;
                 if (!$productImage && $promo->product) {
-                    $image = $promo->product->images?->where('is_primary', true)->first()
-                        ?? $promo->product->images?->first();
-                    $productImage = $image ? (
-                        str_starts_with($image->image_path, 'images/')
-                            ? '/' . $image->image_path
-                            : '/storage/' . $image->image_path
-                    ) : null;
+                    $productImage = $this->productImageUrl($promo->product);
                 }
 
                 $customImage = $promo->custom_image_url
@@ -145,8 +122,6 @@ class HomeController extends Controller
             $fallback = (clone $baseProductQuery)->latest()->take(4)->get();
             $featuredPromotions = $fallback->map(function ($product) use ($fallback) {
                 $seller = $product->seller;
-                $image  = $product->images?->where('is_primary', true)->first()
-                       ?? $product->images?->first();
                 return [
                     'id'               => null,
                     'promotion_order'  => $fallback->search($product) + 1,
@@ -155,11 +130,7 @@ class HomeController extends Controller
                     'product_price'    => $product->sale_price ?? $product->price,
                     'product_currency' => $product->currency ?? 'CDF',
                     'product_slug'     => $product->slug,
-                    'product_image'    => $image ? (
-                        str_starts_with($image->image_path, 'images/')
-                            ? '/' . $image->image_path
-                            : '/storage/' . $image->image_path
-                    ) : null,
+                    'product_image'    => $this->productImageUrl($product),
                     'category_name'    => $product->category?->name,
                     'seller_id'        => $seller?->id,
                     'seller_name'      => $seller?->business_name,
@@ -190,5 +161,21 @@ class HomeController extends Controller
         }
 
         return '/storage/' . ltrim($path, '/');
+    }
+
+    private function productImageUrl(?Product $product): ?string
+    {
+        if (!$product) {
+            return null;
+        }
+
+        $image = $product->images?->where('is_primary', true)->first()
+              ?? $product->images?->first();
+
+        if (!$image?->image_path) {
+            return null;
+        }
+
+        return $this->normalizeHeroImageUrl($image->image_path);
     }
 }

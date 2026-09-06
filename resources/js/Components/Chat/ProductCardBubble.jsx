@@ -10,7 +10,7 @@ export default function ProductCardBubble({ product, isOwnMessage }) {
             {/* Image */}
             <div className="h-40 w-full relative bg-white overflow-hidden">
                 <img 
-                    src={product.image_url || '/images/demo-products/default.jpg'} 
+                    src={product.image_url || '/images/categories/default.jpg'} 
                     alt={product.name}
                     className="w-full h-full object-contain"
                     onError={(e) => { e.target.src = '/images/placeholder.svg'; }}

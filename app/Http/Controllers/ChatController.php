@@ -9,7 +9,7 @@ use App\Models\MessageReaction;
 use App\Models\PinnedMessage;
 use App\Models\Product;
 use App\Models\StarredMessage;
-use App\Services\DemoSimulationService;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -115,10 +115,6 @@ class ChatController extends Controller
                     ]);
 
                     $conversation->update(['last_message_at' => now()]);
-
-                    if ($buyer->isBuyer() && DemoSimulationService::isDemoSeller($conversation->seller)) {
-                        DemoSimulationService::scheduleBuyerMessageProgression($productMessage, $conversation);
-                    }
                 }
             }
         }
@@ -159,10 +155,6 @@ class ChatController extends Controller
         $user = auth()->user();
         $conversations = $this->conversationsForUser($user);
         $conversation->load(['buyer.buyer', 'seller.user']);
-
-        if ($user->isBuyer() && DemoSimulationService::isDemoSeller($conversation->seller)) {
-            DemoSimulationService::applyOnlineStatus($conversation->seller->user, $conversation->seller);
-        }
 
         $otherUser = $user->isBuyer()
             ? array_merge($conversation->seller->user->toArray(), [
@@ -271,10 +263,6 @@ class ChatController extends Controller
         $conversation->update(['last_message_at' => now()]);
 
         ConversationUserState::forUser($conversation, $sender->id)->update(['deleted_at' => null]);
-
-        if ($sender->isBuyer() && DemoSimulationService::isDemoSeller($conversation->seller)) {
-            DemoSimulationService::scheduleBuyerMessageProgression($message, $conversation);
-        }
 
         return response()->json([
             'message' => $this->formatMessage($message->load(['sender', 'receiver', 'replyTo.sender', 'reactions.user', 'stars']), $sender->id),
@@ -537,13 +525,7 @@ class ChatController extends Controller
             })
             ->orderByDesc('last_message_at');
 
-        return $query->get()->map(function (Conversation $conv) use ($user) {
-            if ($user->isBuyer() && DemoSimulationService::isDemoSeller($conv->seller)) {
-                DemoSimulationService::applyOnlineStatus($conv->seller->user, $conv->seller);
-            }
-
-            return $conv;
-        });
+        return $query->get();
     }
 
     private function loadConversationMessages(Conversation $conversation, int $userId)

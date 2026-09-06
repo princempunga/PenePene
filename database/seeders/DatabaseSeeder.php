@@ -4,13 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Buyer;
-use App\Models\Seller;
 use App\Models\SubscriptionPlan;
 use App\Models\Category;
 use App\Models\Subcategory;
 use App\Models\PlatformSetting;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -125,72 +122,11 @@ class DatabaseSeeder extends Seeder
         // ── Appel du seeder Users / Admin / Demo accounts ─────────────────────
         $this->call(UserSeeder::class);
 
-        // ── Demo Buyer ─────────────────────────────────────────────────────────
-        $buyerUser = User::firstOrCreate(
-            ['email' => 'buyer@penepene.co.tz'],
-            [
-                'name'              => 'Demo Buyer',
-                'email'             => 'buyer@penepene.co.tz',
-                'phone'             => '+255700000003',
-                'password'          => Hash::make('password'),
-                'role'              => 'buyer',
-                'email_verified_at' => now(),
-            ]
-        );
-        Buyer::firstOrCreate(['user_id' => $buyerUser->id], [
-            'user_id' => $buyerUser->id,
-            'city'    => 'Dar es Salaam',
-            'country' => 'Tanzania',
-        ]);
-
-        // ── Demo Seller ────────────────────────────────────────────────────────
-        $sellerUser = User::firstOrCreate(
-            ['email' => 'seller@penepene.co.tz'],
-            [
-                'name'              => 'Demo Seller',
-                'email'             => 'seller@penepene.co.tz',
-                'phone'             => '+255700000004',
-                'password'          => Hash::make('password'),
-                'role'              => 'seller',
-                'email_verified_at' => now(),
-            ]
-        );
-        
-        // Récupérer le Super Admin créé par SuperAdminSeeder
-        $superAdmin = User::where('email', 'josephtshim6@gmail.com')->first() 
-                      ?? User::where('role', 'super_admin')->first();
-        
-        Seller::firstOrCreate(['user_id' => $sellerUser->id], [
-            'user_id'       => $sellerUser->id,
-            'business_name' => 'Demo Store',
-            'slug'          => 'demo-store',
-            'description'   => 'A demo seller store for testing PenePene.',
-            'city'          => 'Dar es Salaam',
-            'country'       => 'TZ',
-            'status'        => 'verified',
-            'verified_at'   => now(),
-            'verified_by'   => $superAdmin?->id,
-        ]);
-
         $this->command->info('✅ PenePene seeding complete!');
         $this->command->info('');
         $this->command->info('🔐 Comptes de connexion :');
         $this->command->info('  Super Admin: josephtshim6@gmail.com  / Josephes6@');
         $this->command->info('  Admin:       admin@penepene.com       / password');
-        $this->command->info('  Buyer:       buyer@penepene.co.tz     / password');
-        $this->command->info('  Seller:      seller@penepene.co.tz    / password');
-        $this->command->info('');
-
-        $this->call(DemoUsersSeeder::class);
-        $this->call(GovernmentUserSeeder::class);
-        $this->call(HomepagePromotionSeeder::class);
-
-        $this->command->info('');
-        $this->command->info('🏛️  Comptes gouvernement :');
-        $this->command->info('  Commune:  commune@rdc.gov.cd   / password');
-        $this->command->info('  Ville:    ville@rdc.gov.cd     / password');
-        $this->command->info('  Province: province@rdc.gov.cd  / password');
-        $this->command->info('  National: national@rdc.gov.cd  / password');
         $this->command->info('');
     }
 }

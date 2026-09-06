@@ -9,7 +9,7 @@ import SectionReveal from '@/Components/UI/SectionReveal';
 import MaskReveal from '@/Components/UI/MaskReveal';
 import CategoryIcon from '@/Components/Category/CategoryIcon';
 import { getSubcategoryIcon } from '@/lib/categoryIcons';
-import { SlidersHorizontal, Sparkles } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { Link, router } from '@inertiajs/react';
 import useTranslation from '@/hooks/useTranslation';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -19,7 +19,6 @@ import { DURATION, EASE } from '@/lib/premiumMotion';
 export default function Index({
     products,
     filters = {},
-    usingDemo = false,
     category = null,
     subcategory = null,
     subcategoryMeta = null,
@@ -61,7 +60,7 @@ export default function Index({
                     src={bannerImage}
                     alt={pageTitle}
                     className="absolute inset-0 w-full h-full object-cover opacity-40 hero-zoom-bg"
-                    onError={(e) => { e.target.src = '/images/demo-products/default.jpg'; }}
+                    onError={(e) => { e.target.src = '/images/categories/default.jpg'; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-gray-900/50" />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
@@ -129,69 +128,61 @@ export default function Index({
                             {t('products_page.products_found', { count: products?.total ?? productList.length })}
                         </motion.p>
                     )}
-
-                    {usingDemo && (
-                        <AnimateIn delay={0.32}>
-                            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-400/90 text-amber-950 px-4 py-1.5 text-sm font-semibold">
-                                <Sparkles size={16} />
-                                {t('products_page.demo_preview')}
-                            </div>
-                        </AnimateIn>
-                    )}
                 </div>
             </section>
 
             <SectionReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-                <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-                    <AnimateIn variant={slideInLeft} className="shrink-0">
-                        <ProductFilters filters={filters} brandOptions={brandOptions} />
-                    </AnimateIn>
+                {/* Horizontal Filter Navigation Bar */}
+                <AnimateIn variant={slideInLeft}>
+                    <ProductFilters filters={filters} brandOptions={brandOptions} />
+                </AnimateIn>
 
-                    <div className="flex-1 min-w-0">
-                        <AnimateIn delay={0.08}>
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="text-gray-600 text-sm">
-                                    {t('products_page.showing_products', {
-                                        from: products?.from || 0,
-                                        to: products?.to || 0,
-                                        total: products?.total ?? productList.length,
-                                    })}
-                                </div>
+                {/* Sort & Counter Bar */}
+                <AnimateIn delay={0.08}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 bg-white p-4 rounded-2xl border border-gray-200/80 shadow-sm">
+                        <div className="text-gray-600 text-sm font-medium">
+                            {t('products_page.showing_products', {
+                                from: products?.from || 0,
+                                to: products?.to || 0,
+                                total: products?.total ?? productList.length,
+                            })}
+                        </div>
 
-                                <div className="flex items-center gap-3">
-                                    <label className="text-gray-600 text-sm flex items-center gap-2 whitespace-nowrap">
-                                        <SlidersHorizontal size={16} />
-                                        {t('products_page.sort_label')}
-                                    </label>
-                                    <select
-                                        value={filters.sort || 'newest'}
-                                        onChange={handleSortChange}
-                                        className="border border-gray-300 rounded-lg text-sm py-2 pl-3 pr-8 focus:ring-primary-500 focus:border-primary-500 min-w-[160px]"
-                                    >
-                                        <option value="newest">{t('products_page.sort_newest')}</option>
-                                        <option value="price_asc">{t('products_page.sort_price_asc')}</option>
-                                        <option value="price_desc">{t('products_page.sort_price_desc')}</option>
-                                        <option value="popular">{t('products_page.sort_popular')}</option>
-                                        <option value="rating">{t('products_page.sort_rating')}</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div className="flex items-center gap-3">
+                            <label className="text-gray-600 text-sm flex items-center gap-2 whitespace-nowrap font-medium">
+                                <SlidersHorizontal size={16} className="text-primary-600" />
+                                {t('products_page.sort_label')}
+                            </label>
+                            <select
+                                value={filters.sort || 'newest'}
+                                onChange={handleSortChange}
+                                className="bg-gray-50 border border-gray-200 rounded-xl text-sm py-2 pl-3 pr-8 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-medium cursor-pointer"
+                            >
+                                <option value="newest">{t('products_page.sort_newest')}</option>
+                                <option value="price_asc">{t('products_page.sort_price_asc')}</option>
+                                <option value="price_desc">{t('products_page.sort_price_desc')}</option>
+                                <option value="popular">{t('products_page.sort_popular')}</option>
+                                <option value="rating">{t('products_page.sort_rating')}</option>
+                            </select>
+                        </div>
+                    </div>
+                </AnimateIn>
+
+                {/* Product Grid */}
+                {productList.length > 0 ? (
+                    <>
+                        <StaggerChildren className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6" stagger={0.05}>
+                            {productList.map((product) => (
+                                <StaggerItem key={product.id}>
+                                    <ProductCard product={product} />
+                                </StaggerItem>
+                            ))}
+                        </StaggerChildren>
+                        <AnimateIn delay={0.1}>
+                            <Pagination links={products?.links} />
                         </AnimateIn>
-
-                        {productList.length > 0 ? (
-                            <>
-                                <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" stagger={0.05}>
-                                    {productList.map((product) => (
-                                        <StaggerItem key={product.id}>
-                                            <ProductCard product={product} />
-                                        </StaggerItem>
-                                    ))}
-                                </StaggerChildren>
-                                <AnimateIn delay={0.1}>
-                                    <Pagination links={products?.links} />
-                                </AnimateIn>
-                            </>
-                        ) : (
+                    </>
+                ) : (
                             <AnimateIn>
                                 <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">{t('products_page.no_products')}</h3>
@@ -199,9 +190,8 @@ export default function Index({
                                 </div>
                             </AnimateIn>
                         )}
-                    </div>
-                </div>
             </SectionReveal>
         </AppLayout>
     );
 }
+

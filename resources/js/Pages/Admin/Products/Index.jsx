@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Package, Check, X, ShieldAlert, Eye, Search, Calendar, ArrowUpDown, Square, CheckSquare, Ban, ShieldCheck } from 'lucide-react';
+import { Package, Check, X, ShieldAlert, Eye, Search, Calendar, ArrowUpDown, Square, CheckSquare, Ban, ShieldCheck, Power } from 'lucide-react';
 
 export default function ProductsIndex({ products, filters }) {
     const { flash } = usePage().props;
-    const { patch, get } = useForm();
+    const { get } = useForm();
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkProcessing, setBulkProcessing] = useState(false);
 
@@ -16,7 +16,7 @@ export default function ProductsIndex({ products, filters }) {
 
         if (confirm(`Are you sure you want to ${msg}?`)) {
             const payload = reason ? { reason } : {};
-            patch(`/admin/products/${productId}/${action}`, { data: payload });
+            router.patch(`/admin/products/${productId}/${action}`, payload);
         }
     };
 
@@ -224,31 +224,47 @@ export default function ProductsIndex({ products, filters }) {
                                     >
                                         <Eye size={18} />
                                     </Link>
-                                    {product.status === 'pending' && (
+                                    {product.status !== 'active' && product.status !== 'inactive' ? (
                                         <>
-                                            <button
-                                                onClick={() => updateStatus(product.id, 'approve')}
-                                                className="p-2 text-green-600 hover:bg-green-50 rounded transition"
-                                            >
-                                                <Check size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    const reason = prompt('Reason for rejection?');
-                                                    if (reason) updateStatus(product.id, 'reject', reason);
-                                                }}
-                                                className="p-2 text-red-600 hover:bg-red-50 rounded transition"
-                                            >
-                                                <X size={18} />
-                                            </button>
+                                            {product.status === 'pending' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => updateStatus(product.id, 'approve')}
+                                                        className="p-2 text-green-600 hover:bg-green-50 rounded transition"
+                                                    >
+                                                        <Check size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const reason = prompt('Reason for rejection?');
+                                                            if (reason) updateStatus(product.id, 'reject', reason);
+                                                        }}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded transition"
+                                                    >
+                                                        <X size={18} />
+                                                    </button>
+                                                </>
+                                            )}
+                                            {product.status === 'active' && (
+                                                <button
+                                                    onClick={() => updateStatus(product.id, 'ban')}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded transition"
+                                                >
+                                                    <ShieldAlert size={18} />
+                                                </button>
+                                            )}
                                         </>
-                                    )}
-                                    {product.status === 'active' && (
+                                    ) : (
                                         <button
-                                            onClick={() => updateStatus(product.id, 'ban')}
-                                            className="p-2 text-red-600 hover:bg-red-50 rounded transition"
+                                            onClick={() => router.patch(`/admin/products/${product.id}/${product.status === 'active' ? 'deactivate' : 'activate'}`)}
+                                            className={`p-2 rounded transition ${
+                                                product.status === 'active'
+                                                    ? 'text-gray-600 hover:bg-gray-100'
+                                                    : 'text-green-600 hover:bg-green-50'
+                                            }`}
+                                            title={product.status === 'active' ? 'Désactiver' : 'Activer'}
                                         >
-                                            <ShieldAlert size={18} />
+                                            <Power size={18} />
                                         </button>
                                     )}
                                 </div>
@@ -327,35 +343,50 @@ export default function ProductsIndex({ products, filters }) {
                                                 <Eye size={18} />
                                             </Link>
 
-                                            {product.status === 'pending' && (
+                                            {product.status !== 'active' && product.status !== 'inactive' ? (
                                                 <>
-                                                    <button
-                                                        onClick={() => updateStatus(product.id, 'approve')}
-                                                        className="p-1.5 text-green-600 hover:bg-green-50 rounded transition"
-                                                        title="Approve"
-                                                    >
-                                                        <Check size={18} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            const reason = prompt('Reason for rejection?');
-                                                            if (reason) updateStatus(product.id, 'reject', reason);
-                                                        }}
-                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
-                                                        title="Reject"
-                                                    >
-                                                        <X size={18} />
-                                                    </button>
+                                                    {product.status === 'pending' && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => updateStatus(product.id, 'approve')}
+                                                                className="p-1.5 text-green-600 hover:bg-green-50 rounded transition"
+                                                                title="Approve"
+                                                            >
+                                                                <Check size={18} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const reason = prompt('Reason for rejection?');
+                                                                    if (reason) updateStatus(product.id, 'reject', reason);
+                                                                }}
+                                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
+                                                                title="Reject"
+                                                            >
+                                                                <X size={18} />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {product.status === 'active' && (
+                                                        <button
+                                                            onClick={() => updateStatus(product.id, 'ban')}
+                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
+                                                            title="Ban Product"
+                                                        >
+                                                            <ShieldAlert size={18} />
+                                                        </button>
+                                                    )}
                                                 </>
-                                            )}
-
-                                            {product.status === 'active' && (
+                                            ) : (
                                                 <button
-                                                    onClick={() => updateStatus(product.id, 'ban')}
-                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
-                                                    title="Ban Product"
+                                                    onClick={() => router.patch(`/admin/products/${product.id}/${product.status === 'active' ? 'deactivate' : 'activate'}`)}
+                                                    className={`p-1.5 rounded transition ${
+                                                        product.status === 'active'
+                                                            ? 'text-gray-600 hover:bg-gray-100'
+                                                            : 'text-green-600 hover:bg-green-50'
+                                                    }`}
+                                                    title={product.status === 'active' ? 'Désactiver' : 'Activer'}
                                                 >
-                                                    <ShieldAlert size={18} />
+                                                    <Power size={18} />
                                                 </button>
                                             )}
                                         </div>

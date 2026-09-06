@@ -136,13 +136,26 @@ class SellerController extends Controller
                 return back()->with('success', 'Seller rejected.');
             case 'suspend':
                 $seller->update(['status' => 'suspended']);
-                // Cascade: suspend all seller's active products
                 $seller->products()->where('status', 'active')->update(['status' => 'inactive']);
                 return back()->with('success', 'Seller suspended and products hidden.');
             case 'activate':
                 $seller->update(['status' => 'verified']);
                 return back()->with('success', 'Seller activated.');
         }
+    }
+
+    public function toggleStatus(Request $request, Seller $seller)
+    {
+        $newStatus = $seller->status === 'suspended' ? 'verified' : 'suspended';
+
+        $seller->update(['status' => $newStatus]);
+
+        if ($newStatus === 'suspended') {
+            $seller->products()->where('status', 'active')->update(['status' => 'inactive']);
+        }
+
+        $label = $newStatus === 'suspended' ? 'suspended' : 'activated';
+        return back()->with('success', "Seller {$label} successfully.");
     }
 
     /**

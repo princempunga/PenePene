@@ -424,6 +424,30 @@ export default function OrderShow({ order }) {
                                         </div>
                                     )}
                                 </div>
+
+                                {order.status === 'delivered' && order.payment_status !== 'paid' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (confirm('Confirmer la réception du paiement en espèces (cash) pour cette commande ?')) {
+                                                setProcessing(true);
+                                                router.patch(
+                                                    `/seller/orders/${order.id}/payment`,
+                                                    {},
+                                                    {
+                                                        preserveScroll: true,
+                                                        onFinish: () => setProcessing(false),
+                                                    }
+                                                );
+                                            }
+                                        }}
+                                        disabled={processing}
+                                        className="mt-3 w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                                    >
+                                        <Check size={16} />
+                                        {processing ? 'Confirmation…' : 'Marquer comme payé (Cash)'}
+                                    </button>
+                                )}
                             </div>
 
                             {order.buyer?.user?.name && order.conversation_id && (

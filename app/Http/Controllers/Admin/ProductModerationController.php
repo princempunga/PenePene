@@ -177,4 +177,32 @@ class ProductModerationController extends Controller
 
         return back()->with('success', "{$count} product(s) {$label} successfully.");
     }
+
+    public function activate(Request $request, Product $product)
+    {
+        $product->update(['status' => 'active']);
+
+        Notification::create([
+            'user_id' => $product->seller->user_id,
+            'title'   => 'Product Activated',
+            'body'    => "Your product \"{$product->name}\" has been activated by an administrator and is now visible on the marketplace.",
+            'type'    => 'system',
+        ]);
+
+        return back()->with('success', 'Product activated successfully.');
+    }
+
+    public function deactivate(Request $request, Product $product)
+    {
+        $product->update(['status' => 'inactive']);
+
+        Notification::create([
+            'user_id' => $product->seller->user_id,
+            'title'   => 'Product Deactivated',
+            'body'    => "Your product \"{$product->name}\" has been deactivated by an administrator and is no longer visible on the marketplace.",
+            'type'    => 'system',
+        ]);
+
+        return back()->with('success', 'Product deactivated successfully.');
+    }
 }

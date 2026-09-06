@@ -10,8 +10,7 @@ use App\Models\Category;
 use App\Models\Seller;
 use App\Support\ProductListing;
 use App\Support\CatalogTranslations;
-use App\Services\DemoProductService;
-use App\Services\DemoSimulationService;
+
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 
@@ -52,15 +51,6 @@ class ProductController extends Controller
 
             if ($childCategory) {
                 $query->where('category_id', $childCategory->id);
-            } else {
-                $subcategory = DemoProductService::resolveSubcategory(
-                    $request->subcategory,
-                    $request->category
-                );
-
-                if ($subcategory) {
-                    $query->where('subcategory_id', $subcategory->id);
-                }
             }
         }
 
@@ -116,35 +106,18 @@ class ProductController extends Controller
                 break;
         }
 
-        $listing = ProductListing::paginateOrDemo(
+        $products = ProductListing::paginateOrDemo(
             $query,
             $category,
             $subcategory,
             $request->subcategory
         );
 
-        if ($listing['using_demo']) {
-            $listing['products'] = CatalogTranslations::localizePaginator($listing['products']);
-        }
-
         if ($category) {
             $category->name = CatalogTranslations::categoryName($category->slug, $category->name);
         }
 
-        $subcategoryMeta = ($subcategory || $request->filled('subcategory'))
-            ? DemoProductService::subcategoryMeta($subcategory, $request->subcategory, $category?->slug ?? 'electronics')
-            : null;
-
-        if ($subcategoryMeta) {
-            $subcategoryMeta = CatalogTranslations::localizeSubcategoryMeta(
-                $subcategoryMeta,
-                $category?->slug ?? 'electronics'
-            );
-        }
-
-        $brands = $category?->slug === 'electronics'
-            ? collect(DemoProductService::popularBrands())->pluck('name')->values()->all()
-            : [];
+        $brands = [];
 
         $pageMeta = null;
         if ($request->get('filter') === 'sale') {
@@ -156,15 +129,13 @@ class ProductController extends Controller
         }
 
         return Inertia::render('Products/Index', [
-            'products'        => $listing['products'],
-            'usingDemo'       => $listing['using_demo'],
+            'products'        => $products,
             'filters'         => $request->only([
                 'category', 'subcategory', 'sort', 'min_price', 'max_price',
                 'city', 'brand', 'condition', 'verified_seller', 'filter',
             ]),
             'category'        => $category,
             'subcategory'     => $subcategory,
-            'subcategoryMeta' => $subcategoryMeta,
             'pageMeta'        => $pageMeta,
             'brandOptions'    => $brands,
         ]);
@@ -172,29 +143,6 @@ class ProductController extends Controller
 
     public function show(string $slug)
     {
-        if (str_starts_with($slug, 'demo-')) {
-            $demo = DemoProductService::findBySlug($slug);
-
-            if (! $demo) {
-                abort(404);
-            }
-
-            $dbProduct = DemoProductService::ensureDatabaseProduct($demo);
-            $productData = DemoProductService::prepareForShow($demo);
-            $productData = $this->attachSellerForChat($productData, $dbProduct->seller_id);
-            $productData = CatalogTranslations::localizeProduct($productData);
-            $related = CatalogTranslations::localizeProducts(DemoProductService::relatedForDemo($demo));
-
-            return Inertia::render('Products/Show', [
-                'product'           => $productData,
-                'relatedProducts'   => $related,
-                'reviews'           => [],
-                'usingDemo'         => true,
-                'favoriteProductId' => $dbProduct->id,
-                'isFavorited'       => $this->isFavorited($dbProduct->id),
-            ]);
-        }
-
         $product = Product::where('slug', $slug)->firstOrFail();
 
         if ($product->status !== 'active') {
@@ -230,43 +178,13 @@ class ProductController extends Controller
             ['user' => $product->seller->user?->only(['id', 'name', 'avatar', 'is_online', 'last_seen_at'])]
         );
 
-        if ($product->seller->user && DemoSimulationService::isDemoSeller($product->seller)) {
-            DemoSimulationService::applyOnlineStatus($product->seller->user, $product->seller);
-            $productArray['seller']['user'] = $product->seller->user->only(['id', 'name', 'avatar', 'is_online', 'last_seen_at', 'last_seen_text']);
-        }
-
         return Inertia::render('Products/Show', [
             'product'           => $productArray,
             'relatedProducts'   => $relatedProducts,
             'reviews'           => $reviews,
-            'usingDemo'         => false,
             'favoriteProductId' => $product->id,
             'isFavorited'       => $this->isFavorited($product->id),
         ]);
-    }
-
-    private function attachSellerForChat(array $productData, int $sellerId): array
-    {
-        $seller = Seller::with('user')->find($sellerId);
-
-        if ($seller) {
-            if ($seller->user && DemoSimulationService::isDemoSeller($seller)) {
-                DemoSimulationService::applyOnlineStatus($seller->user, $seller);
-            }
-
-            $productData['seller'] = array_merge($productData['seller'] ?? [], [
-                'id'             => $seller->id,
-                'slug'           => $seller->slug ?? ($productData['seller']['slug'] ?? 'demo-seller'),
-                'business_name'  => $seller->business_name,
-                'phone'          => $seller->phone ?? ($productData['seller']['phone'] ?? '+243812345678'),
-                'logo'           => $seller->logo,
-                'average_rating' => $seller->average_rating ?? ($productData['seller']['average_rating'] ?? 4.7),
-                'city'           => $seller->city ?? ($productData['seller']['city'] ?? 'Kinshasa'),
-                'user'           => $seller->user?->only(['id', 'name', 'avatar', 'is_online', 'last_seen_at', 'last_seen_text']),
-            ]);
-        }
-
-        return $productData;
     }
 
     private function isFavorited(int $productId): bool

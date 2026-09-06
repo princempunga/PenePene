@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Services\DemoProductService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 use Illuminate\Support\Str;
@@ -29,20 +28,6 @@ class CatalogTranslations
         return self::resolve("subcategories.{$shortSlug}.description", $fallback ?? '');
     }
 
-    public static function demoProductName(string $slug, ?string $fallback = null): string
-    {
-        $key = self::normalizeDemoSlug($slug);
-
-        return self::resolve("demo_products.{$key}.name", $fallback ?? $slug);
-    }
-
-    public static function demoProductDescription(string $slug, ?string $fallback = null): string
-    {
-        $key = self::normalizeDemoSlug($slug);
-
-        return self::resolve("demo_products.{$key}.description", $fallback ?? '');
-    }
-
     public static function localizeCategory(object|array $category): array
     {
         $data = is_array($category) ? $category : $category->toArray();
@@ -58,21 +43,6 @@ class CatalogTranslations
 
     public static function localizeProduct(array $product): array
     {
-        $slug = $product['slug'] ?? '';
-        $isDemo = ! empty($product['is_demo']) || str_starts_with($slug, 'demo-');
-
-        if ($isDemo && $slug !== '') {
-            $demoKey = self::normalizeDemoSlug($slug);
-            $product['name'] = self::demoProductName($demoKey, $product['name'] ?? $slug);
-
-            $description = $product['description'] ?? null;
-            $translatedDescription = self::demoProductDescription($demoKey, $description);
-
-            if ($translatedDescription !== '') {
-                $product['description'] = $translatedDescription;
-            }
-        }
-
         if (! empty($product['category']['slug'])) {
             $product['category']['name'] = self::categoryName(
                 $product['category']['slug'],
@@ -91,7 +61,7 @@ class CatalogTranslations
 
     public static function localizeSubcategoryCard(array $card, string $categorySlug): array
     {
-        $shortSlug = $card['short_slug'] ?? DemoProductService::normalizeSubcategorySlug($card['slug'] ?? '', $categorySlug);
+        $shortSlug = $card['short_slug'] ?? Str::slug($card['slug'] ?? '');
 
         if ($shortSlug) {
             $card['name'] = self::subcategoryName($shortSlug, $card['name'] ?? $shortSlug);
@@ -103,7 +73,7 @@ class CatalogTranslations
 
     public static function localizeSubcategoryMeta(array $meta, string $categorySlug): array
     {
-        $shortSlug = DemoProductService::normalizeSubcategorySlug($meta['slug'] ?? '', $categorySlug);
+        $shortSlug = Str::slug($meta['slug'] ?? '');
 
         if ($shortSlug) {
             $meta['name'] = self::subcategoryName($shortSlug, $meta['name'] ?? $shortSlug);
@@ -111,13 +81,6 @@ class CatalogTranslations
         }
 
         return $meta;
-    }
-
-    private static function normalizeDemoSlug(string $slug): string
-    {
-        $slug = Str::slug($slug);
-
-        return str_starts_with($slug, 'demo-') ? substr($slug, 5) : $slug;
     }
 
     /** @param  LengthAwarePaginator  $paginator */

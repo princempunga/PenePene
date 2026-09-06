@@ -97,8 +97,6 @@ export default function DashboardShell({
     viewSiteKey,
     signOutKey,
     badges = {},
-    demoHref = null,
-    demoLabelKey = null,
     brandVariant = 'default',
 }) {
     const { t } = useTranslation();
@@ -242,30 +240,6 @@ export default function DashboardShell({
                         </div>
                     </div>
                 ))}
-
-                {demoHref && demoLabelKey && (
-                    <div className="pt-1">
-                        <p className={`px-2 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] ${
-                            isDarkSidebar ? 'text-[#FFB300]/55' : 'text-gray-400'
-                        }`}>
-                            {t('layouts.demo.section')}
-                        </p>
-                        <Link
-                            href={demoHref}
-                            onClick={closeSidebar}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 ${
-                                currentPath.startsWith(demoHref)
-                                    ? navStyles(variant, true)
-                                    : navStyles(variant, false)
-                            }`}
-                        >
-                            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black ${
-                                isDarkSidebar ? 'bg-violet-400/15 text-violet-300' : 'bg-violet-50 text-violet-600'
-                            }`}>β</span>
-                            <span className="flex-1">{t(demoLabelKey)}</span>
-                        </Link>
-                    </div>
-                )}
             </nav>
 
             {/* Déconnexion */}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { ArrowLeft, Package, MapPin, Tag, CheckCircle, XCircle, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, Tag, CheckCircle, XCircle, ShieldAlert, Power } from 'lucide-react';
 
 export default function ProductShow({ product }) {
     const { flash } = usePage().props;
@@ -109,6 +109,19 @@ export default function ProductShow({ product }) {
                                     <XCircle size={18} /> Reject Product
                                 </button>
                             </>
+                        )}
+
+                        {(product.status === 'active' || product.status === 'inactive') && (
+                            <button
+                                onClick={() => router.patch(`/admin/products/${product.id}/${product.status === 'active' ? 'deactivate' : 'activate'}`)}
+                                className={`w-full flex items-center justify-center gap-2 font-bold py-3 px-4 rounded-xl shadow-sm transition-colors ${
+                                    product.status === 'active'
+                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        : 'bg-green-600 text-white hover:bg-green-700'
+                                }`}
+                            >
+                                <Power size={18} /> {product.status === 'active' ? 'Désactiver' : 'Activer'}
+                            </button>
                         )}
 
                         {product.status === 'active' && (

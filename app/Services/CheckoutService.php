@@ -86,18 +86,7 @@ class CheckoutService
 
         foreach ($cart as $cartKey => $item) {
             $quantity = max(1, (int) ($item['quantity'] ?? 1));
-
-            if ($this->isDemoCartKey($cartKey)) {
-                $demo = DemoProductService::findBySlug($cartKey);
-
-                if (! $demo) {
-                    continue;
-                }
-
-                $product = DemoProductService::ensureDatabaseProduct($demo);
-            } else {
-                $product = Product::with('seller')->active()->find($cartKey);
-            }
+            $product = Product::with('seller')->active()->find($cartKey);
 
             if (! $product || ! $product->seller_id) {
                 continue;
@@ -138,8 +127,4 @@ class CheckoutService
         ]);
     }
 
-    private function isDemoCartKey(string $key): bool
-    {
-        return str_starts_with($key, 'demo-');
-    }
 }

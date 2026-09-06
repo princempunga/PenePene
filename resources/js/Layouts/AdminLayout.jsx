@@ -8,6 +8,8 @@ import {
 import useTranslation from '@/hooks/useTranslation';
 import PageTransition from '@/Components/UI/PageTransition';
 import AdminMobileBottomNav from '@/Components/Layout/AdminMobileBottomNav';
+import { CurrencyProvider } from '@/context/CurrencyContext';
+import CurrencySwitcher from '@/Components/Layout/CurrencySwitcher';
 
 const ALL_NAV_ITEMS = [
     { key: 'layouts.admin.dashboard',           href: '/admin/dashboard',       icon: LayoutDashboard, roles: ['super_admin', 'admin'] },
@@ -47,6 +49,7 @@ export default function AdminLayout({ children, title }) {
     const roleLabel = (auth?.user?.role ?? 'Admin').replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     return (
+        <CurrencyProvider>
         <div className="h-screen overflow-hidden bg-gray-50 flex w-full">
 
             {/* ── Overlay backdrop (mobile only) ── */}
@@ -185,6 +188,7 @@ export default function AdminLayout({ children, title }) {
                     <div className="flex-1 min-w-0" />
 
                     <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                        <CurrencySwitcher />
                         <Link href="/" className="hidden sm:block text-sm text-gray-500 hover:text-primary-600 transition-colors whitespace-nowrap">
                             {t('layouts.admin.view_site')}
                         </Link>
@@ -221,5 +225,6 @@ export default function AdminLayout({ children, title }) {
 
             <AdminMobileBottomNav onMenuClick={openSidebar} />
         </div>
+        </CurrencyProvider>
     );
 }

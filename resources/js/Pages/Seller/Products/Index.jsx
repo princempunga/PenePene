@@ -4,7 +4,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/formatCurrency';
 import SellerLayout from '@/Layouts/SellerLayout';
 import Pagination from '@/Components/UI/Pagination';
-import { Plus, Edit, Trash2, Eye, Package, Search, Folder, Tag, DollarSign, Layers, Check } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package, Search, Folder, Tag, DollarSign, Layers, Check, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const statusColors = {
     pending:  'bg-amber-100 text-amber-800',
@@ -311,11 +311,11 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     <td className="px-4 py-4">
                                                         <div>
                                                             <span className="font-semibold text-gray-900">
-                                                                {formatCurrency(product.sale_price || product.price)}
+                                                                 {formatCurrency(product.sale_price || product.price, { currency: product.currency || 'CDF' })}
                                                             </span>
                                                             {product.sale_price && (
                                                                 <span className="block text-xs line-through text-gray-400">
-                                                                    {formatCurrency(product.price)}
+                                                                     {formatCurrency(product.price, { currency: product.currency || 'CDF' })}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -335,6 +335,23 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                             <Link href={`/seller/products/${product.id}`} className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors" title="Voir">
                                                                 <Eye size={16} />
                                                             </Link>
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (!confirm(`Voulez-vous ${product.status === 'active' ? 'désactiver' : 'activer'} ce produit ?`)) return;
+                                                                    router.patch(`/seller/products/${product.id}/toggle`, {}, {
+                                                                        preserveState: true,
+                                                                        onSuccess: () => {},
+                                                                    });
+                                                                }}
+                                                                className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
+                                                                    product.status === 'active'
+                                                                        ? 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                                                                        : 'text-green-600 bg-green-50 hover:bg-green-100'
+                                                                }`}
+                                                                title={product.status === 'active' ? 'Désactiver' : 'Activer'}
+                                                            >
+                                                                {product.status === 'active' ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                                                            </button>
                                                             <Link href={`/seller/products/${product.id}/edit`} className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Modifier">
                                                                 <Edit size={16} />
                                                             </Link>
@@ -388,7 +405,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     </div>
                                                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                                                         <span className="truncate">{product.category?.name || 'Sans catégorie'}</span>
-                                                        <span className="font-semibold text-gray-900">{formatCurrency(product.sale_price || product.price)}</span>
+                                                         <span className="font-semibold text-gray-900">{formatCurrency(product.sale_price || product.price, { currency: product.currency || 'CDF' })}</span>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center justify-between">
@@ -471,12 +488,26 @@ export default function ProductsIndex({ products, filters = {} }) {
 
                                         <div className="mt-2.5 flex items-center justify-between gap-2">
                                             <span className="text-[10px] font-bold text-gray-900">
-                                                {formatCurrency(product.sale_price || product.price)}
+                                                 {formatCurrency(product.sale_price || product.price, { currency: product.currency || 'CDF' })}
                                             </span>
                                             <div className="flex items-center gap-1.5">
                                                 <Link href={`/seller/products/${product.id}`} className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors" title="Voir">
                                                     <Eye size={12} />
                                                 </Link>
+                                                <button
+                                                    onClick={() => {
+                                                        if (!confirm(`Voulez-vous ${product.status === 'active' ? 'désactiver' : 'activer'} ce produit ?`)) return;
+                                                        router.patch(`/seller/products/${product.id}/toggle`, {}, { preserveState: true });
+                                                    }}
+                                                    className={`inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+                                                        product.status === 'active'
+                                                            ? 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                                                            : 'text-green-600 bg-green-50 hover:bg-green-100'
+                                                    }`}
+                                                    title={product.status === 'active' ? 'Désactiver' : 'Activer'}
+                                                >
+                                                    {product.status === 'active' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
+                                                </button>
                                                 <Link href={`/seller/products/${product.id}/edit`} className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Modifier">
                                                     <Edit size={12} />
                                                 </Link>

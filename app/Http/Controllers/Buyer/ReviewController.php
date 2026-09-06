@@ -13,9 +13,10 @@ class ReviewController extends Controller
 {
     public function create(Request $request, \App\Models\Conversation $conversation)
     {
-        $buyer = $request->user()->buyer;
+        $buyer = $request->user()->buyer ?? \App\Models\Buyer::create(['user_id' => $request->user()->id]);
 
-        if ($conversation->buyer_id !== $buyer->id) {
+        // conversations.buyer_id stores the USERS table id, not buyers.id.
+        if ($conversation->buyer_id !== $request->user()->id) {
             abort(403);
         }
 
@@ -33,9 +34,10 @@ class ReviewController extends Controller
 
     public function store(Request $request, \App\Models\Conversation $conversation)
     {
-        $buyer = $request->user()->buyer;
+        $buyer = $request->user()->buyer ?? \App\Models\Buyer::create(['user_id' => $request->user()->id]);
 
-        if ($conversation->buyer_id !== $buyer->id) {
+        // conversations.buyer_id stores the USERS table id, not buyers.id.
+        if ($conversation->buyer_id !== $request->user()->id) {
             abort(403);
         }
 
@@ -87,7 +89,7 @@ class ReviewController extends Controller
             'total_reviews'  => $count,
         ]);
 
-        return redirect()->route('buyer.conversations.show', $conversation->id)
+        return redirect()->route('buyer.messages.show', $conversation->id)
             ->with('success', 'Review submitted successfully!');
     }
 

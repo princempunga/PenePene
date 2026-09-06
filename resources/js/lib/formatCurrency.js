@@ -4,8 +4,8 @@ export const DEFAULT_CURRENCY = 'CDF';
 export const DEFAULT_SYMBOL = 'FC';
 
 /**
- * Formate un montant en franc congolais (CDF / FC).
- * Exemple : 1 234 567 FC
+ * Formate un montant selon la devise donnée.
+ * Par défaut : franc congolais (CDF / FC).
  */
 export function formatCurrency(amount, options = {}) {
     const {
@@ -13,7 +13,12 @@ export function formatCurrency(amount, options = {}) {
         symbol = DEFAULT_SYMBOL,
         maximumFractionDigits = 0,
         minimumFractionDigits,
+        currency,
     } = options;
+
+    const resolvedSymbol = currency
+        ? (currency.toUpperCase() === 'USD' ? '$' : currency.toUpperCase() === 'EUR' ? '€' : currency.toUpperCase() === 'CDF' ? 'FC' : currency)
+        : symbol;
 
     const value = parseFloat(amount || 0);
     const formatOptions = { maximumFractionDigits };
@@ -29,7 +34,7 @@ export function formatCurrency(amount, options = {}) {
         formatted = value.toLocaleString('fr-FR', formatOptions);
     }
 
-    return `${formatted} ${symbol}`;
+    return `${formatted} ${resolvedSymbol}`;
 }
 
 /** Montant avec 2 décimales (retraits, soldes). */

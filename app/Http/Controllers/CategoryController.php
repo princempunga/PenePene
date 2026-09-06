@@ -7,7 +7,8 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Support\ProductListing;
 use App\Support\CatalogTranslations;
-use App\Services\DemoProductService;
+use Illuminate\Support\Str;
+
 
 class CategoryController extends Controller
 {
@@ -32,9 +33,8 @@ class CategoryController extends Controller
     {
         $category->description = CatalogTranslations::categoryDescription(
             $category->slug,
-            DemoProductService::categoryDescription($category)
+            $category->description
         );
-        $category->image = DemoProductService::categoryImage($category);
         $category->name = CatalogTranslations::categoryName($category->slug, $category->name);
 
         $category->load(['children' => fn ($q) => $q->active()->orderBy('sort_order')]);
@@ -47,11 +47,7 @@ class CategoryController extends Controller
             ->whereIn('category_id', $categoryIds)
             ->active();
 
-        $listing = ProductListing::paginateOrDemo($query, $category);
-
-        if ($listing['using_demo']) {
-            $listing['products'] = CatalogTranslations::localizePaginator($listing['products']);
-        }
+        $products = ProductListing::paginateOrDemo($query, $category);
 
         $featuredQuery = Product::with(['seller', 'images', 'category'])
             ->whereIn('category_id', $categoryIds)
@@ -60,25 +56,20 @@ class CategoryController extends Controller
             ->take(8)
             ->get();
 
-        $featuredProducts = $featuredQuery->isNotEmpty()
-            ? $featuredQuery
-            : CatalogTranslations::localizeProducts(DemoProductService::featuredForCategory($category));
-
-        $categoryImage = DemoProductService::categoryImage($category);
+        $featuredProducts = $featuredQuery;
 
         $subcategoryCards = $category->children
-            ->unique(fn ($sub) => DemoProductService::normalizeSubcategorySlug($sub->slug, $category->slug))
+            ->unique(fn ($sub) => Str::slug($sub->slug))
             ->values()
-            ->map(function ($sub) use ($category, $categoryImage) {
-                $shortSlug = DemoProductService::normalizeSubcategorySlug($sub->slug, $category->slug);
-                $meta = DemoProductService::subcategoryMeta($sub, $shortSlug, $category->slug);
+            ->map(function ($sub) use ($categoryImage) {
+                $shortSlug = Str::slug($sub->slug);
 
                 return CatalogTranslations::localizeSubcategoryCard([
                     'id'          => $sub->id,
                     'name'        => $sub->name,
                     'slug'        => $sub->slug,
-                    'description' => $meta['description'],
-                    'image'       => $sub->image ?? $meta['image'] ?? $categoryImage,
+                    'description' => $sub->description ?? '',
+                    'image'       => $sub->image ?? $categoryImage,
                     'short_slug'  => $shortSlug,
                 ], $category->slug);
             })
@@ -89,13 +80,10 @@ class CategoryController extends Controller
 
         return Inertia::render('Categories/Show', [
             'category'          => $category,
-            'products'          => $listing['products'],
-            'usingDemo'         => $listing['using_demo'],
+            'products'          => $products,
             'featuredProducts'  => $featuredProducts,
             'subcategoryCards'  => $subcategoryCards,
-            'popularBrands'     => $category->slug === 'electronics'
-                ? DemoProductService::popularBrands()
-                : [],
+            'popularBrands'     => [],
         ]);
     }
 }

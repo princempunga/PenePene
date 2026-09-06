@@ -265,7 +265,19 @@ function PromotionSlotCard({
     const isExisting = !!promo.id;
     const products = sellerProducts[promo.seller_id] || [];
     const selectedProduct = products.find((p) => String(p.id) === String(promo.product_ids?.[0] || promo.product_id));
-    const previewImage = selectedProduct?.image_url || promo.hero_image_url || null;
+    const previewImage = promo.custom_image_url || selectedProduct?.image_url || promo.hero_image_url || null;
+    const [customImageFile, setCustomImageFile] = React.useState(null);
+    const [customImagePreview, setCustomImagePreview] = React.useState(promo.custom_image_url || null);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files?.[0] || null;
+        setCustomImageFile(file);
+        if (file) {
+            setCustomImagePreview(URL.createObjectURL(file));
+        } else {
+            setCustomImagePreview(promo.custom_image_url || null);
+        }
+    };
 
     return (
         <div className={`bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col ${
@@ -297,9 +309,9 @@ function PromotionSlotCard({
             </div>
 
             <div className="p-5 flex-1 flex flex-col gap-4">
-                {previewImage && (
+                {(customImagePreview || previewImage) && (
                     <div className="w-full h-40 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
-                        <img src={previewImage} alt="Aperçu du produit" className="w-full h-full object-cover" />
+                        <img src={customImagePreview || previewImage} alt="Aperçu" className="w-full h-full object-cover" />
                     </div>
                 )}
 
@@ -331,6 +343,25 @@ function PromotionSlotCard({
                         />
                     </div>
                 )}
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Image personnalisée (optionnel)</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                    />
+                    {customImagePreview && (
+                        <button
+                            type="button"
+                            onClick={() => { setCustomImageFile(null); setCustomImagePreview(null); onUpdate(promo.promotion_order, 'custom_image_url', ''); }}
+                            className="mt-2 text-xs text-red-600 hover:text-red-700"
+                        >
+                            Supprimer l'image
+                        </button>
+                    )}
+                </div>
 
                 {promo.product_ids && promo.product_ids.length > 0 && (
                     <div className="space-y-2">
@@ -394,7 +425,7 @@ function PromotionSlotCard({
                 )}
                 <button
                     type="button"
-                    onClick={() => onSave(promo)}
+                    onClick={() => onSave(promo, customImageFile)}
                     disabled={!promo.seller_id || !promo.product_ids?.length}
                     className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -450,7 +481,7 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
         });
     };
 
-    const buildFormData = (promo) => {
+    const buildFormData = (promo, customImageFile) => {
         const formData = new FormData();
         formData.append('seller_id', promo.seller_id);
         formData.append('product_id', promo.product_ids?.[0] || promo.product_id || '');
@@ -463,12 +494,15 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
         if (promo.product_ids?.length) {
             promo.product_ids.forEach((id) => formData.append('product_ids[]', id));
         }
+        if (customImageFile) {
+            formData.append('custom_image', customImageFile);
+        }
 
         return formData;
     };
 
-    const handleSave = (promo) => {
-        const formData = buildFormData(promo);
+    const handleSave = (promo, customImageFile) => {
+        const formData = buildFormData(promo, customImageFile);
 
         if (promo.id) {
             formData.append('_method', 'PUT');

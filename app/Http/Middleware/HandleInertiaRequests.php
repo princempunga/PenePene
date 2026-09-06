@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\Notification;
-use App\Services\DemoSimulationService;
 use App\Support\Translations;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -107,7 +106,6 @@ class HandleInertiaRequests extends Middleware
                 'status'        => $request->user()->seller->status,
                 'logo'          => $request->user()->seller->logo,
             ] : null,
-            'demo_enabled' => DemoSimulationService::enabled(),
             'currency' => 'CDF',
             'active_portal' => session('active_portal'),
             'active_portal_label' => session('active_portal')

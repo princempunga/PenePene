@@ -8,7 +8,6 @@ use Inertia\Inertia;
 use App\Models\Buyer;
 use App\Models\Favorite;
 use App\Models\Product;
-use App\Services\DemoProductService;
 
 class WishlistController extends Controller
 {
@@ -84,27 +83,11 @@ class WishlistController extends Controller
     public function toggleItem(Request $request)
     {
         $request->validate([
-            'product_id' => 'nullable|integer|exists:products,id',
-            'demo_slug'  => 'nullable|string',
+            'product_id' => 'required|integer|exists:products,id',
         ]);
 
-        if (! $request->product_id && ! $request->demo_slug) {
-            return response()->json(['message' => 'Product is required.'], 422);
-        }
-
         $buyer = $this->resolveBuyer($request);
-
-        if ($request->filled('demo_slug')) {
-            $demo = DemoProductService::findBySlug($request->demo_slug);
-
-            if (! $demo) {
-                return response()->json(['message' => 'Product not found.'], 404);
-            }
-
-            $product = DemoProductService::ensureDatabaseProduct($demo);
-        } else {
-            $product = Product::findOrFail($request->product_id);
-        }
+        $product = Product::findOrFail($request->product_id);
 
         $existing = Favorite::where('buyer_id', $buyer->id)
             ->where('product_id', $product->id)

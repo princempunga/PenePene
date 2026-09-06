@@ -125,11 +125,6 @@ export default function CartIndex({ items, total }) {
                                             {item.seller_name && (
                                                 <p className="text-xs text-gray-500">{t('cart.sold_by')} {item.seller_name}</p>
                                             )}
-                                            {item.is_demo && (
-                                                <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                                                    {t('cart.preview')}
-                                                </span>
-                                            )}
                                         </div>
                                         <div className="flex items-center gap-2 mt-2">
                                             <span className="text-lg font-bold text-primary-600">

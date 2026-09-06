@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\DemoSimulationService;
 use App\Services\PortalAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\Seller;
 
 class LoginController extends Controller
 {
@@ -17,7 +17,6 @@ class LoginController extends Controller
     {
         return Inertia::render('Auth/Login', [
             'redirect' => $this->sanitizeRedirect($request->query('redirect')),
-            'demo_enabled' => config('app.debug', false),
         ]);
     }
 
@@ -42,6 +41,18 @@ class LoginController extends Controller
 
         $user = Auth::user();
         $user->update(['is_online' => true, 'last_seen_at' => now()]);
+
+        // Reactivate account on login
+        if ($user->isSeller()) {
+            $seller = $user->seller;
+            if ($seller && $seller->status === 'suspended') {
+                $seller->update(['status' => 'verified']);
+            }
+        }
+
+        if ($user->role === 'buyer' && !$user->is_active) {
+            $user->update(['is_active' => true]);
+        }
 
         // Auto-detect portal if not provided (for PenePene marketplace users)
         $portal = $validated['portal'] ?? $this->portals->detectPortalForUser($user);
@@ -97,39 +108,6 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
-    }
-
-    public function demoLogin(Request $request)
-    {
-        abort_unless(DemoSimulationService::enabled(), 404);
-
-        $portal = $request->validate([
-            'portal' => 'required|in:'.implode(',', $this->portals->groupKeys()),
-            'role'   => 'nullable|string',
-        ])['portal'];
-
-        $accounts = [
-            'citizen'   => 'buyer@penepene.co.tz',
-            'expert'    => 'expert@rdc.gov.cd',
-            'tutelage'  => 'tutelage@rdc.gov.cd',
-            'commune'   => 'commune@rdc.gov.cd',
-            'territory' => 'ville@rdc.gov.cd',
-            'provincial'=> 'province@rdc.gov.cd',
-            'national'  => 'national@rdc.gov.cd',
-        ];
-
-        $email = $accounts[$portal] ?? null;
-        if (! $email || ! Auth::attempt(['email' => $email, 'password' => 'password'], true)) {
-            return back()->withErrors(['portal' => 'Compte démo indisponible. Exécutez les seeders.']);
-        }
-
-        $request->session()->regenerate();
-        session(['active_portal' => $portal]);
-
-        $user = Auth::user();
-        $user->update(['is_online' => true, 'last_seen_at' => now()]);
-
-        return redirect()->to($this->portals->redirectFor($portal));
     }
 
     private function sanitizeRedirect(?string $redirect): ?string

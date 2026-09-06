@@ -5,6 +5,8 @@ import { MapPin, Heart, ShieldCheck, ShoppingCart, Eye } from 'lucide-react';
 import RatingStars from '../UI/RatingStars';
 import { dispatchToast } from '@/Components/UI/Toast';
 import useTranslation from '@/hooks/useTranslation';
+import ImageLightbox from './ImageLightbox';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const BADGE_STYLES = {
     sponsored: 'bg-amber-400 text-amber-900',
@@ -30,10 +32,8 @@ const LEGACY_BADGE_MAP = {
     Popular: 'popular',
 };
 
-const DEFAULT_PRODUCT_IMAGE = '/images/demo-products/default.jpg';
+const DEFAULT_PRODUCT_IMAGE = '/images/categories/default.jpg';
 
-// Images can live on the public disk (seeded assets under "images/…") or on
-// the storage disk (seller uploads under "products/…") — resolve either.
 function resolveImagePath(path) {
     if (!path) return null;
     if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) return path;
@@ -42,10 +42,6 @@ function resolveImagePath(path) {
 }
 
 function getProductImage(product) {
-    if (product.demo_image) {
-        return resolveImagePath(product.demo_image) || product.demo_image;
-    }
-
     const primaryImage = product.images?.find((img) => img.is_primary)?.image_path
         || product.images?.[0]?.image_path;
 
@@ -62,27 +58,21 @@ function getDisplayBadge(product, badge) {
     const normalized = normalizeBadge(badge);
     if (normalized) return normalized;
     if (product.badge) return normalizeBadge(product.badge);
-    if (product.is_sponsored) return 'sponsored';
     if (product.sale_price) return 'sale';
     return null;
 }
 
 function isOutOfStock(product) {
-    if (product.is_demo) {
-        return false;
-    }
-
     const stock = (product.initial_stock ?? 0) - (product.confirmed_sales ?? 0);
-
     return stock < 1;
 }
 
 export default function ProductCard({ product, badge, showActions = true, compact = false }) {
     const { auth } = usePage().props;
     const { t } = useTranslation();
+    const { formatAmount } = useCurrency();
     const imageUrl = getProductImage(product);
     const displayBadge = getDisplayBadge(product, badge);
-    const isDemo = product.is_demo;
     const rating = product.average_rating || product.seller?.average_rating || 0;
     const productUrl = `/products/${product.slug}`;
     const outOfStock = isOutOfStock(product);
@@ -100,9 +90,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
 
         setAdding(true);
 
-        const payload = isDemo
-            ? { demo_slug: product.slug, quantity: 1 }
-            : { product_id: product.id, quantity: 1 };
+        const payload = { product_id: product.id, quantity: 1 };
 
         router.post('/cart/add', payload, {
             preserveScroll: true,
@@ -128,11 +116,9 @@ export default function ProductCard({ product, badge, showActions = true, compac
             return;
         }
 
-        const payload = isDemo || (typeof product.id === 'string' && String(product.id).startsWith('demo-'))
-            ? { demo_slug: product.slug }
-            : { product_id: Number(product.id) };
+        const payload = { product_id: Number(product.id) };
 
-        if (!payload.demo_slug && (!payload.product_id || Number.isNaN(payload.product_id))) {
+        if (!payload.product_id || Number.isNaN(payload.product_id)) {
             dispatchToast(t('product.wishlist_error'), 'error');
             return;
         }
@@ -189,14 +175,12 @@ export default function ProductCard({ product, badge, showActions = true, compac
             <Link
                 href={productUrl}
                 className="block relative overflow-hidden bg-gray-50 cursor-pointer h-32 sm:h-36 md:h-auto md:aspect-[4/3]"
+                onClick={(e) => e.stopPropagation()}
             >
-                <img
-                    src={imageUrl}
-                    alt={product.name}
-                    loading="lazy"
-                    decoding="async"
-                    className="web-image-zoom w-full h-full object-contain p-2 md:object-cover md:p-0"
-                    onError={(e) => { e.target.src = DEFAULT_PRODUCT_IMAGE; }}
+                <ImageLightbox
+                    images={product.images}
+                    productName={product.name}
+                    triggerImageUrl={imageUrl}
                 />
             </Link>
 
@@ -216,11 +200,11 @@ export default function ProductCard({ product, badge, showActions = true, compac
                 <div className="mt-auto min-w-0">
                     <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5 mb-1.5 md:mb-2">
                         <span className="text-sm md:text-lg lg:text-xl font-extrabold text-gray-900">
-                            {product.currency || 'USD'} {parseFloat(product.sale_price || product.price).toLocaleString()}
+                            {formatAmount(product.sale_price || product.price, product.currency || 'CDF')}
                         </span>
                         {product.sale_price && (
                             <span className="text-[10px] md:text-sm text-gray-400 line-through font-medium">
-                                {parseFloat(product.price).toLocaleString()}
+                                {formatAmount(product.price, product.currency || 'CDF')}
                             </span>
                         )}
                     </div>
@@ -265,7 +249,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
                             >
                                 <Eye size={14} className="shrink-0" />
                                 <span className="truncate">
-                                    {isDemo ? t('product.preview') : t('product.view_details')}
+                                    {t('product.view_details')}
                                 </span>
                             </Link>
                         </div>

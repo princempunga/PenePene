@@ -6,7 +6,11 @@ import {
     FileDown, Ticket, Shield, ChevronRight, BarChart3,
 } from 'lucide-react';
 
+import { useCurrency } from '@/context/CurrencyContext';
+
 export default function Dashboard({ stats, pendingSellers, recentOrders }) {
+    const { formatAmount } = useCurrency();
+
     return (
         <>
             <Head title="Admin Dashboard" />
@@ -55,7 +59,7 @@ export default function Dashboard({ stats, pendingSellers, recentOrders }) {
                         <div className="min-w-0">
                             <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">GMV</p>
                             <p className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                                TZS {parseFloat(stats.totalRevenue).toLocaleString()}
+                                {formatAmount(stats.totalRevenue, 'CDF')}
                             </p>
                         </div>
                     </Link>
@@ -188,7 +192,7 @@ export default function Dashboard({ stats, pendingSellers, recentOrders }) {
                                             </p>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className="font-bold text-gray-900 text-sm">TZS {parseFloat(order.total_amount).toLocaleString()}</p>
+                                            <p className="font-bold text-gray-900 text-sm">{formatAmount(order.total_amount, order.currency || 'CDF')}</p>
                                             <span className="text-xs capitalize text-gray-500">{order.status}</span>
                                         </div>
                                     </div>

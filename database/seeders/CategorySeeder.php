@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Subcategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -47,7 +48,7 @@ class CategorySeeder extends Seeder
             foreach ($subcategories as $subName) {
                 $subSlug = $parentSlug . '-' . Str::slug($subName);
 
-                Category::firstOrCreate(
+                $subCategory = Category::firstOrCreate(
                     ['slug' => $subSlug],
                     [
                         'name'        => $subName,
@@ -56,6 +57,17 @@ class CategorySeeder extends Seeder
                         'is_active'   => true,
                         'sort_order'  => $subSortOrder++,
                         'image'       => "/images/categories/{$subSlug}.jpg",
+                    ]
+                );
+
+                Subcategory::updateOrCreate(
+                    ['slug' => $subSlug],
+                    [
+                        'category_id' => $category->id,
+                        'name'        => $subName,
+                        'slug'        => $subSlug,
+                        'is_active'   => true,
+                        'sort_order'  => $subSortOrder - 1,
                     ]
                 );
             }

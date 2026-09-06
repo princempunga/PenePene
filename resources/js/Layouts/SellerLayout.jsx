@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import SellerMobileBottomNav from '@/Components/Layout/SellerMobileBottomNav';
+import { CurrencyProvider } from '@/context/CurrencyContext';
+import CurrencySwitcher from '@/Components/Layout/CurrencySwitcher';
 
 const navItems = [
     { key: 'layouts.seller.dashboard',      href: '/seller/dashboard',        icon: LayoutDashboard, badge: null },
@@ -120,6 +122,7 @@ export default function SellerLayout({ children, title }) {
               </div>;
 
     return (
+        <CurrencyProvider>
         <div className="h-screen overflow-hidden bg-gray-50 flex w-full">
 
             {/* ── Overlay backdrop (mobile only) ── */}
@@ -263,6 +266,7 @@ export default function SellerLayout({ children, title }) {
                     <div className="flex-1" />
 
                     <div className="flex items-center gap-2 sm:gap-3">
+                        <CurrencySwitcher />
                         <Link href="/" className="hidden sm:block text-sm text-gray-500 hover:text-primary-600 transition-colors">
                             {t('layouts.seller.view_site')}
                         </Link>
@@ -300,5 +304,6 @@ export default function SellerLayout({ children, title }) {
             {/* ── Bottom nav mobile ── */}
             <SellerMobileBottomNav onMenuClick={openSidebar} />
         </div>
+        </CurrencyProvider>
     );
 }

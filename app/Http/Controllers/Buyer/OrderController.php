@@ -45,6 +45,49 @@ class OrderController extends Controller
         ]);
     }
 
+    public function review(Request $request, Order $order)
+    {
+        $buyer = $request->user()->buyer ?? Buyer::create(['user_id' => $request->user()->id]);
+
+        if ($order->buyer_id !== $buyer->id) {
+            abort(403);
+        }
+
+        if ($order->status !== 'delivered') {
+            return back()->withErrors(['error' => 'You can only review delivered orders.']);
+        }
+
+        // Reviews are attached to conversations: reuse the conversation linked
+        // to this order (created on confirmation), otherwise find or create one
+        // with the same shape as OrderConversationService (status 'confirmed'
+        // so the review form accepts it).
+        $conversation = $order->conversation_id
+            ? Conversation::find($order->conversation_id)
+            : null;
+
+        if (! $conversation) {
+            $conversation = Conversation::firstOrCreate(
+                [
+                    'buyer_id'   => $request->user()->id,
+                    'seller_id'  => $order->seller_id,
+                    'product_id' => $order->items->first()?->product_id,
+                ],
+                [
+                    'last_message_at' => now(),
+                    'status'          => 'confirmed',
+                ]
+            );
+        }
+
+        // A conversation created via "contact seller" may have no status;
+        // a delivered order guarantees the deal is done, so allow review.
+        if (! $conversation->status) {
+            $conversation->update(['status' => 'confirmed']);
+        }
+
+        return redirect()->route('buyer.reviews.create', $conversation);
+    }
+
     public function contactSeller(Request $request, Order $order)
     {
         $user = $request->user();
@@ -119,7 +162,7 @@ class OrderController extends Controller
             'notes'            => 'nullable|string',
         ]);
 
-        $buyer   = $request->user()->buyer;
+        $buyer   = $request->user()->buyer ?? Buyer::create(['user_id' => $request->user()->id]);
         $product = Product::with('seller')->findOrFail($request->product_id);
 
         // Stock check

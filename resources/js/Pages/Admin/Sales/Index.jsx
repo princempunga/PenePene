@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import Pagination from '@/Components/UI/Pagination';
-import { TrendingUp, Download, DollarSign, ShoppingBag, BarChart2, Filter, X } from 'lucide-react';
-
-const fmt = (n) => parseFloat(n || 0).toLocaleString('fr-CD', { minimumFractionDigits: 0 });
+import { TrendingUp, Download, DollarSign, ShoppingBag, BarChart2, Filter, X, Eye } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const STATUS_COLORS = {
     delivered: 'bg-green-100 text-green-800',
@@ -15,6 +14,7 @@ const STATUS_COLORS = {
 };
 
 export default function GlobalSalesIndex({ orders, kpis, sellers, categories, filters }) {
+    const { formatAmount } = useCurrency();
     const [showFilters, setShowFilters] = useState(false);
 
     const filterForm = useForm({
@@ -63,8 +63,8 @@ export default function GlobalSalesIndex({ orders, kpis, sellers, categories, fi
                             </div>
                             <span className="text-sm font-medium text-emerald-100">Chiffre d'Affaires Total (GMV)</span>
                         </div>
-                        <p className="text-3xl font-bold">{fmt(kpis.total_gmv)}</p>
-                        <p className="text-xs text-emerald-200 mt-1">CDF – commandes livrées</p>
+                        <p className="text-3xl font-bold">{formatAmount(kpis.total_gmv, 'CDF')}</p>
+                        <p className="text-xs text-emerald-200 mt-1">Commandes livrées</p>
                     </div>
 
                     <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl p-5 shadow-lg">
@@ -85,8 +85,8 @@ export default function GlobalSalesIndex({ orders, kpis, sellers, categories, fi
                             </div>
                             <span className="text-sm font-medium text-blue-100">Panier Moyen</span>
                         </div>
-                        <p className="text-3xl font-bold">{fmt(kpis.avg_order)}</p>
-                        <p className="text-xs text-blue-200 mt-1">CDF par commande livrée</p>
+                        <p className="text-3xl font-bold">{formatAmount(kpis.avg_order, 'CDF')}</p>
+                        <p className="text-xs text-blue-200 mt-1">Par commande livrée</p>
                     </div>
                 </div>
 
@@ -220,6 +220,7 @@ export default function GlobalSalesIndex({ orders, kpis, sellers, categories, fi
                                         <th className="px-4 py-4">Produits / Catégorie</th>
                                         <th className="px-4 py-4 text-right">Total</th>
                                         <th className="px-4 py-4">Statut</th>
+                                        <th className="px-4 py-4 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -250,12 +251,21 @@ export default function GlobalSalesIndex({ orders, kpis, sellers, categories, fi
                                                     <p className="text-[11px] text-gray-400 mt-0.5">{category}</p>
                                                 </td>
                                                 <td className="px-4 py-3 text-right font-bold text-gray-900 whitespace-nowrap">
-                                                    {fmt(order.total)} <span className="text-xs font-normal text-gray-400">{order.currency}</span>
+                                                    {formatAmount(order.total, order.currency || 'CDF')}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold capitalize ${STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-700'}`}>
                                                         {order.status}
                                                     </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-center whitespace-nowrap">
+                                                    <Link
+                                                        href={`/admin/orders/${order.id}`}
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 hover:bg-primary-50 text-gray-600 hover:text-primary-600 transition-colors"
+                                                        title="Voir les détails de la commande"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </Link>
                                                 </td>
                                             </tr>
                                         );

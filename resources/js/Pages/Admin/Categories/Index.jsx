@@ -30,7 +30,7 @@ const CategoryItem = ({ category, onEdit, onDelete, level = 0 }) => {
                     <button onClick={() => onEdit(category)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Edit">
                         <Edit size={16} />
                     </button>
-                    <button onClick={() => onDelete(category.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Delete">
+                    <button onClick={() => onDelete(category.slug)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Delete">
                         <Trash2 size={16} />
                     </button>
                 </div>
@@ -238,14 +238,14 @@ export default function CategoriesIndex({ categories, allCategories }) {
 
     const handleEditSubmit = (event) => {
         event.preventDefault();
-        editForm.put(`/admin/categories/${editingCategory.id}`, {
+        editForm.put(`/admin/categories/${editingCategory.slug}`, {
             onSuccess: () => closeModal(),
         });
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = (slug) => {
         if (confirm('Are you sure you want to delete this category? Note: Categories with assigned products cannot be deleted.')) {
-            editForm.delete(`/admin/categories/${id}`);
+            editForm.delete(`/admin/categories/${slug}`);
         }
     };
 

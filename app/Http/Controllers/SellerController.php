@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\DemoSimulationService;
 use Inertia\Inertia;
 use App\Models\Seller;
 
@@ -16,12 +15,6 @@ class SellerController extends Controller
 
         $seller->load('user');
         $seller->increment('total_views');
-
-        $isDemoStore = DemoSimulationService::isDemoSeller($seller);
-
-        if ($isDemoStore) {
-            DemoSimulationService::syncStoreProducts($seller);
-        }
 
         // Mode "all" : liste complète pour le filtrage instantané côté client
         if ($request->boolean('all')) {
@@ -58,16 +51,7 @@ class SellerController extends Controller
             ->take(5)
             ->get();
 
-        if ($isDemoStore && $reviews->isEmpty()) {
-            $reviews = collect(DemoSimulationService::demoReviews());
-        }
-
-        if ($isDemoStore) {
-            DemoSimulationService::applyOnlineStatus($seller->user, $seller);
-            $seller->total_reviews = max($seller->total_reviews, count(DemoSimulationService::demoReviews()));
-        } else {
-            $seller->user->last_seen_text = $seller->user->getLastSeenText();
-        }
+        $seller->user->last_seen_text = $seller->user->getLastSeenText();
 
         return Inertia::render('Sellers/Store', [
             'seller'   => $seller,
