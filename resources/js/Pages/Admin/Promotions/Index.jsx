@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Megaphone, Save, Trash2, AlertCircle, ChevronLeft, ChevronRight, ChevronDown, Eye, ShoppingBag, Loader2 } from 'lucide-react';
+import { dispatchToast } from '@/Components/UI/Toast';
 
 const HERO_SLOTS = [1, 2, 3, 4];
 const EXTRA_SLOTS = [5, 6, 7, 8, 9, 10];
+const HERO_AUTOPLAY_MS = 7000;
 
 function emptySlot(slot) {
     return {
         promotion_order: slot,
         seller_id: '',
-        product_id: '',
+        product_id: null,
         product_ids: [],
         headline: '',
         is_active: true,
@@ -35,7 +37,7 @@ function SlotPreviewCard({ slot, products, productIds = [], headline, sellerName
         if (selectedProducts.length <= 1) return undefined;
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % selectedProducts.length);
-        }, 1000);
+        }, HERO_AUTOPLAY_MS);
         return () => clearInterval(timer);
     }, [selectedProducts.length]);
 
@@ -53,14 +55,16 @@ function SlotPreviewCard({ slot, products, productIds = [], headline, sellerName
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 text-white text-xs">
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                     <div className="font-semibold">Cadre {slot}</div>
                     {headline && <div className="truncate">{headline}</div>}
-                    <div className="text-[10px] text-white/80">{sellerName || 'Vendeur'}</div>
+                    <div className="text-[10px] text-white/80 truncate">{sellerName || 'Vendeur'}</div>
                 </div>
-                <div className="rounded-full bg-black/50 px-3 py-1 text-[11px]">
-                    {selectedProducts.length > 0 ? `${currentIndex + 1}/${selectedProducts.length}` : '0/5'}
-                </div>
+                {selectedProducts.length > 1 && (
+                    <div className="rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium shrink-0">
+                        {currentIndex + 1}/{selectedProducts.length}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -72,7 +76,9 @@ function HeroPreview({ slides }) {
     if (activeSlides.length === 0) {
         return (
             <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-8 text-center text-gray-500 text-sm">
-                Configurez les 4 emplacements ci-dessous pour prévisualiser le carrousel hero.
+                <Eye size={32} className="mx-auto mb-3 opacity-40" />
+                <p className="font-medium mb-1">Aucune promotion active</p>
+                <p className="text-xs text-gray-400">Configurez les emplacements hero ci-dessous pour voir le aperçu.</p>
             </div>
         );
     }
@@ -82,12 +88,14 @@ function HeroPreview({ slides }) {
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <Eye size={16} />
-                    Aperçu hero 4 cadres (chaque cadre défile toutes les 1s)
+                    Aperçu hero — 4 cadres actifs
                 </div>
+                <span className="text-xs text-gray-500">Défilement: {HERO_AUTOPLAY_MS / 1000}s</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-gray-100">
                 {HERO_SLOTS.map((slot) => {
                     const slide = slides.find((s) => s.promotion_order === slot);
+                    if (!slide?.is_active || (!slide.product_ids?.length && !slide.product_id)) return null;
                     return (
                         <SlotPreviewCard
                             key={slot}
@@ -105,6 +113,9 @@ function HeroPreview({ slides }) {
 }
 
 function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelection = 5 }) {
+    const selectedSet = useMemo(() => new Set(selectedIds.map((id) => String(id))), [selectedIds]);
+    const activeCount = selectedIds.length;
+
     if (loading) {
         return (
             <div className="flex items-center justify-center gap-2 py-6 text-primary-500">
@@ -117,21 +128,20 @@ function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelec
         return (
             <div className="py-6 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">
                 <ShoppingBag size={24} className="mx-auto mb-2 opacity-40" />
-                Aucun produit actif pour ce vendeur
+                Sélectionnez d'abord un vendeur
             </div>
         );
     }
 
-    const selectedSet = new Set(selectedIds.map((id) => String(id)));
-    const activeCount = selectedIds.length;
-
     return (
-        <div className="space-y-3">
+        <div className="space-y-2">
             <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>Choisissez jusqu'à {maxSelection} produits</span>
-                <span className="font-semibold text-gray-900">{activeCount} / {maxSelection}</span>
+                <span>Jusqu'à {maxSelection} produits</span>
+                <span className={`font-semibold ${activeCount >= maxSelection ? 'text-red-600' : 'text-gray-900'}`}>
+                    {activeCount} / {maxSelection}
+                </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
                 {products.map((p) => {
                     const isSelected = selectedSet.has(String(p.id));
                     return (
@@ -146,18 +156,18 @@ function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelec
                             } ${!isSelected && activeCount >= maxSelection ? 'opacity-60 cursor-not-allowed' : ''}`}
                             disabled={!isSelected && activeCount >= maxSelection}
                         >
-                            <div className="w-full h-24 bg-gray-100">
+                            <div className="w-full h-20 bg-gray-100">
                                 {p.image_url ? (
                                     <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                        <ShoppingBag size={28} />
+                                        <ShoppingBag size={20} />
                                     </div>
                                 )}
                             </div>
                             <div className="p-2">
                                 <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight">{p.name}</p>
-                                <p className="text-xs text-primary-600 font-bold mt-0.5">{parseFloat(p.price).toLocaleString()} {p.currency}</p>
+                                <p className="text-[11px] text-primary-600 font-bold mt-0.5">{parseFloat(p.price).toLocaleString()} {p.currency || 'CDF'}</p>
                             </div>
                             {isSelected && (
                                 <div className="absolute top-1 right-1 w-5 h-5 bg-primary-600 rounded-full flex items-center justify-center">
@@ -268,8 +278,10 @@ function PromotionSlotCard({
     const previewImage = promo.custom_image_url || selectedProduct?.image_url || promo.hero_image_url || null;
     const [customImageFile, setCustomImageFile] = React.useState(null);
     const [customImagePreview, setCustomImagePreview] = React.useState(promo.custom_image_url || null);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
 
-    const handleImageChange = (e) => {
+    const handleImageChange = useCallback((e) => {
         const file = e.target.files?.[0] || null;
         setCustomImageFile(file);
         if (file) {
@@ -277,7 +289,36 @@ function PromotionSlotCard({
         } else {
             setCustomImagePreview(promo.custom_image_url || null);
         }
-    };
+    }, [promo.custom_image_url]);
+
+    useEffect(() => {
+        return () => {
+            if (customImagePreview && customImagePreview.startsWith('blob:')) {
+                URL.revokeObjectURL(customImagePreview);
+            }
+        };
+    }, [customImagePreview]);
+
+    const handleSave = useCallback(async () => {
+        setSaving(true);
+        setError(null);
+        try {
+            await onSave(promo, customImageFile);
+            dispatchToast(isExisting ? 'Promotion mise à jour.' : 'Promotion enregistrée.', 'success');
+        } catch (e) {
+            setError(e?.response?.data?.message || 'Échec de l’enregistrement.');
+            dispatchToast(error || 'Échec de l’enregistrement.', 'error');
+        } finally {
+            setSaving(false);
+        }
+    }, [promo, customImageFile, isExisting, onSave]);
+
+    const handleDelete = useCallback(() => {
+        if (!promo.id) return;
+        if (!confirm('Supprimer cette promotion ?')) return;
+        onDelete(promo);
+        dispatchToast('Promotion supprimée.', 'success');
+    }, [promo, onDelete]);
 
     return (
         <div className={`bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col ${
@@ -327,7 +368,7 @@ function PromotionSlotCard({
                 {promo.seller_id && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Choisir 5 produits
+                            Choisir jusqu'à 5 produits
                         </label>
                         <ProductPicker
                             products={products}
@@ -379,11 +420,11 @@ function PromotionSlotCard({
                 )}
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Accroche promo (opt.)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Accroche promo (optionnel)</label>
                     <input
                         type="text"
                         placeholder="ex. Super promo -50% !"
-                        maxLength="100"
+                        maxLength={100}
                         value={promo.headline || ''}
                         onChange={(e) => onUpdate(promo.promotion_order, 'headline', e.target.value)}
                         className="w-full rounded-lg border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
@@ -392,7 +433,7 @@ function PromotionSlotCard({
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Début (opt.)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Début (optionnel)</label>
                         <input
                             type="datetime-local"
                             value={promo.starts_at ? formatDateForInput(promo.starts_at) : ''}
@@ -401,7 +442,7 @@ function PromotionSlotCard({
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Fin (opt.)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Fin (optionnel)</label>
                         <input
                             type="datetime-local"
                             value={promo.ends_at ? formatDateForInput(promo.ends_at) : ''}
@@ -410,13 +451,19 @@ function PromotionSlotCard({
                         />
                     </div>
                 </div>
+
+                {error && (
+                    <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        {error}
+                    </div>
+                )}
             </div>
 
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-2">
                 {isExisting && (
                     <button
                         type="button"
-                        onClick={() => onDelete(promo)}
+                        onClick={handleDelete}
                         className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
                     >
                         <Trash2 size={16} />
@@ -425,12 +472,12 @@ function PromotionSlotCard({
                 )}
                 <button
                     type="button"
-                    onClick={() => onSave(promo, customImageFile)}
-                    disabled={!promo.seller_id || !promo.product_ids?.length}
+                    onClick={handleSave}
+                    disabled={saving || !promo.seller_id || !promo.product_ids?.length}
                     className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Save size={16} />
-                    {isExisting ? 'Mettre à jour' : 'Enregistrer'}
+                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {saving ? 'Enregistrement...' : isExisting ? 'Mettre à jour' : 'Enregistrer'}
                 </button>
             </div>
         </div>
@@ -445,8 +492,8 @@ function buildInitialPromotions(promotions = []) {
             ? {
                 ...existing,
                 seller_id: existing.seller_id || '',
-                product_id: existing.product_id || '',
-                product_ids: existing.product_ids?.length ? existing.product_ids : existing.product_id ? [existing.product_id] : [],
+                product_id: existing.product_id || null,
+                product_ids: existing.product_ids?.length ? existing.product_ids : (existing.product_id ? [existing.product_id] : []),
             }
             : emptySlot(slot);
     });
@@ -464,7 +511,7 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
         [localPromotions, allProductsBySeller],
     );
 
-    const handleUpdate = (slotIndex, field, value) => {
+    const handleUpdate = useCallback((slotIndex, field, value) => {
         setLocalPromotions((prev) => {
             const updated = [...prev];
             const index = updated.findIndex((p) => p.promotion_order === slotIndex);
@@ -473,15 +520,15 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
             updated[index] = { ...updated[index], [field]: value };
 
             if (field === 'seller_id') {
-                updated[index].product_id = '';
+                updated[index].product_id = null;
                 updated[index].product_ids = [];
             }
 
             return updated;
         });
-    };
+    }, []);
 
-    const buildFormData = (promo, customImageFile) => {
+    const buildFormData = useCallback((promo, customImageFile) => {
         const formData = new FormData();
         formData.append('seller_id', promo.seller_id);
         formData.append('product_id', promo.product_ids?.[0] || promo.product_id || '');
@@ -499,9 +546,9 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
         }
 
         return formData;
-    };
+    }, []);
 
-    const handleSave = (promo, customImageFile) => {
+    const handleSave = useCallback((promo, customImageFile) => {
         const formData = buildFormData(promo, customImageFile);
 
         if (promo.id) {
@@ -510,13 +557,12 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
         } else {
             router.post('/admin/promotions', formData, { forceFormData: true });
         }
-    };
+    }, [buildFormData]);
 
-    const handleDelete = (promo) => {
-        if (promo.id && confirm('Supprimer cette promotion ?')) {
-            router.delete(`/admin/promotions/${promo.id}`);
-        }
-    };
+    const handleDelete = useCallback((promo) => {
+        if (!promo.id) return;
+        router.delete(`/admin/promotions/${promo.id}`);
+    }, []);
 
     return (
         <>
@@ -529,7 +575,7 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
                         <p className="text-sm mt-1 text-primary-800">
                             Les emplacements <strong>1 à 4</strong> alimentent le défilement hero de la page d'accueil.
                             Sélectionnez un vendeur, puis choisissez jusqu'à 5 produits depuis sa boutique.
-                            Chaque cadre affiche ces produits et défile automatiquement toutes les 1 seconde.
+                            Chaque cadre affiche ces produits et défile automatiquement toutes les 7 secondes.
                         </p>
                     </div>
                 </div>
