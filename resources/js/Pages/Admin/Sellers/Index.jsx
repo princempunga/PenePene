@@ -134,10 +134,21 @@ export default function SellersIndex({ sellers, filters }) {
                                 return (
                                     <div key={seller.id} className={`bg-white rounded-xl border shadow-sm p-4 transition-colors ${isSelected ? 'border-slate-400 bg-slate-50' : 'border-gray-200'}`}>
                                         <div className="flex items-start justify-between gap-3 mb-3">
-                                            <div className="flex items-center gap-2 min-w-0">
+                                            <div className="flex items-center gap-3 min-w-0">
                                                 <button onClick={() => toggleSelect(seller.id)} className="shrink-0 text-gray-400 hover:text-slate-700">
                                                     {isSelected ? <CheckSquare size={18} className="text-slate-700" /> : <Square size={18} />}
                                                 </button>
+                                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center font-bold text-slate-700 shadow-sm">
+                                                    {seller.logo || seller.user?.avatar ? (
+                                                        <img
+                                                            src={seller.logo ? (seller.logo.startsWith('http') ? seller.logo : `/storage/${seller.logo}`) : (seller.user.avatar.startsWith('http') ? seller.user.avatar : `/storage/${seller.user.avatar}`)}
+                                                            alt={seller.business_name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        seller.business_name?.charAt(0)?.toUpperCase() || 'V'
+                                                    )}
+                                                </div>
                                                 <div className="min-w-0">
                                                     <p className="font-bold text-gray-900 truncate">{seller.business_name}</p>
                                                     <p className="text-xs text-gray-500 mt-0.5">{seller.city}, {seller.country}</p>
@@ -149,7 +160,18 @@ export default function SellersIndex({ sellers, filters }) {
                                             </span>
                                         </div>
                                         <div className="pt-3 border-t border-gray-100 space-y-2">
-                                            <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                <div className="w-7 h-7 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center font-bold text-xs text-slate-700">
+                                                    {seller.user?.avatar ? (
+                                                        <img
+                                                            src={seller.user.avatar.startsWith('http') ? seller.user.avatar : `/storage/${seller.user.avatar}`}
+                                                            alt={seller.user.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        seller.user?.name?.charAt(0)?.toUpperCase() || 'U'
+                                                    )}
+                                                </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium text-gray-900 truncate">{seller.user?.name}</p>
                                                     <p className="text-xs text-gray-500 truncate">{seller.user?.email}</p>
@@ -242,12 +264,42 @@ export default function SellersIndex({ sellers, filters }) {
                                                     </button>
                                                 </td>
                                                 <td className="px-4 py-4">
-                                                    <p className="font-bold text-gray-900">{seller.business_name}</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">Inscrit: {new Date(seller.created_at).toLocaleDateString()}</p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center font-bold text-slate-700 shadow-sm">
+                                                            {seller.logo || seller.user?.avatar ? (
+                                                                <img
+                                                                    src={seller.logo ? (seller.logo.startsWith('http') ? seller.logo : `/storage/${seller.logo}`) : (seller.user.avatar.startsWith('http') ? seller.user.avatar : `/storage/${seller.user.avatar}`)}
+                                                                    alt={seller.business_name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                seller.business_name?.charAt(0)?.toUpperCase() || 'V'
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="font-bold text-gray-900">{seller.business_name}</p>
+                                                            <p className="text-xs text-gray-500 mt-0.5">Inscrit: {new Date(seller.created_at).toLocaleDateString()}</p>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td className="px-4 py-4">
-                                                    <p className="font-medium text-gray-900">{seller.user?.name}</p>
-                                                    <p className="text-xs text-gray-500">{seller.user?.email}</p>
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center font-bold text-xs text-slate-700 shadow-sm">
+                                                            {seller.user?.avatar ? (
+                                                                <img
+                                                                    src={seller.user.avatar.startsWith('http') ? seller.user.avatar : `/storage/${seller.user.avatar}`}
+                                                                    alt={seller.user.name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                seller.user?.name?.charAt(0)?.toUpperCase() || 'U'
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="font-medium text-gray-900">{seller.user?.name}</p>
+                                                            <p className="text-xs text-gray-500">{seller.user?.email}</p>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td className="px-4 py-4">
                                                     {seller.city}, {seller.country}

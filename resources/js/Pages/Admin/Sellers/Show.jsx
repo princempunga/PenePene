@@ -118,9 +118,21 @@ export default function SellerShow({ seller }) {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Store Information */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center gap-3">
-                                <Store className="text-primary-500 shrink-0" size={20} />
-                                <h2 className="font-bold text-gray-900 text-lg">Informations du magasin</h2>
+                            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center gap-3.5">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center font-bold text-lg text-slate-700 shadow-sm">
+                                    {seller.logo || seller.user?.avatar ? (
+                                        <img
+                                            src={seller.logo ? (seller.logo.startsWith('http') ? seller.logo : `/storage/${seller.logo}`) : (seller.user.avatar.startsWith('http') ? seller.user.avatar : `/storage/${seller.user.avatar}`)}
+                                            alt={seller.business_name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <Store className="text-primary-500 shrink-0" size={24} />
+                                    )}
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-gray-900 text-lg">Informations du magasin</h2>
+                                </div>
                             </div>
                             <div className="p-5 sm:p-6 space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -242,9 +254,21 @@ export default function SellerShow({ seller }) {
 
                         {/* Owner Info */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 flex items-center gap-2">
-                                <User className="text-gray-400 shrink-0" size={18} />
-                                <h2 className="font-bold text-gray-900">Contact du propriétaire</h2>
+                            <div className="p-5 border-b border-gray-100 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center font-bold text-slate-700 shadow-sm">
+                                    {seller.user?.avatar ? (
+                                        <img
+                                            src={seller.user.avatar.startsWith('http') ? seller.user.avatar : `/storage/${seller.user.avatar}`}
+                                            alt={seller.user.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <User className="text-gray-400 shrink-0" size={20} />
+                                    )}
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-gray-900">Contact du propriétaire</h2>
+                                </div>
                             </div>
                             <div className="p-5 space-y-3">
                                 <div>
