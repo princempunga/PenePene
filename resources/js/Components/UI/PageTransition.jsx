@@ -15,7 +15,7 @@ export default function PageTransition({ children }) {
 
     return (
         <div 
-            className="w-full min-h-full web-page"
+            className="w-full web-page"
             style={{
                 opacity: animate ? 1 : 0,
                 transition: 'opacity 0.2s ease-out'
