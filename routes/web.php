@@ -419,6 +419,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/settings', [\App\Http\Controllers\Admin\PlatformSettingController::class, 'update'])->name('settings.update');
         });
 
+        // Admin Profile
+        Route::get('/profile',  [\App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile');
+        Route::post('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
+        Route::patch('/profile/password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('profile.password');
+
         // Sub-Admins (Super Admin Only)
         Route::middleware('role:super_admin')->group(function () {
             Route::get('/admins',            [\App\Http\Controllers\Admin\SubAdminController::class, 'index'])->name('admins.index');

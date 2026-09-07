@@ -198,8 +198,12 @@ export default function AdminShell({
                         <span className="hidden max-w-[120px] truncate text-sm font-medium text-blue-100 sm:block">
                             {auth.user?.name}
                         </span>
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FFB300] to-[#F9A825] text-sm font-bold text-[#002E5D] ring-2 ring-[#FFB300]/30">
-                            {auth.user?.name?.charAt(0)?.toUpperCase()}
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FFB300] to-[#F9A825] text-sm font-bold text-[#002E5D] ring-2 ring-[#FFB300]/30 overflow-hidden">
+                            {auth?.user?.avatar ? (
+                                <img src={auth.user.avatar.startsWith('http') ? auth.user.avatar : `/storage/${auth.user.avatar}`} alt={auth.user?.name} className="h-full w-full object-cover" />
+                            ) : (
+                                auth.user?.name?.charAt(0)?.toUpperCase()
+                            )}
                         </div>
                     </div>
                 </div>

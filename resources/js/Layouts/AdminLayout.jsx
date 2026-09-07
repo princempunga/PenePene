@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Users, UserCheck, Shield,
     ListTree, LogOut, ChevronRight, Package, ShoppingCart,
-    Megaphone, Ticket, FileDown, Settings, Star, Menu, X, Bell, Gem, BarChart3, TrendingUp
+    Megaphone, Ticket, FileDown, Settings, Star, Menu, X, Bell, Gem, BarChart3, TrendingUp, User
 } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import PageTransition from '@/Components/UI/PageTransition';
@@ -13,6 +13,7 @@ import CurrencySwitcher from '@/Components/Layout/CurrencySwitcher';
 
 const ALL_NAV_ITEMS = [
     { key: 'layouts.admin.dashboard',           href: '/admin/dashboard',       icon: LayoutDashboard, roles: ['super_admin', 'admin'] },
+    { key: 'Profile',                           href: '/admin/profile',         icon: User,            roles: ['super_admin', 'admin'] },
     { key: 'Statistiques',                      href: '/admin/statistics',      icon: BarChart3,       roles: ['super_admin', 'admin'] },
     { key: 'Ventes Globales',                   href: '/admin/sales',           icon: TrendingUp,      roles: ['super_admin', 'admin'] },
     { key: 'layouts.admin.products',            href: '/admin/products',        icon: Package,         roles: ['super_admin', 'admin'] },
@@ -81,8 +82,12 @@ export default function AdminLayout({ children, title }) {
                 {/* ── En-tête drawer (mobile) ── */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white md:hidden shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center font-bold text-lg text-white shrink-0">
-                            {adminInitial}
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center font-bold text-lg text-white shrink-0 overflow-hidden">
+                            {auth?.user?.avatar ? (
+                                <img src={auth.user.avatar.startsWith('http') ? auth.user.avatar : `/storage/${auth.user.avatar}`} alt={auth?.user?.name} className="w-full h-full object-cover" />
+                            ) : (
+                                adminInitial
+                            )}
                         </div>
                         <div className="min-w-0">
                             <p className="font-semibold text-gray-900 text-sm truncate">{auth?.user?.name ?? 'Admin'}</p>
@@ -106,8 +111,12 @@ export default function AdminLayout({ children, title }) {
                 <div className="hidden md:block p-3 shrink-0">
                     <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-9 h-9 lg:w-11 lg:h-11 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center font-bold text-base lg:text-xl text-white shrink-0 shadow-md">
-                                {adminInitial}
+                            <div className="w-9 h-9 lg:w-11 lg:h-11 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center font-bold text-base lg:text-xl text-white shrink-0 shadow-md overflow-hidden">
+                                {auth?.user?.avatar ? (
+                                    <img src={auth.user.avatar.startsWith('http') ? auth.user.avatar : `/storage/${auth.user.avatar}`} alt={auth?.user?.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    adminInitial
+                                )}
                             </div>
                             <div className="min-w-0">
                                 <p className="font-semibold text-gray-900 truncate text-sm">{auth?.user?.name ?? 'Admin'}</p>
@@ -199,12 +208,16 @@ export default function AdminLayout({ children, title }) {
                             <Bell size={20} />
                         </Link>
                         <Link
-                            href="/admin/dashboard"
+                            href="/admin/profile"
                             className="flex items-center gap-1.5 sm:gap-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg p-1"
                         >
                             <span className="hidden sm:block font-medium truncate max-w-[120px]">{auth?.user?.name}</span>
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center font-bold text-white text-xs sm:text-sm shrink-0">
-                                {adminInitial}
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center font-bold text-white text-xs sm:text-sm shrink-0 overflow-hidden">
+                                {auth?.user?.avatar ? (
+                                    <img src={auth.user.avatar.startsWith('http') ? auth.user.avatar : `/storage/${auth.user.avatar}`} alt={auth?.user?.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    adminInitial
+                                )}
                             </div>
                         </Link>
                     </div>
