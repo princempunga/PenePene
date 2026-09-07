@@ -321,8 +321,14 @@ export default function DashboardShell({
 
                     <Link href={userProfileHref} className="flex items-center gap-2 text-sm rounded-xl p-1 text-blue-100 hover:text-white transition-colors duration-300">
                         <span className="hidden sm:block font-medium truncate max-w-[120px]">{auth.user?.name}</span>
-                        <div className="w-8 h-8 rounded-full bg-[#FFB300] text-[#002E5D] flex items-center justify-center font-bold text-sm shrink-0">
-                            {auth.user?.name?.charAt(0)?.toUpperCase()}
+                        <div className="w-8 h-8 rounded-full bg-[#FFB300] text-[#002E5D] flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden">
+                            {profile?.avatar ? (
+                                <img src={profile.avatar.startsWith('http') ? profile.avatar : profile.avatar.startsWith('/') ? profile.avatar : `/storage/${profile.avatar}`} alt="" className="w-full h-full object-cover" />
+                            ) : auth.user?.avatar ? (
+                                <img src={auth.user.avatar.startsWith('http') ? auth.user.avatar : `/storage/${auth.user.avatar}`} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                auth.user?.name?.charAt(0)?.toUpperCase()
+                            )}
                         </div>
                     </Link>
                 </div>
