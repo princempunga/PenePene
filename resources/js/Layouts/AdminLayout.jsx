@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Users, UserCheck, Shield,
@@ -40,6 +40,15 @@ export default function AdminLayout({ children, title }) {
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, []);
+
     const userRole = auth?.user?.role ?? '';
     const allowedNavItems = ALL_NAV_ITEMS.filter(item => item.roles.includes(userRole));
 
@@ -51,7 +60,7 @@ export default function AdminLayout({ children, title }) {
 
     return (
         <CurrencyProvider>
-        <div className="h-screen overflow-hidden bg-gray-50 flex w-full">
+        <div className="h-dvh overflow-hidden bg-gray-50 flex w-full">
 
             {/* ── Overlay backdrop (mobile only) ── */}
             <div
@@ -172,7 +181,7 @@ export default function AdminLayout({ children, title }) {
             </aside>
 
             {/* ── Zone principale ── */}
-            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
 
                 {/* ── Admin Top Bar ── */}
                 <header className="sticky top-0 z-30 h-14 sm:h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-3 sm:px-4 gap-2 sm:gap-4 shrink-0">
@@ -224,7 +233,7 @@ export default function AdminLayout({ children, title }) {
                 </header>
 
                 {/* ── Main Content ── */}
-                <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-7 pb-[76px] md:pb-6 min-w-0">
+                <main className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-5 lg:p-7 pb-[76px] md:pb-6 min-w-0">
                     {title && (
                         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                             {title}

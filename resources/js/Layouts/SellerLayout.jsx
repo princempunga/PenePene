@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, Package, ShoppingCart, MessageCircle, Bell,
@@ -104,6 +104,15 @@ export default function SellerLayout({ children, title }) {
     const { auth, seller, unread_notifications, unread_messages } = page.props;
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, []);
+
     const badges = {
         messages: typeof unread_messages === 'number' ? unread_messages : 0,
         notifications: unread_notifications ?? 0,
@@ -123,7 +132,7 @@ export default function SellerLayout({ children, title }) {
 
     return (
         <CurrencyProvider>
-        <div className="h-screen overflow-hidden bg-gray-50 flex w-full">
+        <div className="h-dvh overflow-hidden bg-gray-50 flex w-full">
 
             {/* ── Overlay backdrop (mobile only) ── */}
             <div
@@ -244,7 +253,7 @@ export default function SellerLayout({ children, title }) {
             </aside>
 
             {/* ── Zone principale ── */}
-            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
 
                 {/* ── Header ── */}
                 <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4 gap-2 sm:gap-4 shrink-0">
@@ -299,7 +308,7 @@ export default function SellerLayout({ children, title }) {
                 </header>
 
                 {/* ── Contenu principal ── */}
-                <main className="flex-1 h-[calc(100vh-4rem)] overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-6 min-w-0">
+                <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-6 min-w-0">
                     {title && (
                         <h1 className="text-2xl font-bold text-gray-900 mb-6">{title}</h1>
                     )}
