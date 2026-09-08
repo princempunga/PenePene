@@ -58,10 +58,12 @@ class CategoryController extends Controller
 
         $featuredProducts = $featuredQuery;
 
+        $categoryImage = $category->image;
+
         $subcategoryCards = $category->children
             ->unique(fn ($sub) => Str::slug($sub->slug))
             ->values()
-            ->map(function ($sub) use ($categoryImage) {
+            ->map(function ($sub) use ($category, $categoryImage) {
                 $shortSlug = Str::slug($sub->slug);
 
                 return CatalogTranslations::localizeSubcategoryCard([

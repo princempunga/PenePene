@@ -185,8 +185,9 @@ function LandingPreview({ promos, sellers, allProductsBySeller, imageOverrides, 
     );
 }
 
-function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelection = 5 }) {
+function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelection = 5, disabledIds = new Set() }) {
     const selectedSet = useMemo(() => new Set(selectedIds.map((id) => String(id))), [selectedIds]);
+    const disabledSet = useMemo(() => new Set([...disabledIds].map((id) => String(id))), [disabledIds]);
     const activeCount = selectedIds.length;
 
     if (loading) {
@@ -217,17 +218,23 @@ function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelec
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
                 {products.map((p) => {
                     const isSelected = selectedSet.has(String(p.id));
+                    const isUsedElsewhere = disabledSet.has(String(p.id));
+                    const isDisabled = (!isSelected && (activeCount >= maxSelection || isUsedElsewhere));
                     return (
                         <button
                             key={p.id}
                             type="button"
                             onClick={() => onToggle(p.id)}
-                            className={`relative flex flex-col rounded-xl border-2 overflow-hidden text-left transition-all duration-200 hover:shadow-md ${
+                            disabled={isDisabled}
+                            className={`relative flex flex-col rounded-xl border-2 overflow-hidden text-left transition-all duration-200 ${
                                 isSelected
                                     ? 'border-primary-500 ring-2 ring-primary-200 shadow-md'
-                                    : 'border-gray-200 hover:border-primary-300'
-                            } ${!isSelected && activeCount >= maxSelection ? 'opacity-60 cursor-not-allowed' : ''}`}
-                            disabled={!isSelected && activeCount >= maxSelection}
+                                    : isUsedElsewhere
+                                        ? 'border-gray-200 bg-gray-100/70 opacity-60 cursor-not-allowed'
+                                        : isDisabled
+                                            ? 'opacity-60 cursor-not-allowed border-gray-200'
+                                            : 'border-gray-200 hover:border-primary-300'
+                            }`}
                         >
                             <div className="w-full h-20 bg-gray-100">
                                 {p.image_url ? (
@@ -345,6 +352,7 @@ function PromotionSlotCard({
     onSave,
     onDelete,
     onImagePreviewChange,
+    disabledIds = new Set(),
     compact = false,
 }) {
     const isExisting = !!promo.id;
@@ -469,6 +477,7 @@ function PromotionSlotCard({
                             products={products}
                             loading={false}
                             selectedIds={promo.product_ids}
+                            disabledIds={disabledIds}
                             onToggle={(id) => {
                                 const isSelected = promo.product_ids.includes(id);
                                 const nextIds = isSelected
@@ -713,6 +722,29 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
         });
     }, []);
 
+    // Un produit ne peut appartenir qu'à un seul cadre à la fois.
+    // On calcique, pour chaque slot, l'ensemble des IDs déjà utilisés par les autres slots.
+    const disabledBySlot = useMemo(() => {
+        const map = {};
+        localPromotions.forEach((promo) => {
+            map[promo.promotion_order] = new Set(
+                (promo.product_ids || []).map((id) => String(id))
+            );
+        });
+        return map;
+    }, [localPromotions]);
+
+    const getDisabledForSlot = useCallback((slot) => {
+        const mine = disabledBySlot[slot] || new Set();
+        const all = new Set();
+        Object.entries(disabledBySlot).forEach(([order, set]) => {
+            if (String(order) !== String(slot)) set.forEach((id) => all.add(id));
+        });
+        // On retire nos propres IDs pour rester sélectionnable
+        mine.forEach((id) => all.delete(id));
+        return all;
+    }, [disabledBySlot]);
+
     const buildFormData = useCallback((promo, customImageFile) => {
         const formData = new FormData();
         formData.append('seller_id', promo.seller_id);
@@ -867,6 +899,7 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
                                         onSave={handleSave}
                                         onDelete={handleDelete}
                                         onImagePreviewChange={handleImagePreviewChange}
+                                        disabledIds={getDisabledForSlot(currentHeroPromo.promotion_order)}
                                     />
 
                                     {/* Pagination between hero slots */}
@@ -905,6 +938,7 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
                                                 onSave={handleSave}
                                                 onDelete={handleDelete}
                                                 onImagePreviewChange={handleImagePreviewChange}
+                                                disabledIds={getDisabledForSlot(promo.promotion_order)}
                                             />
                                         ))}
                                 </div>
@@ -979,6 +1013,7 @@ export default function HomepagePromotionsAdmin({ promotions = [], sellers = [],
                                         onSave={handleSave}
                                         onDelete={handleDelete}
                                         onImagePreviewChange={handleImagePreviewChange}
+                                        disabledIds={getDisabledForSlot(promo.promotion_order)}
                                     />
                                 ))}
                         </div>

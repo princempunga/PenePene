@@ -724,3 +724,7 @@ body.splash-active {
 .rdc-form-card {
   animation: authPageEnter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+/* Admin : aucun débordement horizontal de la barre de défilement */
+body {
+    overflow-x: hidden;
+}

@@ -58,7 +58,7 @@ export default function AdminLayout({ children, title }) {
             │  (html/body), pas de double scrollbar, pas de h-screen forcé.   │
             └─────────────────────────────────────────────────────────────────┘
             */}
-            <div className="flex min-h-screen bg-gray-50">
+            <div className="flex min-h-screen overflow-x-hidden bg-gray-50">
 
                 {/* ── Overlay backdrop (mobile only) ── */}
                 <div
@@ -77,14 +77,14 @@ export default function AdminLayout({ children, title }) {
                               sans hauteur fixe pour éviter tout scroll interne.
                 ══════════════════════════════════════════════════════════════
                 */}
-                <aside
+                    <aside
                     className={`
                         fixed inset-y-0 left-0 z-[60]
-                        flex flex-col
+                        flex h-dvh flex-col overflow-hidden
                         w-[280px] bg-white border-r border-gray-200 shadow-2xl
                         transition-transform duration-300 ease-in-out
                         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                        md:translate-x-0 md:sticky md:top-0 md:h-screen md:shadow-sm md:z-auto
+                        md:translate-x-0 md:shadow-sm md:z-auto
                         md:w-56 md:shrink-0 md:bg-gray-50
                         lg:w-72
                     `}
@@ -138,11 +138,11 @@ export default function AdminLayout({ children, title }) {
 
                     {/*
                     ── Navigation ─────────────────────────────────────────────
-                      flex-1 + overflow-y-auto : la nav scrolle en interne 
+                      flex-1 + overflow-y-auto : la nav scrolle en interne
                       si la hauteur de l'écran (h-screen) est trop petite.
                     ──────────────────────────────────────────────────────────
                     */}
-                    <nav className="flex-1 py-2 pb-4">
+                    <nav className="flex-1 min-h-0 overflow-y-auto py-2 pb-4">
                         <div className="md:bg-white md:rounded-xl md:border md:border-gray-200 md:shadow-sm md:mx-3 md:overflow-hidden md:flex md:flex-col">
                             {allowedNavItems.map(({ key, href, icon: Icon }) => {
                                 const isActive = typeof currentPath === 'string' && typeof href === 'string'
@@ -184,12 +184,12 @@ export default function AdminLayout({ children, title }) {
                 {/*
                 ══════════════════════════════════════════════════════════════
                   ZONE PRINCIPALE
-                  flex-1 : prend l'espace restant. 
+                  flex-1 : prend l'espace restant.
                   flex-col : organise header et main.
                   PAS de overflow-hidden ici, le contenu s'étend naturellement.
                 ══════════════════════════════════════════════════════════════
                 */}
-                <div className="flex-1 min-w-0 flex flex-col">
+                <div className="flex-1 min-w-0 flex flex-col md:ml-56 lg:ml-72">
 
                     {/* ── Top Bar (Sticky) ── */}
                     <header className="sticky top-0 z-30 h-14 sm:h-16 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm flex items-center px-3 sm:px-4 gap-2 sm:gap-4 shrink-0">
@@ -244,7 +244,7 @@ export default function AdminLayout({ children, title }) {
                       Pas de overflow-y-auto (c'est la page entière qui scrolle).
                     ──────────────────────────────────────────────────────────
                     */}
-                    <main className="flex-1 p-3 sm:p-5 lg:p-7 pb-[76px] md:pb-6">
+                    <main className="flex-1 min-w-0 max-w-full overflow-x-hidden p-3 sm:p-5 lg:p-7 pb-[76px] md:pb-6">
                         {title && (
                             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                                 {title}
