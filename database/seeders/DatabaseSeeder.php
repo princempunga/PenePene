@@ -121,6 +121,7 @@ class DatabaseSeeder extends Seeder
 
         // ── Appel du seeder Users / Admin / Demo accounts ─────────────────────
         $this->call(UserSeeder::class);
+        $this->call(AdminSeeder::class);
 
         $this->command->info('✅ PenePene seeding complete!');
         $this->command->info('');
