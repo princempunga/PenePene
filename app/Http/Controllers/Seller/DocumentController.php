@@ -46,12 +46,16 @@ class DocumentController extends Controller
             'document_file.max'      => 'Le fichier ne doit pas dépasser 5 Mo.',
         ]);
 
-        $path = $request->file('document_file')->store('seller_documents', 'public');
+        // KYC/identity documents are sensitive — stored on the private 'local'
+        // disk (storage/app/private), never on the publicly web-served 'public'
+        // disk. Access is only through the authenticated download() route below.
+        $path = $request->file('document_file')->store('seller_documents', 'local');
 
         $seller->documents()->create([
             'document_type'   => $request->document_type,
             'document_number' => $request->document_number,
             'document_file'   => $path,
+            'disk'            => 'local',
             'status'          => 'pending',
         ]);
 
@@ -68,9 +72,32 @@ class DocumentController extends Controller
             return back()->with('error', 'Les documents approuvés ne peuvent pas être supprimés.');
         }
 
-        Storage::disk('public')->delete($document->document_file);
+        Storage::disk($document->disk ?? 'public')->delete($document->document_file);
         $document->delete();
 
         return back()->with('success', 'Document supprimé.');
+    }
+
+    /**
+     * Stream a seller document to the browser. Only the owning seller or an
+     * admin may view it — the file lives on a disk that is never directly
+     * web-accessible, so this is the sole path to reading its contents.
+     */
+    public function download(Request $request, SellerDocument $document)
+    {
+        $user = $request->user();
+        $isOwner = $user->seller && $document->seller_id === $user->seller->id;
+
+        if (! $isOwner && ! $user->isAdmin()) {
+            abort(403);
+        }
+
+        $disk = $document->disk ?? 'public';
+
+        if (! Storage::disk($disk)->exists($document->document_file)) {
+            abort(404, 'Document introuvable.');
+        }
+
+        return Storage::disk($disk)->response($document->document_file);
     }
 }

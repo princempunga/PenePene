@@ -332,6 +332,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/support/{ticket}/reply',     [\App\Http\Controllers\Buyer\SupportController::class, 'reply'])->name('support.reply');
     });
 
+    // Seller document download — owning seller OR admin (ownership/role checked
+    // in the controller). Kept outside the role:seller-only group above so admins
+    // can also reach it.
+    Route::middleware('role:seller,admin,super_admin')
+        ->get('/seller/documents/{document}/download', [\App\Http\Controllers\Seller\DocumentController::class, 'download'])
+        ->name('seller.documents.download');
+
     // ─── Admin Routes ─────────────────────────────────────────────────────────
     Route::middleware('role:super_admin,admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
