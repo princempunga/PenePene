@@ -276,7 +276,7 @@ export default function DocumentsIndex({ documents, documentTypes }) {
                                                         <td className="px-5 py-4 text-right">
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <a
-                                                                    href={`/storage/${doc.document_file}`}
+                                                                    href={`/seller/documents/${doc.id}/download`}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition"

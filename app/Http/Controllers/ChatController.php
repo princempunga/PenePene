@@ -180,7 +180,7 @@ class ChatController extends Controller
 
         $request->validate([
             'body'                 => 'nullable|string|max:5000',
-            'attachment'           => 'nullable|file|max:51200',
+            'attachment'           => 'nullable|file|max:51200|mimes:jpg,jpeg,png,gif,webp,mp4,mov,pdf,doc,docx,xlsx,zip',
             'reply_to_message_id'  => 'nullable|exists:messages,id',
             'message_type'         => 'nullable|in:text,image,video,file,product',
             'product_id'           => 'nullable|exists:products,id',
