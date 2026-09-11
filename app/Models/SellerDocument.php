@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SellerDocument extends Model
 {
     protected $fillable = [
-        'seller_id', 'document_type', 'document_file',
+        'seller_id', 'document_type', 'document_file', 'disk',
         'document_number', 'status', 'rejection_reason',
         'verified_at', 'verified_by',
     ];
