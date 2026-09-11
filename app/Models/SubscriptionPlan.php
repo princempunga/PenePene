@@ -9,6 +9,7 @@ class SubscriptionPlan extends Model
     protected $fillable = [
         'name', 'slug', 'description', 'price', 'currency',
         'billing_cycle', 'duration_days', 'features',
+        'product_limit', 'featured_slots', 'price_usd', 'price_cdf',
         'is_active', 'is_featured', 'sort_order',
     ];
 

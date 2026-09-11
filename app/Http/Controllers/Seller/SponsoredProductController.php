@@ -7,10 +7,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\SponsoredProduct;
 use App\Models\Product;
+use App\Services\SubscriptionService;
 use Illuminate\Support\Facades\Auth;
 
 class SponsoredProductController extends Controller
 {
+    public function __construct(protected SubscriptionService $subscriptions)
+    {
+    }
     protected function seller()
     {
         return Auth::user()->seller;
@@ -32,7 +36,14 @@ class SponsoredProductController extends Controller
             ->where('status', 'active')
             ->get(['id', 'name']);
 
-        return Inertia::render('Seller/Sponsored/Create', ['products' => $products]);
+        [$allowed, $quotaMessage] = $this->subscriptions->canAddFeatured($this->seller());
+
+        return Inertia::render('Seller/Sponsored/Create', [
+            'products'    => $products,
+            'featuredUsage' => $this->subscriptions->featuredUsage($this->seller()),
+            'quotaBlocked'  => ! $allowed,
+            'quotaMessage'  => $quotaMessage,
+        ]);
     }
 
     public function store(Request $request)
@@ -55,6 +66,14 @@ class SponsoredProductController extends Controller
             'expires_at.after'    => 'La date de fin doit être postérieure à la date de début.',
         ]);
 
+        // Quota de mises en avant du plan d'abonnement (backend, systématique)
+        [$allowed, $quotaMessage] = $this->subscriptions->canAddFeatured($this->seller());
+        if (! $allowed) {
+            return redirect()
+                ->route('seller.subscriptions.index')
+                ->with('error', $quotaMessage);
+        }
+
         // Verify product belongs to this seller
         $product = Product::where('id', $request->product_id)
             ->where('seller_id', $this->seller()->id)
@@ -69,6 +88,9 @@ class SponsoredProductController extends Controller
             'amount_paid' => 0, // V1: admin sets price, not auto-charged
             'status'      => 'pending', // Admin must approve
         ]);
+
+        // Consommer une mise en avant du quota
+        $this->subscriptions->incrementFeaturedUsage($this->seller());
 
         return redirect()->route('seller.sponsored.index')
             ->with('success', 'Votre demande de produit sponsorisé a été soumise pour examen par l\'administrateur.');
@@ -85,6 +107,9 @@ class SponsoredProductController extends Controller
         }
 
         $sponsored->delete();
+
+        // Rembourser le quota si la campagne annulée avait consommé une mise en avant
+        $this->subscriptions->decrementFeaturedUsage($this->seller());
 
         return back()->with('success', 'Demande de produit sponsorisé supprimée.');
     }

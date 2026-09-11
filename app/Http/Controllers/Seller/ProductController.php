@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Category;
 use App\Models\Subcategory;
+use App\Services\SubscriptionService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -157,9 +158,17 @@ class ProductController extends Controller
         return $subcategory?->id;
     }
 
-    public function store(Request $request)
+    public function store(Request $request, SubscriptionService $subscriptions)
     {
         $seller = $request->user()->seller;
+
+        // Limite de produits du plan d'abonnement (backend, systématique)
+        [$allowed, $limitMessage] = $subscriptions->canAddProduct($seller);
+        if (! $allowed) {
+            return redirect()
+                ->route('seller.subscriptions.index')
+                ->with('error', $limitMessage);
+        }
 
         $request->validate([
             'category_id'    => 'required|exists:categories,id',
@@ -211,9 +220,24 @@ class ProductController extends Controller
     /**
      * Publication multiple : chaque entrée = 1 produit avec 1 image.
      */
-    public function storeBulk(Request $request)
+    public function storeBulk(Request $request, SubscriptionService $subscriptions)
     {
         $seller = $request->user()->seller;
+
+        // Limite de produits : le lot ne doit pas dépasser le quota restant
+        [$allowed, $limitMessage] = $subscriptions->canAddProduct($seller);
+        $newCount = count($request->input('products', []));
+        $plan = $subscriptions->effectivePlan($seller);
+        $used = $subscriptions->activeProductCount($seller);
+
+        if ($plan->product_limit !== null && ($used + $newCount) > (int) $plan->product_limit) {
+            $remaining = max(0, (int) $plan->product_limit - $used);
+            return redirect()
+                ->route('seller.subscriptions.index')
+                ->with('error', $plan->product_limit == $used
+                    ? $limitMessage
+                    : "Votre plan autorise {$plan->product_limit} produits : il vous reste {$remaining} emplacement(s). Publiez un lot plus petit ou changez de plan.");
+        }
 
         $validated = $request->validate(
             $this->bulkValidationRules(),

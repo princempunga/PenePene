@@ -94,7 +94,7 @@ class RegisterController extends Controller
                 'description'             => $fullDescription,
                 'address'                 => $request->address,
                 'city'                    => $request->city,
-                'country'                 => 'Tanzania',
+                'country'                 => $request->country,
                 'whatsapp'                => $request->whatsapp,
                 'logo'                    => $logoPath,
                 'banner'                  => $bannerPath,

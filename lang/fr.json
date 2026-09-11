@@ -432,6 +432,8 @@
         "seller_terms": "Conditions vendeur",
         "city": "Ville",
         "city_placeholder": "Kinshasa",
+        "country": "Pays",
+        "country_placeholder": "République démocratique du Congo",
         "address_placeholder": "123 rue Principale",
         "business_name_placeholder": "Votre super boutique"
     },

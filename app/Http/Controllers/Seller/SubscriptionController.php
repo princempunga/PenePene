@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
-use Carbon\Carbon;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class SubscriptionController extends Controller
 {
+    public function __construct(protected \App\Services\SubscriptionService $subscriptions)
+    {
+    }
     protected function seller()
     {
         return Auth::user()->seller;
@@ -19,57 +22,12 @@ class SubscriptionController extends Controller
 
     public function index()
     {
-        $seller = $this->seller()->load('activeSubscription.plan');
-        $plans  = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->get();
-        $history = Subscription::with('plan')
-            ->where('seller_id', $seller->id)
-            ->latest()
-            ->get();
-
-        $activeSub = $seller->activeSubscription;
-        $currentPlan = $activeSub?->plan;
-
-        return Inertia::render('Seller/Subscriptions/Index', [
-            'seller'       => $seller,
-            'plans'        => $plans,
-            'history'      => $history,
-            'currentPlan'  => $currentPlan,
-            'billingStatus' => $this->resolveBillingStatus($activeSub),
-        ]);
+        return $this->indexV2();
     }
 
     public function subscribe(Request $request, SubscriptionPlan $plan)
     {
-        if (! $plan->is_active) {
-            return back()->with('error', 'Ce plan n\'est plus disponible.');
-        }
-
-        $seller = $this->seller()->load('activeSubscription.plan');
-        $currentPlan = $seller->activeSubscription?->plan;
-        $action = $this->resolvePlanAction($currentPlan, $plan);
-
-        Subscription::where('seller_id', $seller->id)
-            ->where('status', 'active')
-            ->update(['status' => 'cancelled', 'expires_at' => now()]);
-
-        $startsAt  = Carbon::now();
-        $expiresAt = $startsAt->copy()->addDays($plan->duration_days);
-
-        Subscription::create([
-            'seller_id'            => $seller->id,
-            'subscription_plan_id' => $plan->id,
-            'status'               => 'active',
-            'starts_at'            => $startsAt,
-            'expires_at'           => $expiresAt,
-            'amount_paid'          => $plan->price,
-            'currency'             => 'CDF',
-        ]);
-
-        return back()->with('success', match ($action) {
-            'upgrade'   => "Passage au plan {$plan->name} effectué avec succès !",
-            'downgrade' => "Passage au plan {$plan->name} effectué.",
-            default     => "Vous êtes maintenant abonné au plan {$plan->name} !",
-        });
+        return $this->subscribeV2($request, $plan);
     }
 
     protected function resolveBillingStatus(?Subscription $subscription): array
@@ -122,5 +80,86 @@ class SubscriptionController extends Controller
         }
 
         return 'subscribe';
+    }
+
+    // ================= V2 : module abonnements complet (USD/CDF) =================
+
+    public function indexV2()
+    {
+    $seller = $this->seller()->load('activeSubscription.plan');
+    $plans  = SubscriptionPlan::active()->orderBy('sort_order')->get();
+
+    $history = SubscriptionPlanChange::with(['fromPlan', 'toPlan'])
+        ->where('seller_id', $seller->id)
+        ->latest()
+        ->limit(20)
+        ->get();
+
+    $activeSub = $seller->activeSubscription;
+
+    return Inertia::render('Seller/Subscriptions/Index', [
+        'plans'        => $plans,
+        'history'      => $history,
+        'currentPlan'  => $this->subscriptions->effectivePlan($seller),
+        'activeSub'    => $activeSub,
+        'billingStatus' => $this->resolveBillingStatus($activeSub),
+        'usage'        => $this->usage($seller),
+    ]);
+}
+
+/**
+ * Souscription / changement de plan avec devise choisie.
+ */
+public function subscribeV2(Request $request, SubscriptionPlan $plan)
+{
+    if (! $plan->is_active) {
+        return back()->with('error', "Ce plan n'est plus disponible.");
+    }
+
+    $currency = $request->input('currency', 'USD');
+    if (! in_array($currency, ['USD', 'CDF'], true)) {
+        return back()->with('error', 'Devise invalide.');
+    }
+
+    // Un plan gratuit ne nécessite pas de devise
+    if ((float) $plan->price_usd == 0) {
+        $currency = 'USD';
+    } elseif ($currency === 'USD' && ! $plan->price_usd) {
+        return back()->with('error', 'Ce plan ne supporte pas la devise sélectionnée.');
+    } elseif ($currency === 'CDF' && ! $plan->price_cdf) {
+        return back()->with('error', 'Ce plan ne supporte pas la devise sélectionnée.');
+    }
+
+    $seller = $this->seller();
+    $currentPlan = $this->subscriptions->effectivePlan($seller);
+    $action = $this->resolvePlanAction($currentPlan, $plan);
+
+    $this->subscriptions->changePlan($seller, $plan, $currency);
+
+    return back()->with('success', match ($action) {
+        'upgrade'   => "Passage au plan {$plan->name} effectué avec succès !",
+        'downgrade' => "Passage au plan {$plan->name} effectué. Les produits excédentaires ont été désactivés si nécessaire.",
+        default     => "Vous êtes maintenant abonné au plan {$plan->name} !",
+    });
+}
+
+/**
+ * Usage courant : produits et mises en avant.
+ */
+protected function usage($seller): array
+{
+    $plan = $this->subscriptions->effectivePlan($seller);
+    $used = $this->subscriptions->activeProductCount($seller);
+    $feat = $this->subscriptions->featuredUsage($seller);
+
+    return [
+        'products' => [
+            'used'      => $used,
+            'limit'     => $plan->product_limit,
+            'unlimited' => $plan->product_limit === null,
+            'label'     => $plan->product_limit === null ? "{$used} produits (illimité)" : "{$used}/{$plan->product_limit} produits utilisés",
+        ],
+        'featured' => $feat,
+    ];
     }
 }

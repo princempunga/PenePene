@@ -416,6 +416,8 @@
         "seller_terms": "Ba conditions vendeur",
         "city": "Ville",
         "city_placeholder": "Kinshasa",
+        "country": "Pays",
+        "country_placeholder": "République Démocratique du Congo",
         "address_placeholder": "123 rue Principale",
         "business_name_placeholder": "Boutique ya kitoko na bino"
     },

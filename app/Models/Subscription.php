@@ -9,13 +9,14 @@ class Subscription extends Model
     protected $fillable = [
         'seller_id', 'subscription_plan_id', 'status',
         'amount_paid', 'currency', 'payment_reference',
-        'starts_at', 'expires_at',
+        'starts_at', 'expires_at', 'featured_used', 'auto_renew',
     ];
 
     protected function casts(): array
     {
         return [
             'amount_paid' => 'decimal:2',
+            'featured_used' => 'integer',
             'starts_at'   => 'datetime',
             'expires_at'  => 'datetime',
         ];

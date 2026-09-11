@@ -432,6 +432,8 @@
         "seller_terms": "Seller Terms",
         "city": "City",
         "city_placeholder": "Kinshasa",
+        "country": "Country",
+        "country_placeholder": "Democratic Republic of the Congo",
         "address_placeholder": "123 Main Street",
         "business_name_placeholder": "Your Awesome Store"
     },

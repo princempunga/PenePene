@@ -53,6 +53,7 @@ export default function Register() {
         description: '',
         address: '',
         city: '',
+        country: '',
         whatsapp: '',
         logo: null,
         cover_image: null,
@@ -216,6 +217,7 @@ export default function Register() {
                                 </div>
                                 <AuthInput id="whatsapp" label={t('seller.whatsapp_number')} type="tel" icon={Phone} value={data.whatsapp} onChange={(e) => setData('whatsapp', e.target.value)} error={errors.whatsapp} placeholder={t('auth.phone_placeholder')} required accent="amber" />
                                 <AuthInput id="city" label={t('seller.city')} icon={MapPin} value={data.city} onChange={(e) => setData('city', e.target.value)} error={errors.city} placeholder={t('seller.city_placeholder')} required accent="amber" />
+                                <AuthInput id="country" label={t('seller.country')} icon={MapPin} value={data.country} onChange={(e) => setData('country', e.target.value)} error={errors.country} placeholder={t('seller.country_placeholder')} accent="amber" />
                                 <AuthInput id="address" label={t('seller.address')} icon={MapPin} value={data.address} onChange={(e) => setData('address', e.target.value)} error={errors.address} placeholder={t('seller.address_placeholder')} required accent="amber" />
                                 <div className="sm:col-span-2">
                                     <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-1.5">{t('seller.store_description')}</label>
