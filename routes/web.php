@@ -82,15 +82,15 @@ Route::get('/seller/register', [\App\Http\Controllers\Seller\Auth\RegisterContro
 Route::middleware('guest')->group(function () {
     Route::get('/register',            fn() => \Inertia\Inertia::render('Auth/RegisterChoice'))->name('register');
     Route::get('/buyer/register',      [\App\Http\Controllers\Auth\RegisterController::class, 'create'])->name('buyer.register');
-    Route::post('/buyer/register',     [\App\Http\Controllers\Auth\RegisterController::class, 'store']);
+    Route::post('/buyer/register',     [\App\Http\Controllers\Auth\RegisterController::class, 'store'])->middleware('throttle:5,1');
     Route::get('/login',               [\App\Http\Controllers\Auth\LoginController::class, 'create'])->name('login');
-    Route::post('/login',              [\App\Http\Controllers\Auth\LoginController::class, 'store']);
+    Route::post('/login',              [\App\Http\Controllers\Auth\LoginController::class, 'store'])->middleware('throttle:5,1');
     Route::get('/forgot-password',     [\App\Http\Controllers\Auth\PasswordController::class, 'requestForm'])->name('password.request');
-    Route::post('/forgot-password',    [\App\Http\Controllers\Auth\PasswordController::class, 'sendResetLink'])->name('password.email');
+    Route::post('/forgot-password',    [\App\Http\Controllers\Auth\PasswordController::class, 'sendResetLink'])->middleware('throttle:5,1')->name('password.email');
     Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\PasswordController::class, 'resetForm'])->name('password.reset');
-    Route::post('/reset-password',     [\App\Http\Controllers\Auth\PasswordController::class, 'reset'])->name('password.store');
+    Route::post('/reset-password',     [\App\Http\Controllers\Auth\PasswordController::class, 'reset'])->middleware('throttle:5,1')->name('password.store');
 
-    Route::post('/seller/register', [\App\Http\Controllers\Seller\Auth\RegisterController::class, 'store']);
+    Route::post('/seller/register', [\App\Http\Controllers\Seller\Auth\RegisterController::class, 'store'])->middleware('throttle:5,1');
 });
 
 
