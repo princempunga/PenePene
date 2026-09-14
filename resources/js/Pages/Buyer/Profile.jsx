@@ -12,7 +12,7 @@ export default function Profile({ user, buyer }) {
         phone: user.phone || '',
         address: buyer?.address || '',
         city: buyer?.city || '',
-        country: buyer?.country || 'Tanzania',
+        country: buyer?.country || 'Congo (RDC)',
     });
 
     const passwordForm = useForm({

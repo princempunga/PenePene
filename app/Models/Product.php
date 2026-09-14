@@ -49,7 +49,7 @@ class Product extends Model
     }
 
     // Scopes
-    public function scopeActive($q)    { return $q->where('status', 'active'); }
+    public function scopeActive($q)    { return $q->where('status', 'active')->inStock(); }
     public function scopeFeatured($q)  { return $q->where('is_featured', true); }
     public function scopeInStock($q)   { return $q->whereRaw('(initial_stock - confirmed_sales) > 0'); }
 

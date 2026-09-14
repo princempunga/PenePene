@@ -274,7 +274,7 @@ export default function Navbar({ onMenuClick }) {
             {/* Bottom Links Bar (Categories) */}
             <div className="hidden lg:block border-t border-gray-100 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
-                    <ul className="flex items-center gap-2 py-2.5 text-sm font-medium text-gray-600 overflow-x-auto hide-scrollbar">
+                    <ul className="flex items-center gap-2 py-2.5 text-sm font-medium text-gray-600 overflow-x-auto hide-scrollbar" style={{overflowY: 'visible'}}>
                         <li>
                             <Link href="/categories" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold whitespace-nowrap px-2 py-1.5">
                                 <Menu size={16} /> {t('nav.all_categories')}
@@ -285,7 +285,7 @@ export default function Navbar({ onMenuClick }) {
                             const hasChildren = Array.isArray(category.children) && category.children.length > 0;
 
                             return (
-                                <li key={category.id} className="relative group">
+                                <li key={category.id} className="relative group/cat">
                                     <Link
                                         href={category.slug ? `/categories/${category.slug}` : '/categories'}
                                         className="block px-2 py-1.5 rounded-md hover:text-primary-600 hover:bg-gray-50 whitespace-nowrap transition-colors"
@@ -294,16 +294,20 @@ export default function Navbar({ onMenuClick }) {
                                     </Link>
 
                                     {hasChildren && (
-                                        <div className="absolute left-0 top-full z-30 hidden min-w-[220px] group-hover:block rounded-xl border border-gray-200 bg-white shadow-lg py-2">
-                                            {category.children.map((child) => (
-                                                <Link
-                                                    key={child.id}
-                                                    href={child.slug ? `/categories/${child.slug}` : '/categories'}
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-                                                >
-                                                    {child.name}
-                                                </Link>
-                                            ))}
+                                        <div className="absolute left-0 top-full z-[200] pt-1 hidden group-hover/cat:block">
+                                            {/* transparent bridge to fill the gap between trigger and panel */}
+                                            <div className="absolute -top-1 left-0 right-0 h-2 bg-transparent" />
+                                            <div className="min-w-[220px] rounded-xl border border-gray-200 bg-white shadow-xl py-2">
+                                                {category.children.map((child) => (
+                                                    <Link
+                                                        key={child.id}
+                                                        href={child.slug ? `/categories/${child.slug}` : '/categories'}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+                                                    >
+                                                        {child.name}
+                                                    </Link>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
                                 </li>
