@@ -40,6 +40,7 @@ class RegisterController extends Controller
             'business_category' => 'nullable|string',
             'address'           => 'required|string',
             'city'              => 'required|string',
+            'country'           => 'required|string|max:100',
             'whatsapp'          => 'nullable|string|max:30',
             'logo'              => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
@@ -55,6 +56,7 @@ class RegisterController extends Controller
             'business_name.required' => 'Le nom de la boutique est obligatoire.',
             'address.required'       => 'L\'adresse est obligatoire.',
             'city.required'          => 'La ville est obligatoire.',
+            'country.required'       => 'Le pays est obligatoire.',
         ]);
 
         try {
