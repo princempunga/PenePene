@@ -4,7 +4,50 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import {
     Store, User, MapPin, FileText, CheckCircle, XCircle, FileWarning,
     Package, Eye, BarChart3, ShieldAlert, Award, Clock, Power,
+    ExternalLink, FileCheck,
 } from 'lucide-react';
+
+const documentTypeLabels = {
+    national_id: 'Carte d\'identité nationale',
+    passport: 'Passeport',
+    business_registration: 'Immatriculation d\'entreprise',
+    tax_certificate: 'Certificat fiscal',
+    other: 'Autre document',
+};
+
+const documentTypeIcons = {
+    national_id: FileText,
+    passport: FileText,
+    business_registration: FileCheck,
+    tax_certificate: FileCheck,
+    other: FileText,
+};
+
+const documentStatusStyles = {
+    pending: 'bg-amber-100 text-amber-800',
+    verified: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800',
+};
+
+const documentStatusLabels = {
+    pending: 'En attente',
+    verified: 'Approuvé',
+    rejected: 'Rejeté',
+};
+
+function DocumentStatusBadge({ status }) {
+    if (!status) return null;
+
+    return (
+        <span
+            className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${
+                documentStatusStyles[status] || 'bg-gray-100 text-gray-800'
+            }`}
+        >
+            {documentStatusLabels[status] || status}
+        </span>
+    );
+}
 
 const statusConfig = {
     pending:   { label: 'En attente',    color: 'bg-amber-100 text-amber-800',  icon: Clock },
@@ -164,34 +207,53 @@ export default function SellerShow({ seller }) {
                             </div>
                         </div>
 
-                        {/* Verification Document */}
+                        {/* KYC Documents */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center gap-3">
                                 <FileText className="text-primary-500 shrink-0" size={20} />
-                                <h2 className="font-bold text-gray-900 text-lg">Document de vérification</h2>
+                                <h2 className="font-bold text-gray-900 text-lg">Documents de vérification</h2>
                             </div>
                             <div className="p-5 sm:p-6">
-                                {seller.verification_document ? (
-                                    <div className="border border-gray-200 rounded-lg p-4 flex items-center justify-between bg-gray-50">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-white rounded flex items-center justify-center border border-gray-200 shadow-sm shrink-0">
-                                                <FileText size={20} className="text-gray-400" />
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-gray-900 text-sm">Business License / ID</p>
-                                                <p className="text-xs text-gray-500">
-                                                    Téléchargé le {new Date(seller.created_at).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <a
-                                            href={`/storage/${seller.verification_document}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                                        >
-                                            Voir le document
-                                        </a>
+                                {seller.documents && seller.documents.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {seller.documents.map((doc) => {
+                                            const TypeIcon = documentTypeIcons[doc.document_type] || FileText;
+                                            return (
+                                                <div
+                                                    key={doc.id}
+                                                    className="border border-gray-200 rounded-lg p-4 flex items-center justify-between bg-gray-50 gap-3"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-10 h-10 bg-white rounded flex items-center justify-center border border-gray-200 shadow-sm shrink-0">
+                                                            <TypeIcon size={20} className="text-gray-400" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="font-medium text-gray-900 text-sm truncate">
+                                                                {documentTypeLabels[doc.document_type] || doc.document_type}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                Téléversé le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
+                                                                {doc.document_number && <> · #{doc.document_number}</>}
+                                                            </p>
+                                                            <div className="mt-1">
+                                                                <DocumentStatusBadge status={doc.status} />
+                                                                {doc.status === 'rejected' && doc.rejection_reason && (
+                                                                    <p className="text-xs text-red-500 mt-1">{doc.rejection_reason}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <a
+                                                        href={`/seller/documents/${doc.id}/download`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                                                    >
+                                                        <ExternalLink size={14} /> Voir
+                                                    </a>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <div className="text-center py-6 text-gray-500 flex flex-col items-center">

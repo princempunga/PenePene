@@ -33,10 +33,12 @@ class SellerController extends Controller
 
     public function show(Seller $seller)
     {
-        $seller->load(['user', 'activeSubscription.plan', 'products' => function ($q) {
+        $seller->load(['user', 'activeSubscription.plan', 'documents' => function ($q) {
+            $q->latest();
+        }, 'products' => function ($q) {
             $q->with(['category', 'images'])->latest();
         }]);
-        
+
         return Inertia::render('Admin/Sellers/Show', [
             'seller' => $seller,
         ]);
