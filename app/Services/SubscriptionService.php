@@ -10,6 +10,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionPlanChange;
 use App\Models\SubscriptionProductDisable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SubscriptionService
 {
@@ -262,13 +263,40 @@ class SubscriptionService
                 ->get();
         }
 
+        $reactivated = 0;
+
         foreach ($disabled as $row) {
-            Product::where('id', $row->product_id)->where('status', 'inactive')
-                ->update(['status' => 'active']);
+            $product = Product::withTrashed()->find($row->product_id);
+
+            // On ne réactive que si le produit est encore exactement dans
+            // l'état où disableExcessProducts() l'a laissé : toujours
+            // 'inactive', pas supprimé, et pas touché depuis (updated_at
+            // encore au niveau de la désactivation). Si un admin l'a
+            // rejeté/bloqué/banni, si le vendeur l'a supprimé, ou si
+            // quoi que ce soit d'autre l'a modifié depuis, ce n'est plus
+            // à nous de décider — on referme la ligne sans y toucher pour
+            // ne pas la garder en attente indéfiniment.
+            $skipReason = match (true) {
+                ! $product => 'Produit introuvable (supprimé définitivement).',
+                $product->trashed() => 'Produit supprimé (corbeille) depuis la désactivation.',
+                $product->status !== 'inactive' => "Statut modifié depuis la désactivation (actuellement '{$product->status}') — probablement une action de modération.",
+                $product->updated_at->gt($row->created_at) => 'Produit modifié depuis la désactivation — réactivation automatique annulée par prudence.',
+                default => null,
+            };
+
+            if ($skipReason !== null) {
+                Log::info("SubscriptionService::reactivateDisabledProducts — ligne #{$row->id} (produit #{$row->product_id}) non réactivée : {$skipReason}");
+                $row->update(['reactivated_at' => now(), 'skip_reason' => $skipReason]);
+
+                continue;
+            }
+
+            $product->update(['status' => 'active']);
             $row->update(['reactivated_at' => now()]);
+            $reactivated++;
         }
 
-        return $disabled->count();
+        return $reactivated;
     }
 
     /**

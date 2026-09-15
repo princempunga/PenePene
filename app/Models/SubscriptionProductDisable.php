@@ -8,7 +8,7 @@ class SubscriptionProductDisable extends Model
 {
     protected $fillable = [
         'seller_id', 'product_id', 'subscription_id',
-        'reason', 'reactivated_at',
+        'reason', 'reactivated_at', 'skip_reason',
     ];
 
     protected function casts(): array
