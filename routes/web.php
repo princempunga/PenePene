@@ -361,6 +361,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/sellers/{seller}/quick-action',  [\App\Http\Controllers\Admin\SellerController::class, 'quickAction'])->name('sellers.quick-action');
         Route::patch('/sellers/{seller}/toggle',       [\App\Http\Controllers\Admin\SellerController::class, 'toggleStatus'])->name('sellers.toggle');
 
+        // Seller KYC Documents (individual approve/reject)
+        Route::patch('/documents/{document}/verify',   [\App\Http\Controllers\Admin\DocumentController::class, 'verify'])->name('documents.verify');
+        Route::patch('/documents/{document}/reject',   [\App\Http\Controllers\Admin\DocumentController::class, 'reject'])->name('documents.reject');
+
         // Product Moderation
         // NOTE: static routes (bulk-action) MUST come before wildcard routes ({product})
         Route::get('/products',                       [\App\Http\Controllers\Admin\ProductModerationController::class, 'index'])->name('products.index');
