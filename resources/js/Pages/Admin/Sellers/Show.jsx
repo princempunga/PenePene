@@ -70,10 +70,13 @@ export default function SellerShow({ seller }) {
     const { flash } = usePage().props;
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [processingProductId, setProcessingProductId] = useState(null);
+    const [processingDocumentId, setProcessingDocumentId] = useState(null);
+    const [rejectingDocumentId, setRejectingDocumentId] = useState(null);
 
     const verifyForm = useForm({});
     const rejectForm = useForm({ reason: '' });
     const statusForm = useForm({ status: seller.status });
+    const documentRejectForm = useForm({ reason: '' });
 
     const handleVerify = () => {
         if (confirm('Êtes-vous sûr de vouloir vérifier ce vendeur et mettre son magasin en ligne ?')) {
@@ -114,6 +117,27 @@ export default function SellerShow({ seller }) {
             preserveState: true,
             preserveScroll: true,
             onFinish: () => setProcessingProductId(null),
+        });
+    };
+
+    const handleVerifyDocument = (documentId) => {
+        if (!confirm('Approuver ce document ?')) return;
+        setProcessingDocumentId(documentId);
+        router.patch(`/admin/documents/${documentId}/verify`, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setProcessingDocumentId(null),
+        });
+    };
+
+    const handleRejectDocument = (e) => {
+        e.preventDefault();
+        documentRejectForm.patch(`/admin/documents/${rejectingDocumentId}/reject`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setRejectingDocumentId(null);
+                documentRejectForm.reset();
+            },
         });
     };
 
@@ -243,14 +267,36 @@ export default function SellerShow({ seller }) {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <a
-                                                        href={`/seller/documents/${doc.id}/download`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="shrink-0 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-1.5"
-                                                    >
-                                                        <ExternalLink size={14} /> Voir
-                                                    </a>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <a
+                                                            href={`/seller/documents/${doc.id}/download`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                                                        >
+                                                            <ExternalLink size={14} /> Voir
+                                                        </a>
+                                                        {doc.status === 'pending' && (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleVerifyDocument(doc.id)}
+                                                                    disabled={processingDocumentId === doc.id}
+                                                                    className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                                                                >
+                                                                    <CheckCircle size={14} /> Approuver
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setRejectingDocumentId(doc.id)}
+                                                                    disabled={processingDocumentId === doc.id}
+                                                                    className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                                                                >
+                                                                    <XCircle size={14} /> Rejeter
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             );
                                         })}
@@ -599,6 +645,52 @@ export default function SellerShow({ seller }) {
                                         className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
                                     >
                                         {rejectForm.processing ? 'Rejet en cours...' : 'Confirmer le rejet'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Document Reject Modal */}
+                {rejectingDocumentId && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                        <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">Rejeter ce document</h3>
+                            <form onSubmit={handleRejectDocument}>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Motif du rejet (envoyé au vendeur)
+                                </label>
+                                <textarea
+                                    value={documentRejectForm.data.reason}
+                                    onChange={e => documentRejectForm.setData('reason', e.target.value)}
+                                    rows={4}
+                                    required
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:ring-2 focus:ring-red-500 outline-none resize-none"
+                                    placeholder="ex. Le document est illisible, veuillez téléverser un scan clair."
+                                ></textarea>
+                                {documentRejectForm.errors.reason && (
+                                    <p className="text-xs text-red-600 mb-4">{documentRejectForm.errors.reason}</p>
+                                )}
+
+                                <div className="flex gap-3 justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setRejectingDocumentId(null);
+                                            documentRejectForm.reset();
+                                            documentRejectForm.clearErrors();
+                                        }}
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={documentRejectForm.processing}
+                                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                                    >
+                                        {documentRejectForm.processing ? 'Rejet en cours...' : 'Confirmer le rejet'}
                                     </button>
                                 </div>
                             </form>
