@@ -198,7 +198,7 @@ export default function ProductShow({ product }) {
                                 </p>
                             </div>
                             <Link
-                                href={`/admin/sellers/${product.seller?.id}`}
+                                href={`/admin/sellers/${product.seller?.slug || product.seller?.id}`}
                                 className="block text-center mt-2 text-sm text-primary-600 hover:underline font-medium"
                             >
                                 View Seller Profile →

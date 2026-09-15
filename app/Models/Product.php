@@ -114,4 +114,11 @@ class Product extends Model
     public function reviews()     { return $this->hasMany(Review::class); }
 
     public function getRouteKeyName(): string { return 'slug'; }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where($field ?? $this->getRouteKeyName(), $value)
+            ->orWhere('id', $value)
+            ->firstOrFail();
+    }
 }

@@ -71,4 +71,11 @@ class Category extends Model
     }
 
     public function getRouteKeyName(): string { return 'slug'; }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where($field ?? $this->getRouteKeyName(), $value)
+            ->orWhere('id', $value)
+            ->firstOrFail();
+    }
 }
