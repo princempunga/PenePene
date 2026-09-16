@@ -14,6 +14,7 @@ Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 
 
 // ─── Public Routes ───────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
 
 // Generic /dashboard redirect — sends users to their role-specific dashboard
 Route::get('/dashboard', function () {
