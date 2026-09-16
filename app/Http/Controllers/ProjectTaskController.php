@@ -38,7 +38,7 @@ class ProjectTaskController extends Controller
 
         if ($request->hasFile('document')) {
             $file = $request->file('document');
-            $path = $file->store("projects/{$project->id}/tasks/{$task->id}", 'public');
+            $path = $file->store("projects/{$project->id}/tasks/{$task->id}", 'local');
             ProjectDocument::create([
                 'project_id'      => $project->id,
                 'project_task_id' => $task->id,
@@ -47,6 +47,7 @@ class ProjectTaskController extends Controller
                 'stage'           => 'execution',
                 'name'            => $file->getClientOriginalName(),
                 'path'            => $path,
+                'disk'            => 'local',
                 'mime_type'       => $file->getMimeType(),
                 'size'            => $file->getSize(),
             ]);

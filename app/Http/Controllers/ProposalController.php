@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AdministrativeDivision;
 use App\Models\Proposal;
 use App\Models\ProposalDocument;
+use App\Services\ProposalScopeService;
 use App\Services\ProposalWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,7 @@ class ProposalController extends Controller
 {
     public function __construct(
         private ProposalWorkflowService $workflow,
+        private ProposalScopeService $scopeService,
     ) {}
 
     public function index(Request $request)
@@ -82,11 +84,12 @@ class ProposalController extends Controller
 
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $file) {
-                $path = $file->store('proposals/' . $proposal->id, 'public');
+                $path = $file->store('proposals/' . $proposal->id, 'local');
                 ProposalDocument::create([
                     'proposal_id' => $proposal->id,
                     'name'        => $file->getClientOriginalName(),
                     'path'        => $path,
+                    'disk'        => 'local',
                     'mime_type'   => $file->getMimeType(),
                     'size'        => $file->getSize(),
                 ]);
@@ -119,6 +122,36 @@ class ProposalController extends Controller
         return Inertia::render('Proposals/Show', [
             'proposal' => $proposal,
         ]);
+    }
+
+    /**
+     * Stream a proposal document. Accessible to the proposal's own
+     * submitter, a government officer already scoped to review this
+     * proposal (ProposalScopeService — same check used by
+     * Government\ProposalController), or an admin.
+     */
+    public function downloadDocument(Request $request, Proposal $proposal, ProposalDocument $document)
+    {
+        // IDOR guard: the document must actually belong to the proposal in
+        // the URL, not just be a valid document overall.
+        abort_unless($document->proposal_id === $proposal->id, 404);
+
+        $user = $request->user();
+        $isOwner = $proposal->user_id === $user->id;
+        $isGovernmentReviewer = $user->role === 'government'
+            && $this->scopeService->canOfficerAccessProposal($user, $proposal);
+
+        if (! $isOwner && ! $isGovernmentReviewer && ! $user->isAdmin()) {
+            abort(403);
+        }
+
+        $disk = $document->disk ?? 'public';
+
+        if (! Storage::disk($disk)->exists($document->path)) {
+            abort(404, 'Document introuvable.');
+        }
+
+        return Storage::disk($disk)->response($document->path, $document->name);
     }
 
     public function submit(Proposal $proposal)
