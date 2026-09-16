@@ -8,7 +8,7 @@ class ProjectDocument extends Model
 {
     protected $fillable = [
         'project_id', 'project_task_id', 'uploaded_by', 'type', 'stage',
-        'name', 'path', 'mime_type', 'size',
+        'name', 'path', 'disk', 'mime_type', 'size',
     ];
 
     public function project() { return $this->belongsTo(Project::class); }
