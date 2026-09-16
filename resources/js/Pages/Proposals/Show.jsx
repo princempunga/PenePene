@@ -83,7 +83,7 @@ export default function ProposalsShow({ proposal }) {
               <ul className="space-y-1">
                 {proposal.documents.map((doc) => (
                   <li key={doc.id}>
-                    <a href={`/storage/${doc.path}`} target="_blank" rel="noreferrer" className="text-[#0056B3] text-sm hover:underline">
+                    <a href={`/proposals/${proposal.id}/documents/${doc.id}/download`} target="_blank" rel="noreferrer" className="text-[#0056B3] text-sm hover:underline">
                       {doc.name}
                     </a>
                   </li>

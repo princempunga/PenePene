@@ -54,7 +54,7 @@ class TutelageProjectController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store("projects/{$project->id}/tutelage", 'public');
+        $path = $file->store("projects/{$project->id}/tutelage", 'local');
 
         ProjectDocument::create([
             'project_id'  => $project->id,
@@ -63,6 +63,7 @@ class TutelageProjectController extends Controller
             'stage'       => 'tutelage',
             'name'        => $file->getClientOriginalName(),
             'path'        => $path,
+            'disk'        => 'local',
             'mime_type'   => $file->getMimeType(),
             'size'        => $file->getSize(),
         ]);
