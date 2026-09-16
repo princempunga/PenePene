@@ -168,6 +168,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/{project}/tasks/{task}/delay', [\App\Http\Controllers\ProjectTaskController::class, 'reportDelay'])->name('tasks.delay');
     });
 
+    // Project document download — deliberately OUTSIDE the 'portal'-gated
+    // group above. PortalAccessService::routeRequiresPortal() maps every
+    // 'projects/...' path to the 'citizen' portal, which would redirect
+    // away a government reviewer (active_portal = expert/tutelage) before
+    // this route's own authorization ever ran. Same URL, no portal check —
+    // authorization is fully handled in ProjectDocumentController.
+    Route::get('/projects/{project}/documents/{document}/download', [\App\Http\Controllers\ProjectDocumentController::class, 'download'])->name('projects.documents.download');
+
     Route::redirect('/proposals', '/projects');
     Route::redirect('/proposals/create', '/projects/create');
 
@@ -179,6 +187,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{proposal}', [\App\Http\Controllers\ProposalController::class, 'show'])->name('show');
         Route::post('/{proposal}/submit', [\App\Http\Controllers\ProposalController::class, 'submit'])->name('submit');
         Route::post('/{proposal}/reply', [\App\Http\Controllers\ProposalController::class, 'reply'])->name('reply');
+        Route::get('/{proposal}/documents/{document}/download', [\App\Http\Controllers\ProposalController::class, 'downloadDocument'])->name('documents.download');
     });
 
     // ─── Government Routes ──────────────────────────────────────────────────────
