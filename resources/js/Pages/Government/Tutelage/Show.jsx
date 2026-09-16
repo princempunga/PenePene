@@ -20,7 +20,7 @@ export default function TutelageShow({ project }) {
 
           <h3 className="font-semibold pt-2">Documents</h3>
           {project.documents?.map(d => (
-            <a key={d.id} href={`/storage/${d.path}`} target="_blank" rel="noreferrer" className="block text-[#0056B3] hover:underline">{d.name} ({d.type})</a>
+            <a key={d.id} href={`/projects/${project.id}/documents/${d.id}/download`} target="_blank" rel="noreferrer" className="block text-[#0056B3] hover:underline">{d.name} ({d.type})</a>
           ))}
           <form onSubmit={e => { e.preventDefault(); docForm.post(`/government/tutelage/projects/${project.id}/documents`, { forceFormData: true }); }} className="space-y-2 pt-2">
             <select value={docForm.data.type} onChange={e => docForm.setData('type', e.target.value)} className="w-full border-gray-300 rounded-lg text-sm">
