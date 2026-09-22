@@ -275,7 +275,6 @@ export default function ProductsIndex({ products, filters = {} }) {
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {products.data.map((product) => {
-                                            const imgPath = getPrimaryImage(product);
                                             const availableStock = product.initial_stock - product.confirmed_sales;
                                             const isSelected = selectedIds.includes(product.id);
 
@@ -362,7 +361,6 @@ export default function ProductsIndex({ products, filters = {} }) {
 
                         <div className="hidden md:block lg:hidden space-y-3">
                             {products.data.map((product) => {
-                                const imgPath = getPrimaryImage(product);
                                 const availableStock = product.initial_stock - product.confirmed_sales;
                                 const isSelected = selectedIds.includes(product.id);
 
@@ -423,7 +421,6 @@ export default function ProductsIndex({ products, filters = {} }) {
 
                         <div className="md:hidden grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 pb-20">
                             {products.data.map((product) => {
-                                const imgPath = getPrimaryImage(product);
                                 const availableStock = product.initial_stock - product.confirmed_sales;
                                 const isSelected = selectedIds.includes(product.id);
 
