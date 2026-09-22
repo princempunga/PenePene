@@ -1,4 +1,5 @@
 import React from 'react';
+import { handleImageError } from '@/utils/productImage';
 
 const FIELD_LABELS = [
     { key: 'image', label: 'Image' },
@@ -69,6 +70,7 @@ export default function ProductFormCard({
                                 src={product.preview}
                                 alt={`Produit ${index + 1}`}
                                 className="w-full h-full object-cover"
+                                onError={handleImageError}
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">

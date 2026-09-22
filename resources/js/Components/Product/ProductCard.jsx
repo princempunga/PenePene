@@ -8,6 +8,8 @@ import useTranslation from '@/hooks/useTranslation';
 import ImageLightbox from './ImageLightbox';
 import { useCurrency } from '@/context/CurrencyContext';
 
+import { getProductImageUrl, handleImageError, DEFAULT_PRODUCT_PLACEHOLDER } from '@/utils/productImage';
+
 const BADGE_STYLES = {
     sponsored: 'bg-amber-400 text-amber-900',
     hot_deal: 'bg-red-500 text-white',
@@ -32,22 +34,6 @@ const LEGACY_BADGE_MAP = {
     Popular: 'popular',
 };
 
-const DEFAULT_PRODUCT_IMAGE = '/images/categories/default.jpg';
-
-function resolveImagePath(path) {
-    if (!path) return null;
-    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) return path;
-    if (path.startsWith('images/')) return `/${path}`;
-    return `/storage/${path}`;
-}
-
-function getProductImage(product) {
-    const primaryImage = product.images?.find((img) => img.is_primary)?.image_path
-        || product.images?.[0]?.image_path;
-
-    return resolveImagePath(primaryImage) || DEFAULT_PRODUCT_IMAGE;
-}
-
 function normalizeBadge(badge) {
     if (!badge) return null;
     if (BADGE_STYLES[badge]) return badge;
@@ -71,7 +57,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
     const { auth } = usePage().props;
     const { t } = useTranslation();
     const { formatAmount } = useCurrency();
-    const imageUrl = getProductImage(product);
+    const imageUrl = getProductImageUrl(product);
     const displayBadge = getDisplayBadge(product, badge);
     const rating = product.average_rating || product.seller?.average_rating || 0;
     const productUrl = `/products/${product.slug}`;

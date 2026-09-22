@@ -14,6 +14,7 @@ import MaskReveal from '@/Components/UI/MaskReveal';
 import { motion, useReducedMotion } from 'framer-motion';
 import { scaleIn } from '@/lib/motion';
 import { DURATION, EASE } from '@/lib/premiumMotion';
+import { handleImageError } from '@/utils/productImage';
 
 export default function Show({
     category,
@@ -54,7 +55,7 @@ export default function Show({
                     src={bannerImage}
                     alt={category.name}
                     className="absolute inset-0 w-full h-full object-cover hero-zoom-bg"
-                    onError={(e) => { e.target.src = '/images/categories/default.jpg'; }}
+                    onError={handleImageError}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -110,7 +111,7 @@ export default function Show({
                                             src={sub.image || '/images/categories/default.jpg'}
                                             alt={sub.name}
                                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                            onError={(e) => { e.target.src = '/images/categories/default.jpg'; }}
+                                            onError={handleImageError}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent transition-opacity duration-500 group-hover:from-black/90" />
                                         <div className="relative z-10 flex h-full min-h-[140px] items-end p-4">
@@ -157,7 +158,7 @@ export default function Show({
                                         className="group flex flex-col items-center gap-2 p-3 rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all duration-300 bg-white hover:-translate-y-0.5"
                                     >
                                         <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-50 ring-2 ring-gray-100 group-hover:ring-primary-200 transition-all duration-300 group-hover:scale-105">
-                                            <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover" onError={(e) => { e.target.src = '/images/categories/default.jpg'; }} />
+                                            <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover" onError={handleImageError} />
                                         </div>
                                         <span className="text-xs font-semibold text-gray-700 text-center">{brand.name}</span>
                                     </Link>

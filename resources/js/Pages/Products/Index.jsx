@@ -15,6 +15,7 @@ import useTranslation from '@/hooks/useTranslation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { scaleIn, slideInLeft } from '@/lib/motion';
 import { DURATION, EASE } from '@/lib/premiumMotion';
+import { handleImageError } from '@/utils/productImage';
 
 export default function Index({
     products,
@@ -60,7 +61,7 @@ export default function Index({
                     src={bannerImage}
                     alt={pageTitle}
                     className="absolute inset-0 w-full h-full object-cover opacity-40 hero-zoom-bg"
-                    onError={(e) => { e.target.src = '/images/categories/default.jpg'; }}
+                    onError={handleImageError}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-gray-900/50" />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">

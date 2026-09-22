@@ -2,6 +2,7 @@ import React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { ArrowLeft, Package, MapPin, Tag, CheckCircle, XCircle, ShieldAlert, Power } from 'lucide-react';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 export default function ProductShow({ product }) {
     const { flash } = usePage().props;
@@ -61,7 +62,7 @@ export default function ProductShow({ product }) {
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {product.images.map(img => (
                                         <div key={img.id} className="relative rounded-lg overflow-hidden border border-gray-200 aspect-square bg-gray-50">
-                                            <img src={`/storage/${img.image_path}`} alt="" className="w-full h-full object-cover" />
+                                            <img src={getProductImageUrl(img.image_path)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                                             {img.is_primary && (
                                                 <span className="absolute top-2 left-2 bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded">PRIMARY</span>
                                             )}

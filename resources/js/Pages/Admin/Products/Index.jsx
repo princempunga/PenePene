@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Package, Check, X, ShieldAlert, Eye, Search, Calendar, ArrowUpDown, Square, CheckSquare, Ban, ShieldCheck, Power } from 'lucide-react';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 export default function ProductsIndex({ products, filters }) {
     const { flash } = usePage().props;
@@ -59,15 +60,6 @@ export default function ProductsIndex({ products, filters }) {
         get('/admin/products', { ...filters, search: e.target.search.value });
     };
 
-    const getProductImageUrl = (product) => {
-        if (product.images && product.images[0]?.image_path) {
-            return `/storage/${product.images[0].image_path}`;
-        }
-        if (product.image) {
-            return `/storage/${product.image}`;
-        }
-        return null;
-    };
 
     const handleSort = (sortValue) => {
         get('/admin/products', { ...filters, sort: sortValue });
@@ -197,7 +189,7 @@ export default function ProductsIndex({ products, filters }) {
                                     {isSelected ? <CheckSquare size={18} className="text-slate-700" /> : <Square size={18} />}
                                 </button>
                                 {getProductImageUrl(product) ? (
-                                    <img src={getProductImageUrl(product)} alt={product.name} className="w-12 h-12 object-cover rounded-lg border border-gray-200 shrink-0" />
+                                    <img src={getProductImageUrl(product)} alt={product.name} className="w-12 h-12 object-cover rounded-lg border border-gray-200 shrink-0" onError={handleImageError} />
                                 ) : (
                                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
                                         <Package size={20} className="text-gray-400" />
@@ -309,7 +301,7 @@ export default function ProductsIndex({ products, filters }) {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             {getProductImageUrl(product) ? (
-                                                <img src={getProductImageUrl(product)} alt={product.name} className="w-10 h-10 object-cover rounded-lg border border-gray-200 shrink-0" />
+                                                <img src={getProductImageUrl(product)} alt={product.name} className="w-10 h-10 object-cover rounded-lg border border-gray-200 shrink-0" onError={handleImageError} />
                                             ) : (
                                                 <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
                                                     <Package size={20} className="text-gray-400" />

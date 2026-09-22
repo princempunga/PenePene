@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { ShoppingCart, Trash2, Plus, Minus, Package, ArrowRight, ShoppingBag, AlertCircle } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 export default function CartIndex({ items, total }) {
     const { auth, flash, errors } = usePage().props;
@@ -107,13 +108,7 @@ export default function CartIndex({ items, total }) {
                                 <div key={item.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 md:p-6 flex gap-4 items-start">
                                     <Link href={`/products/${item.slug}`} className="shrink-0">
                                         <div className="w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
-                                            {item.image_url ? (
-                                                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <Package size={32} className="text-gray-300" />
-                                                </div>
-                                            )}
+                                            <img src={getProductImageUrl(item.image_url || item)} alt={item.name} className="w-full h-full object-cover" onError={handleImageError} />
                                         </div>
                                     </Link>
 

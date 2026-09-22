@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getProductImageUrl, handleImageError, DEFAULT_PRODUCT_PLACEHOLDER } from '@/utils/productImage';
 
 export default function ImageLightbox({ images, productName, triggerImageUrl }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const displayImages = images && images.length > 0
         ? images
-        : [{ id: 'placeholder', image_path: 'images/placeholder.svg' }];
+        : [{ id: 'placeholder', image_path: DEFAULT_PRODUCT_PLACEHOLDER }];
 
-    const getImageUrl = (path) => {
-        if (!path) return '';
-        if (path.startsWith('images/')) return `/${path}`;
-        if (path.startsWith('/images/')) return path;
-        if (path.startsWith('http')) return path;
-        return `/storage/${path}`;
-    };
-
-    const allUrls = displayImages.map(img => getImageUrl(img.image_path));
+    const allUrls = displayImages.map(img => getProductImageUrl(img.image_path || img));
     const initialIndex = triggerImageUrl
         ? Math.max(0, allUrls.findIndex(url => url === triggerImageUrl))
         : 0;
@@ -55,10 +48,11 @@ export default function ImageLightbox({ images, productName, triggerImageUrl }) 
                 aria-label="Zoom image"
             >
                 <img
-                    src={triggerImageUrl || getImageUrl(displayImages[0]?.image_path)}
+                    src={triggerImageUrl || getProductImageUrl(displayImages[0]?.image_path || displayImages[0])}
                     alt={productName}
                     className="w-full h-full object-contain p-2 md:object-cover md:p-0"
                     loading="lazy"
+                    onError={handleImageError}
                 />
             </button>
         );
@@ -113,7 +107,7 @@ export default function ImageLightbox({ images, productName, triggerImageUrl }) 
                     src={allUrls[currentIndex]}
                     alt={productName}
                     className="max-w-full max-h-full object-contain"
-                    onError={(e) => { e.target.src = '/images/placeholder.svg'; }}
+                    onError={handleImageError}
                 />
             </div>
         </div>

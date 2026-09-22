@@ -6,6 +6,7 @@ import StatusBadge from '@/Components/UI/StatusBadge';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { ORDER_STATUS_LABELS_FR } from '@/lib/orderStatusLabels';
 import { Package, Calendar, Filter, X, MessageCircle, CreditCard, Truck, MapPin } from 'lucide-react';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 const STATUS_TABS = ['all', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
@@ -169,11 +170,7 @@ export default function OrdersIndex({ orders, filters }) {
                                                     <td className="px-4 py-4">
                                                         <div className="flex items-center gap-2">
                                                             <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
-                                                                {imgPath ? (
-                                                                    <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <Package size={16} />
-                                                                )}
+                                                                <img src={getProductImageUrl(item?.product)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                                                             </div>
                                                             <div className="min-w-0">
                                                                 <p className="truncate max-w-[140px] font-medium text-gray-900">
@@ -242,11 +239,7 @@ export default function OrdersIndex({ orders, filters }) {
                                         <div className="flex items-start justify-between gap-3 mb-3">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
-                                                    {imgPath ? (
-                                                        <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <Package size={20} />
-                                                    )}
+                                                    <img src={getProductImageUrl(item?.product)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-gray-900">{order.order_number}</p>

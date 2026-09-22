@@ -5,6 +5,7 @@ import BuyerAccountEmptyState from '@/Components/Buyer/BuyerAccountEmptyState';
 import Pagination from '@/Components/UI/Pagination';
 import { Package } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 const statusColors = {
     pending:   'bg-amber-100 text-amber-800',
@@ -62,20 +63,11 @@ export default function OrdersIndex({ orders }) {
 
                                         {order.items && order.items.length > 0 && (
                                             <div className="mt-4 flex gap-2">
-                                                {order.items.slice(0, 4).map(item => {
-                                                    const imgPath = item.product?.images?.[0]?.image_path;
-                                                    return (
-                                                        <div key={item.id} className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                                                            {imgPath ? (
-                                                                <img src={`/storage/${imgPath}`} alt={item.product?.name} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center">
-                                                                    <Package size={18} className="text-gray-300" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
+                                                {order.items.slice(0, 4).map(item => (
+                                                    <div key={item.id} className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                                        <img src={getProductImageUrl(item.product)} alt={item.product?.name} className="w-full h-full object-cover" onError={handleImageError} />
+                                                    </div>
+                                                ))}
                                                 {order.items.length > 4 && (
                                                     <div className="w-14 h-14 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
                                                         +{order.items.length - 4}

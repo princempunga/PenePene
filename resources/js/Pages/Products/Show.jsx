@@ -16,6 +16,7 @@ import useTranslation from '@/hooks/useTranslation';
 import ReportSellerModal from '@/Components/ReportSellerModal';
 import { Flag, CheckCircle, Package } from 'lucide-react';
 import { useCurrency } from '@/context/CurrencyContext';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 function ProductActions({
     availableStock,
@@ -169,11 +170,7 @@ function OrderModal({ product, quantity, availableStock, onClose, auth }) {
                         {/* Résumé produit */}
                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
                             <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
-                                {product.images?.[0]?.image_path ? (
-                                    <img src={`/storage/${product.images[0].image_path}`} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                    <PackageIcon size={24} className="m-auto mt-3 text-gray-400" />
-                                )}
+                                <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="font-semibold text-gray-900 truncate text-sm">{product.name}</p>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getProductImageUrl, handleImageError, DEFAULT_PRODUCT_PLACEHOLDER } from '@/utils/productImage';
 
 export default function ImageGallery({ images, productName }) {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -8,16 +9,9 @@ export default function ImageGallery({ images, productName }) {
     // If no images provided, use a placeholder array
     const displayImages = images && images.length > 0 
         ? images 
-        : [{ id: 'placeholder', image_path: 'images/placeholder.svg' }];
+        : [{ id: 'placeholder', image_path: DEFAULT_PRODUCT_PLACEHOLDER }];
 
-    const getImageUrl = (path) => {
-        if (!path) return '';
-        if (path.startsWith('images/')) return `/${path}`;
-        if (path.startsWith('/images/')) return path;
-        return `/storage/${path}`;
-    };
-
-    const activeUrl = getImageUrl(displayImages[activeIndex]?.image_path);
+    const activeUrl = getProductImageUrl(displayImages[activeIndex]?.image_path || displayImages[activeIndex]);
 
     const handlePrevious = useCallback((e) => {
         if (e) e.stopPropagation();
@@ -54,7 +48,7 @@ export default function ImageGallery({ images, productName }) {
                         src={activeUrl} 
                         alt={productName} 
                         className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
-                        onError={(e) => { e.target.src = '/images/placeholder.svg'; }}
+                        onError={handleImageError}
                     />
                 </button>
 
@@ -62,7 +56,7 @@ export default function ImageGallery({ images, productName }) {
                 {displayImages.length > 1 && (
                     <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
                         {displayImages.map((img, index) => {
-                            const imgUrl = getImageUrl(img.image_path);
+                            const imgUrl = getProductImageUrl(img.image_path || img);
                             return (
                                 <button 
                                     key={img.id || index}
@@ -77,7 +71,7 @@ export default function ImageGallery({ images, productName }) {
                                         src={imgUrl} 
                                         alt={`${productName} thumbnail ${index + 1}`} 
                                         className="w-full h-full object-cover"
-                                        onError={(e) => { e.target.src = '/images/placeholder.svg'; }}
+                                        onError={handleImageError}
                                     />
                                 </button>
                             );
@@ -119,7 +113,7 @@ export default function ImageGallery({ images, productName }) {
                             alt={productName} 
                             className="max-w-full max-h-full object-contain cursor-default"
                             onClick={(e) => e.stopPropagation()}
-                            onError={(e) => { e.target.src = '/images/placeholder.svg'; }}
+                            onError={handleImageError}
                         />
                     </div>
 

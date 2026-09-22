@@ -6,6 +6,8 @@ import SellerLayout from '@/Layouts/SellerLayout';
 import Pagination from '@/Components/UI/Pagination';
 import { Plus, Edit, Trash2, Eye, Package, Search, Folder, Tag, DollarSign, Layers, Check, ToggleLeft, ToggleRight } from 'lucide-react';
 
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
+
 const statusColors = {
     pending:  'bg-amber-100 text-amber-800',
     active:   'bg-green-100 text-green-800',
@@ -27,12 +29,6 @@ const filterLabels = {
     inactive: 'Inactif',
     rejected: 'Rejeté',
 };
-
-function getPrimaryImage(product) {
-    const images = product.images || [];
-    const primary = images.find((img) => img.is_primary);
-    return primary?.image_path || images[0]?.image_path;
-}
 
 function stripHtml(text = '') {
     return text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -296,11 +292,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     <td className="px-4 py-4 font-medium text-gray-900">
                                                         <div className="flex items-center gap-3">
                                                             <Link href={`/seller/products/${product.id}`} className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden shrink-0 hover:ring-2 hover:ring-primary-300 transition-all">
-                                                                {imgPath ? (
-                                                                    <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <Package size={18} />
-                                                                )}
+                                                                <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
                                                             </Link>
                                                             <Link href={`/seller/products/${product.id}`} className="truncate max-w-[200px] hover:text-primary-600 transition-colors" title={product.name}>
                                                                 {product.name}
@@ -385,11 +377,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 mt-0.5"
                                                 />
                                                 <Link href={`/seller/products/${product.id}`} className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden shrink-0 hover:ring-2 hover:ring-primary-300 transition-all">
-                                                    {imgPath ? (
-                                                        <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <Package size={20} />
-                                                    )}
+                                                    <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
                                                 </Link>
                                             </div>
 
@@ -456,13 +444,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                                         </div>
 
                                         <Link href={`/seller/products/${product.id}`} className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden block">
-                                            {imgPath ? (
-                                                <img src={`/storage/${imgPath}`} alt="" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                    <Package size={24} />
-                                                </div>
-                                            )}
+                                            <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
                                         </Link>
 
                                         <div className="mt-2 space-y-1">

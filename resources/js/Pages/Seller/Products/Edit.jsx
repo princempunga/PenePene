@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import { Upload, X, Star } from 'lucide-react';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 const statusColors = {
     pending:  'bg-amber-100 text-amber-800',
@@ -140,7 +141,7 @@ export default function ProductEdit({ product, categories }) {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {product.images.map((img) => (
                                         <div key={img.id} className={`relative group rounded-lg overflow-hidden border-2 ${img.is_primary ? 'border-primary-500' : 'border-gray-200'}`}>
-                                            <img src={`/storage/${img.image_path}`} alt="" className="w-full h-32 object-cover" />
+                                            <img src={getProductImageUrl(img.image_path)} alt="" className="w-full h-32 object-cover" onError={handleImageError} />
 
                                             {img.is_primary && (
                                                 <div className="absolute top-2 left-2 bg-primary-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">

@@ -4,6 +4,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { MapPin, Store, Package, X, Star } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import useStatusLabel from '@/hooks/useStatusLabel';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
 const statusColors = {
     pending:   'bg-amber-100 text-amber-800',
@@ -107,13 +108,7 @@ export default function OrderShow({ order }) {
                                     return (
                                         <div key={item.id} className="p-5 flex items-center gap-4">
                                             <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shrink-0">
-                                                {imgPath ? (
-                                                    <img src={`/storage/${imgPath}`} alt={item.product?.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <Package size={20} className="text-gray-300" />
-                                                    </div>
-                                                )}
+                                                <img src={getProductImageUrl(item.product)} alt={item.product?.name} className="w-full h-full object-cover" onError={handleImageError} />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <Link href={`/products/${item.product?.slug}`} className="font-semibold text-gray-900 hover:text-primary-600 truncate block">
