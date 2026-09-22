@@ -5,9 +5,8 @@ import { getProductImageUrl, handleImageError, DEFAULT_PRODUCT_PLACEHOLDER } fro
 export default function ImageLightbox({ images, productName, triggerImageUrl }) {
     const [isOpen, setIsOpen] = useState(false);
 
-    const displayImages = images && images.length > 0
-        ? images
-        : [{ id: 'placeholder', image_path: DEFAULT_PRODUCT_PLACEHOLDER }];
+    const hasImages = Array.isArray(images) && images.length > 0;
+    const displayImages = hasImages ? images : [];
 
     const allUrls = displayImages.map(img => getProductImageUrl(img.image_path || img));
     const initialIndex = triggerImageUrl
@@ -42,7 +41,7 @@ export default function ImageLightbox({ images, productName, triggerImageUrl }) 
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setIsOpen(true);
+                    if (hasImages) setIsOpen(true);
                 }}
                 className="block w-full h-full cursor-zoom-in"
                 aria-label="Zoom image"
@@ -69,9 +68,11 @@ export default function ImageLightbox({ images, productName, triggerImageUrl }) 
                 <X size={32} />
             </button>
 
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 text-white font-medium text-lg z-50">
-                {currentIndex + 1} / {allUrls.length}
-            </div>
+            {allUrls.length > 0 && (
+                <div className="absolute top-4 left-4 sm:top-6 sm:left-6 text-white font-medium text-lg z-50">
+                    {currentIndex + 1} / {allUrls.length}
+                </div>
+            )}
 
             {allUrls.length > 1 && (
                 <>
@@ -104,7 +105,7 @@ export default function ImageLightbox({ images, productName, triggerImageUrl }) 
 
             <div className="w-full h-full max-w-6xl max-h-screen p-4 sm:p-12 flex items-center justify-center">
                 <img
-                    src={allUrls[currentIndex]}
+                    src={allUrls.length > 0 ? allUrls[currentIndex] : (triggerImageUrl || DEFAULT_PRODUCT_PLACEHOLDER)}
                     alt={productName}
                     className="max-w-full max-h-full object-contain"
                     onError={handleImageError}

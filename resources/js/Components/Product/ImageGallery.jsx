@@ -6,12 +6,12 @@ export default function ImageGallery({ images, productName }) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-    // If no images provided, use a placeholder array
-    const displayImages = images && images.length > 0 
-        ? images 
-        : [{ id: 'placeholder', image_path: DEFAULT_PRODUCT_PLACEHOLDER }];
+    const hasImages = Array.isArray(images) && images.length > 0;
+    const displayImages = hasImages ? images : [];
 
-    const activeUrl = getProductImageUrl(displayImages[activeIndex]?.image_path || displayImages[activeIndex]);
+    const activeUrl = hasImages
+        ? getProductImageUrl(displayImages[activeIndex]?.image_path || displayImages[activeIndex])
+        : DEFAULT_PRODUCT_PLACEHOLDER;
 
     const handlePrevious = useCallback((e) => {
         if (e) e.stopPropagation();
@@ -41,8 +41,8 @@ export default function ImageGallery({ images, productName }) {
                 {/* Main Image */}
                 <button 
                     type="button"
-                    onClick={() => setIsLightboxOpen(true)}
-                    className="aspect-square w-full bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-xs cursor-zoom-in group relative"
+                    onClick={() => hasImages && setIsLightboxOpen(true)}
+                    className={`aspect-square w-full bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-xs ${hasImages ? 'cursor-zoom-in group' : 'cursor-default'} relative`}
                 >
                     <img 
                         src={activeUrl} 
@@ -52,8 +52,8 @@ export default function ImageGallery({ images, productName }) {
                     />
                 </button>
 
-                {/* Thumbnails */}
-                {displayImages.length > 1 && (
+                {/* Thumbnails — only when real DB images exist and there are more than one */}
+                {hasImages && displayImages.length > 1 && (
                     <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
                         {displayImages.map((img, index) => {
                             const imgUrl = getProductImageUrl(img.image_path || img);
@@ -80,8 +80,8 @@ export default function ImageGallery({ images, productName }) {
                 )}
             </div>
 
-            {/* Lightbox Modal */}
-            {isLightboxOpen && (
+            {/* Lightbox Modal — only when real images exist */}
+            {isLightboxOpen && hasImages && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm">
                     <button 
                         type="button"

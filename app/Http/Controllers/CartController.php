@@ -48,7 +48,7 @@ class CartController extends Controller
                     'sale_price'     => $product->sale_price,
                     'quantity'       => $quantity,
                     'subtotal'       => $price * $quantity,
-                    'image_url'      => $imagePath ? '/storage/' . $imagePath : '/images/demo-products/default.jpg',
+                    'image_url'      => $imagePath ? '/storage/' . $imagePath : '/images/defaults/product-placeholder.png',
                     'stock'          => max(0, ($product->initial_stock ?? 0) - ($product->confirmed_sales ?? 0)),
                     'seller_name'    => $product->seller?->business_name,
                 ];

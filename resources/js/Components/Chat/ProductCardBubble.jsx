@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { Tag, ExternalLink } from 'lucide-react';
+import { DEFAULT_PRODUCT_PLACEHOLDER, handleImageError } from '@/utils/productImage';
 
 export default function ProductCardBubble({ product, isOwnMessage }) {
     if (!product) return null;
@@ -10,10 +11,10 @@ export default function ProductCardBubble({ product, isOwnMessage }) {
             {/* Image */}
             <div className="h-40 w-full relative bg-white overflow-hidden">
                 <img 
-                    src={product.image_url || '/images/categories/default.jpg'} 
+                    src={product.image_url || DEFAULT_PRODUCT_PLACEHOLDER} 
                     alt={product.name}
                     className="w-full h-full object-contain"
-                    onError={(e) => { e.target.src = '/images/placeholder.svg'; }}
+                    onError={handleImageError}
                 />
                 {product.category && (
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded">
