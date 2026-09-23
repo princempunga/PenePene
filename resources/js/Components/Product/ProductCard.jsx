@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { MapPin, Heart, ShieldCheck, ShoppingCart, Eye } from 'lucide-react';
@@ -65,6 +66,9 @@ export default function ProductCard({ product, badge, showActions = true, compac
     const [adding, setAdding] = useState(false);
     const [isFavorited, setIsFavorited] = useState(Boolean(product.is_favorited));
     const [favoriting, setFavoriting] = useState(false);
+    const [heartBounce, setHeartBounce] = useState(false);
+    const [addedToCart, setAddedToCart] = useState(false);
+    const prefersReduced = useReducedMotion();
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -81,6 +85,10 @@ export default function ProductCard({ product, badge, showActions = true, compac
         router.post('/cart/add', payload, {
             preserveScroll: true,
             onFinish: () => setAdding(false),
+            onSuccess: () => {
+                setAddedToCart(true);
+                setTimeout(() => setAddedToCart(false), 1200);
+            },
         });
     };
 
@@ -117,6 +125,8 @@ export default function ProductCard({ product, badge, showActions = true, compac
             });
 
             setIsFavorited(res.data.is_favorited);
+            setHeartBounce(true);
+            setTimeout(() => setHeartBounce(false), 300);
             dispatchToast(res.data.message, res.data.is_favorited ? 'success' : 'info');
             window.dispatchEvent(new CustomEvent('wishlist-updated', {
                 detail: { wishlist_count: res.data.wishlist_count },
@@ -133,7 +143,13 @@ export default function ProductCard({ product, badge, showActions = true, compac
     };
 
     return (
-        <div className="web-card premium-card bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col h-full group relative min-w-0 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+        <motion.div
+            className="web-card premium-card bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col h-full group relative min-w-0 transition-shadow duration-200 hover:shadow-lg"
+            whileHover={prefersReduced ? undefined : { scale: 1.03, y: -2 }}
+            whileTap={prefersReduced ? undefined : { scale: 0.98 }}
+            transition={{ type: 'tween', duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: prefersReduced ? 'auto' : 'transform' }}
+        >
             <button
                 type="button"
                 onClick={handleToggleWishlist}
@@ -147,7 +163,13 @@ export default function ProductCard({ product, badge, showActions = true, compac
                 }`}
                 aria-label={isFavorited ? t('product.remove_from_wishlist') : t('product.add_to_wishlist')}
             >
-                <Heart size={compact ? 15 : 18} className={isFavorited ? 'fill-current' : ''} />
+                <motion.span
+                    animate={heartBounce ? { scale: [1, 1.5, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', willChange: 'transform' }}
+                >
+                    <Heart size={compact ? 15 : 18} className={isFavorited ? 'fill-current' : ''} />
+                </motion.span>
             </button>
 
             {displayBadge && (
@@ -227,9 +249,15 @@ export default function ProductCard({ product, badge, showActions = true, compac
                                 disabled={outOfStock || adding}
                                 className="web-btn flex-1 min-w-0 w-full inline-flex items-center justify-center gap-1.5 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors cursor-pointer text-[11px] md:text-xs py-2 px-2 md:py-2.5"
                             >
-                                <ShoppingCart size={14} className="shrink-0" />
+                                <motion.span
+                                    animate={addedToCart ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                                    transition={{ duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
+                                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', willChange: 'transform' }}
+                                >
+                                    <ShoppingCart size={14} className="shrink-0" />
+                                </motion.span>
                                 <span className="truncate">
-                                    {adding ? t('product.adding') : outOfStock ? t('product.out_of_stock') : t('product.add_to_cart')}
+                                    {adding ? t('product.adding') : addedToCart ? '✓ Ajouté !' : (outOfStock ? t('product.out_of_stock') : t('product.add_to_cart'))}
                                 </span>
                             </button>
                             <Link
@@ -245,6 +273,6 @@ export default function ProductCard({ product, badge, showActions = true, compac
                     )}
                 </div>
             </div>
-        </div>
-    );
-}
+            </motion.div>
+        );
+    }

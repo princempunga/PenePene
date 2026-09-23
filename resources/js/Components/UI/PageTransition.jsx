@@ -1,27 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { usePage } from '@inertiajs/react';
+import { pageTransition } from '@/lib/motion';
 
 export default function PageTransition({ children }) {
     const { url } = usePage();
-    const [animate, setAnimate] = useState(false);
+    const prefersReduced = useReducedMotion();
 
-    useEffect(() => {
-        setAnimate(false);
-        const timer = requestAnimationFrame(() => {
-            setAnimate(true);
-        });
-        return () => cancelAnimationFrame(timer);
-    }, [url]);
+    if (prefersReduced) {
+        return <div className="w-full web-page">{children}</div>;
+    }
 
     return (
-        <div 
+        <motion.div
+            key={url}
+            initial={pageTransition.initial}
+            animate={pageTransition.animate}
+            transition={pageTransition.transition}
             className="w-full web-page"
-            style={{
-                opacity: animate ? 1 : 0,
-                transition: 'opacity 0.2s ease-out'
-            }}
+            style={{ willChange: 'transform, opacity' }}
         >
             {children}
-        </div>
+        </motion.div>
     );
 }
