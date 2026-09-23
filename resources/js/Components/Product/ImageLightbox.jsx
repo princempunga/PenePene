@@ -49,7 +49,7 @@ export default function ImageLightbox({ images, productName, triggerImageUrl }) 
                 <img
                     src={triggerImageUrl || getProductImageUrl(displayImages[0]?.image_path || displayImages[0])}
                     alt={productName}
-                    className="w-full h-full object-contain p-2 md:object-cover md:p-0"
+                    className="w-full h-full object-cover object-center"
                     loading="lazy"
                     onError={handleImageError}
                 />

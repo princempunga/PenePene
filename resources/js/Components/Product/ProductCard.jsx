@@ -159,7 +159,7 @@ export default function ProductCard({ product, badge, showActions = true, compac
             )}
 
             <div
-                className="block relative overflow-hidden bg-gray-50 cursor-pointer h-32 sm:h-36 md:h-auto md:aspect-[4/3]"
+                className="block relative overflow-hidden bg-gray-50 cursor-pointer h-48 sm:h-56 md:h-auto md:aspect-[4/3]"
                 onClick={(e) => {
                     if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
                         router.visit(productUrl);
