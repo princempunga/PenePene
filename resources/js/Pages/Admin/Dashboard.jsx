@@ -18,7 +18,7 @@ export default function Dashboard({ stats, pendingSellers, recentOrders }) {
 
                 {/* Stats — shortcut buttons */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
-                    <Link href="/admin/sellers" className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-primary-300 hover:shadow-md transition-all group">
+                    <Link href="/admin/buyers" className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm flex items-center gap-3 sm:gap-4 hover:border-primary-300 hover:shadow-md transition-all group">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-200 transition-colors">
                             <Users size={20} className="sm:hidden" />
                             <Users size={24} className="hidden sm:block" />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import useTranslation from '@/hooks/useTranslation';
-import { router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
 import ProductCard from '@/Components/Product/ProductCard';
@@ -10,6 +10,7 @@ import { MapPin, Phone, ShieldCheck, Calendar, MessageSquareText, Package, Star,
 import ChatWindow from '@/Components/Chat/ChatWindow';
 import OnlineStatusBadge from '@/Components/Chat/OnlineStatusBadge';
 import ReportSellerModal from '@/Components/ReportSellerModal';
+import { truncateDescription, toAbsoluteImageUrl, absoluteUrl } from '@/utils/seo';
 
 export default function Store({ seller, products, reviews }) {
     const { t } = useTranslation();
@@ -130,8 +131,32 @@ export default function Store({ seller, products, reviews }) {
         }
     }, [auth?.user?.id, auth?.user?.role, startChat]);
 
+    // ── SEO ──────────────────────────────────────────────────────────
+    const sellerTitle = ((seller.meta_title || seller.business_name || 'Boutique') + ' — ' + 'PenePene');
+    const sellerDescription = truncateDescription(
+        seller.meta_description || seller.description || '',
+        155
+    );
+    const sellerImageUrl = seller.banner
+        ? toAbsoluteImageUrl('/storage/' + seller.banner)
+        : toAbsoluteImageUrl('/storage/' + (seller.logo || seller.user?.avatar || ''));
+
     return (
         <AppLayout>
+            <Head title={sellerTitle}>
+                <meta name="description" content={sellerDescription} />
+                <meta property="og:title" content={sellerTitle} />
+                <meta property="og:description" content={sellerDescription} />
+                <meta property="og:image" content={sellerImageUrl} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={absoluteUrl(`/sellers/${seller.slug}`)} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={sellerTitle} />
+                <meta name="twitter:description" content={sellerDescription} />
+                <meta name="twitter:image" content={sellerImageUrl} />
+                <link rel="canonical" href={absoluteUrl(`/sellers/${seller.slug}`)} />
+            </Head>
+
             {/* Store Header/Banner */}
             <div className="relative bg-white border-b">
                 <div className="h-48 md:h-64 bg-gray-900 relative">

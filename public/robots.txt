@@ -1,4 +1,11 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /seller/dashboard
+Disallow: /seller/products/*/edit
+Disallow: /cart
+Disallow: /checkout
+Disallow: /login
+Disallow: /register
 
 Sitemap: https://penepene.store/sitemap.xml

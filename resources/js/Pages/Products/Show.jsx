@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import {
     MapPin, ShieldCheck, Truck, ArrowRight, MessageCircle, Heart,
@@ -17,6 +17,7 @@ import ReportSellerModal from '@/Components/ReportSellerModal';
 import { Flag, CheckCircle, Package } from 'lucide-react';
 import { useCurrency } from '@/context/CurrencyContext';
 import { getProductImageUrl, handleImageError } from '@/utils/productImage';
+import { truncateDescription, toAbsoluteImageUrl, absoluteUrl } from '@/utils/seo';
 
 function ProductActions({
     availableStock,
@@ -252,6 +253,48 @@ export default function Show({
     const { auth } = usePage().props;
     const { t } = useTranslation();
     const { formatAmount } = useCurrency();
+
+    const seller = product.seller;
+    const availableStock = Math.max(0, (product.initial_stock ?? 0) - (product.confirmed_sales ?? 0));
+
+    // ── SEO: build dynamic meta tags + JSON-LD ────────────────────────
+    const productTitle = (product.meta_title || product.name || 'Produit') + ' — PenePene';
+    const productDescription = product.meta_description
+        || product.short_description
+        || product.description
+        || '';
+    const truncatedDescription = truncateDescription(productDescription, 155);
+    const productImageUrl = toAbsoluteImageUrl(getProductImageUrl(product));
+    const productPageUrl = absoluteUrl(`/products/${product.slug}`);
+
+    const effectivePrice = parseFloat(product.sale_price || product.price || 0);
+    const isInStock = availableStock > 0;
+
+    const jsonLd = {
+        '@context': 'https://schema.org/',
+        '@type': 'Product',
+        name: product.name || '',
+        image: productImageUrl || undefined,
+        description: productDescription || undefined,
+        offers: {
+            '@type': 'Offer',
+            priceCurrency: product.currency || 'CDF',
+            price: effectivePrice || 0,
+            availability: isInStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: productPageUrl,
+        },
+        ...(seller?.average_rating > 0 && seller?.total_reviews > 0
+            ? {
+                  aggregateRating: {
+                      '@type': 'AggregateRating',
+                      ratingValue: String(seller.average_rating),
+                      reviewCount: Number(seller.total_reviews),
+                  },
+              }
+            : {}),
+    };
+
+    // ── State ────────────────────────────────────────────────────────
     const [quantity, setQuantity] = useState(1);
     const [adding, setAdding] = useState(false);
     const [favoriting, setFavoriting] = useState(false);
@@ -262,9 +305,6 @@ export default function Show({
     const [reportModalOpen, setReportModalOpen] = useState(false);
     const [showOrderModal, setShowOrderModal] = useState(false);
     const autoChatStarted = useRef(false);
-
-    const seller = product.seller;
-    const availableStock = Math.max(0, (product.initial_stock ?? 0) - (product.confirmed_sales ?? 0));
 
     useEffect(() => {
         setIsFavorited(initialFavorited);
@@ -398,6 +438,23 @@ export default function Show({
 
     return (
         <AppLayout>
+            <Head title={productTitle}>
+                <meta name="description" content={truncatedDescription} />
+                <meta property="og:title" content={productTitle} />
+                <meta property="og:description" content={truncatedDescription} />
+                <meta property="og:image" content={productImageUrl} />
+                <meta property="og:type" content="product" />
+                <meta property="og:url" content={productPageUrl} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={productTitle} />
+                <meta name="twitter:description" content={truncatedDescription} />
+                <meta name="twitter:image" content={productImageUrl} />
+                <link rel="canonical" href={productPageUrl} />
+                <script type="application/ld+json">
+                    {JSON.stringify(jsonLd)}
+                </script>
+            </Head>
+
             <div className="bg-white border-b overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 py-3 text-sm text-gray-500 flex items-center whitespace-nowrap overflow-hidden text-ellipsis">
                     <Link href="/" className="hover:text-primary-600 shrink-0">{t('product.breadcrumb_home')}</Link>

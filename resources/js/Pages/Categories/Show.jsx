@@ -1,9 +1,9 @@
 import React from 'react';
 import useTranslation from '@/hooks/useTranslation';
+import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import ProductCard from '@/Components/Product/ProductCard';
 import Pagination from '@/Components/UI/Pagination';
-import { Link } from '@inertiajs/react';
 import { ShieldCheck, Truck, Headphones, ArrowRight } from 'lucide-react';
 import CategoryIcon from '@/Components/Category/CategoryIcon';
 import AnimateIn from '@/Components/UI/AnimateIn';
@@ -15,6 +15,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { scaleIn } from '@/lib/motion';
 import { DURATION, EASE } from '@/lib/premiumMotion';
 import { handleImageError } from '@/utils/productImage';
+import { truncateDescription, toAbsoluteImageUrl, absoluteUrl } from '@/utils/seo';
 
 export default function Show({
     category,
@@ -48,8 +49,32 @@ export default function Show({
         { icon: Headphones, title: t('categories_page.buyer_support'), text: t('categories_page.buyer_support_desc') },
     ];
 
+    // ── SEO ──────────────────────────────────────────────────────────
+    const categoryTitle = (category.meta_title || category.name || 'Catégorie') + ' — PenePene';
+    const categoryDescription = truncateDescription(
+        category.meta_description || description || '',
+        155
+    );
+    const categoryImageUrl = toAbsoluteImageUrl(
+        category.image || bannerImage
+    );
+
     return (
         <AppLayout>
+            <Head title={categoryTitle}>
+                <meta name="description" content={categoryDescription} />
+                <meta property="og:title" content={categoryTitle} />
+                <meta property="og:description" content={categoryDescription} />
+                <meta property="og:image" content={categoryImageUrl} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={absoluteUrl(`/categories/${category.slug}`)} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={categoryTitle} />
+                <meta name="twitter:description" content={categoryDescription} />
+                <meta name="twitter:image" content={categoryImageUrl} />
+                <link rel="canonical" href={absoluteUrl(`/categories/${category.slug}`)} />
+            </Head>
+
             <section className="relative min-h-[280px] sm:min-h-[320px] overflow-hidden">
                 <img
                     src={bannerImage}
