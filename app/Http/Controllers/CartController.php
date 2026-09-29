@@ -196,7 +196,7 @@ class CartController extends Controller
                 'seller_id' => $seller->id,
             ]);
 
-            $messageBody = "Bonjour, je souhaite demander un devis pour les articles suivants :\n\n";
+            $messageBody = "Bonjour, je souhaite contacter le vendeur au sujet des articles suivants :\n\n";
             
             foreach ($items as $item) {
                 $product = $item['product'];
@@ -210,7 +210,7 @@ class CartController extends Controller
                     'product_id'   => $product->id,
                     'name'         => $product->name,
                     'price'        => $product->sale_price ?? $product->price,
-                    'currency'     => $product->currency ?? 'CDF',
+                    'currency'     => $product->currency ?? 'USD',
                     'category'     => $product->category?->name,
                     'seller_name'  => $seller?->business_name,
                     'seller_slug'  => $seller?->slug,
@@ -245,6 +245,6 @@ class CartController extends Controller
 
         return redirect()
             ->route('buyer.messages.index')
-            ->with('success', 'Votre demande de devis a été envoyée aux vendeurs.');
+            ->with('success', 'Votre demande a été envoyée aux vendeurs.');
     }
 }

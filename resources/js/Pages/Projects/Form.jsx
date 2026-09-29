@@ -29,7 +29,7 @@ function buildInitial(project) {
       title: '', division_id: null, category: 'other',
       planned_duration_days: '', planned_start_date: '', planned_end_date: '',
       interests: [{ type: 'primary', description: '' }, { type: 'secondary', description: '' }],
-      budget: { contingency_rate: 10, creator_unsure: false, currency: 'CDF', defined_by: 'creator', internal_expert_notes: '', external_expert_notes: '', lines: [emptyLine()] },
+      budget: { contingency_rate: 10, creator_unsure: false, currency: 'USD', defined_by: 'creator', internal_expert_notes: '', external_expert_notes: '', lines: [emptyLine()] },
       tasks: [emptyTask()],
       materials: [{ name: '', quantity: 1, unit: '', source: 'existing', notes: '' }],
       personnel: [{ role_title: '', count: 1, source: 'local', notes: '' }],
@@ -45,7 +45,7 @@ function buildInitial(project) {
     interests: project.interests?.length ? project.interests : [{ type: 'primary', description: '' }],
     budget: project.budget ? {
       ...project.budget, lines: project.budget.lines?.length ? project.budget.lines : [emptyLine()],
-    } : { contingency_rate: 10, creator_unsure: false, currency: 'CDF', lines: [emptyLine()] },
+    } : { contingency_rate: 10, creator_unsure: false, currency: 'USD', lines: [emptyLine()] },
     tasks: project.tasks?.length ? project.tasks.map(t => ({ ...t, members: t.members?.length ? t.members : [{ member_name: '', role: '' }] })) : [emptyTask()],
     materials: project.materials?.length ? project.materials : [{ name: '', quantity: 1, unit: '', source: 'existing' }],
     personnel: project.personnel?.length ? project.personnel : [{ role_title: '', count: 1, source: 'local' }],

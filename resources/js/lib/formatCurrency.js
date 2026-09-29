@@ -1,19 +1,19 @@
-/** Locale et devise par défaut du portail vendeur (RDC). */
-export const DEFAULT_LOCALE = 'fr-CD';
-export const DEFAULT_CURRENCY = 'CDF';
-export const DEFAULT_SYMBOL = 'FC';
+/** Locale et devise par défaut du portail vendeur. */
+export const DEFAULT_LOCALE = 'en-US';
+export const DEFAULT_CURRENCY = 'USD';
+export const DEFAULT_SYMBOL = '$';
 
 /**
  * Formate un montant selon la devise donnée.
- * Par défaut : franc congolais (CDF / FC).
+ * Par défaut : dollar américain (USD / $).
  */
 export function formatCurrency(amount, options = {}) {
     const {
         locale = DEFAULT_LOCALE,
         symbol = DEFAULT_SYMBOL,
-        maximumFractionDigits = 0,
+        maximumFractionDigits = 2,
         minimumFractionDigits,
-        currency,
+        currency = DEFAULT_CURRENCY,
     } = options;
 
     const resolvedSymbol = currency
@@ -31,7 +31,11 @@ export function formatCurrency(amount, options = {}) {
     try {
         formatted = value.toLocaleString(locale, formatOptions);
     } catch {
-        formatted = value.toLocaleString('fr-FR', formatOptions);
+        formatted = value.toLocaleString('en-US', formatOptions);
+    }
+
+    if (resolvedSymbol === '$') {
+        return `$${formatted}`;
     }
 
     return `${formatted} ${resolvedSymbol}`;

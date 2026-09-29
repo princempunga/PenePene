@@ -15,9 +15,11 @@ function getDashboardUrl(role) {
 }
 
 export default function Navbar({ onMenuClick }) {
-    const { auth, cart_count, wishlist_count: sharedWishlistCount, categories: topCategories = [] } = usePage().props;
+    const { auth, cart_count: sharedCartCount, wishlist_count: sharedWishlistCount, categories: topCategories = [] } = usePage().props;
     const { t } = useTranslation();
     const [wishlistCount, setWishlistCount] = useState(sharedWishlistCount || 0);
+    const [cartCount, setCartCount] = useState(sharedCartCount || 0);
+    const [cartBump, setCartBump] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -26,6 +28,22 @@ export default function Navbar({ onMenuClick }) {
     useEffect(() => {
         setWishlistCount(sharedWishlistCount || 0);
     }, [sharedWishlistCount]);
+
+    // Sync cart count from shared Inertia props (handles navigation + preserveState updates)
+    useEffect(() => {
+        setCartCount(sharedCartCount || 0);
+    }, [sharedCartCount]);
+
+    // Listen for optimistic cart-updated event fired immediately after successful add
+    useEffect(() => {
+        const handler = () => {
+            setCartCount((prev) => prev + 1);
+            setCartBump(true);
+            setTimeout(() => setCartBump(false), 400);
+        };
+        window.addEventListener('cart-updated', handler);
+        return () => window.removeEventListener('cart-updated', handler);
+    }, []);
 
     useEffect(() => {
         const handler = (e) => {
@@ -254,12 +272,15 @@ export default function Navbar({ onMenuClick }) {
                         <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative group flex items-center gap-2">
                             <div className="relative">
                                 <ShoppingCart size={24} className="group-hover:text-primary-600" />
-                                {(cart_count || 0) > 0 && (
-                                    <span className="absolute -top-1.5 -right-2 bg-primary-600 text-white text-[10px] min-w-[20px] h-5 flex items-center justify-center rounded-full font-bold border-2 border-white shadow-sm px-1">
-                                        {cart_count > 99 ? '99+' : cart_count}
+                                {cartCount > 0 && (
+                                    <span
+                                        className="absolute -top-1.5 -right-2 bg-primary-600 text-white text-[10px] min-w-[20px] h-5 flex items-center justify-center rounded-full font-bold border-2 border-white shadow-sm px-1 transition-transform"
+                                        style={{ transform: cartBump ? 'scale(1.35)' : 'scale(1)' }}
+                                    >
+                                        {cartCount > 99 ? '99+' : cartCount}
                                     </span>
                                 )}
-                                {(cart_count || 0) === 0 && (
+                                {cartCount === 0 && (
                                     <span className="absolute -top-1.5 -right-2 bg-gray-300 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 border-white shadow-sm">
                                         0
                                     </span>

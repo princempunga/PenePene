@@ -18,8 +18,8 @@ export default function CurrencySwitcher({ variant = 'navbar' }) {
     }, []);
 
     const currencies = [
-        { code: 'CDF', label: 'Franc Congolais', symbol: 'CDF / FC' },
         { code: 'USD', label: 'Dollar Américain', symbol: 'USD / $' },
+        { code: 'CDF', label: 'Franc Congolais', symbol: 'CDF / FC' },
     ];
 
     if (variant === 'compact') {

@@ -59,7 +59,7 @@ export default function Dashboard({ stats, pendingSellers, recentOrders }) {
                         <div className="min-w-0">
                             <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">GMV</p>
                             <p className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                                {formatAmount(stats.totalRevenue, 'CDF')}
+                                {formatAmount(stats.totalRevenue, 'USD')}
                             </p>
                         </div>
                     </Link>
@@ -192,7 +192,7 @@ export default function Dashboard({ stats, pendingSellers, recentOrders }) {
                                             </p>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className="font-bold text-gray-900 text-sm">{formatAmount(order.total_amount, order.currency || 'CDF')}</p>
+                                            <p className="font-bold text-gray-900 text-sm">{formatAmount(order.total_amount, order.currency || 'USD')}</p>
                                             <span className="text-xs capitalize text-gray-500">{order.status}</span>
                                         </div>
                                     </div>

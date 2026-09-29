@@ -49,10 +49,17 @@ class ChatController extends Controller
             return response()->json(['message' => 'Only buyers can start a conversation this way.'], 403);
         }
 
+        $isNew = false;
+
         $conversation = Conversation::firstOrCreate(
             ['buyer_id' => $buyer->id, 'seller_id' => $request->seller_id, 'product_id' => null],
-            ['last_message_at' => now()]
+            ['last_message_at' => now(), 'status' => 'inquiry']
         );
+
+        // Track whether this is a brand-new conversation
+        if ($conversation->wasRecentlyCreated) {
+            $isNew = true;
+        }
 
         ConversationUserState::forUser($conversation, $buyer->id)->update([
             'deleted_at' => null,
@@ -78,7 +85,7 @@ class ChatController extends Controller
                     'product_id'   => $product->id,
                     'name'         => $product->name,
                     'price'        => $product->sale_price ?? $product->price,
-                    'currency'     => $product->currency ?? 'CDF',
+                    'currency'     => $product->currency ?? 'USD',
                     'category'     => $product->category?->name,
                     'seller_name'  => $seller?->business_name,
                     'seller_slug'  => $seller?->slug,
@@ -115,6 +122,18 @@ class ChatController extends Controller
                     ]);
 
                     $conversation->update(['last_message_at' => now()]);
+
+                    // 3) Notify the seller of the new inquiry (first contact only)
+                    if ($isNew && $seller?->user_id) {
+                        \App\Models\Notification::create([
+                            'user_id'    => $seller->user_id,
+                            'type'       => 'new_inquiry',
+                            'title'      => 'Nouvelle demande de contact',
+                            'body'       => "{$buyer->name} vous a contacté au sujet du produit : {$product->name}.",
+                            'action_url' => '/chat/conversations/' . $conversation->id,
+                            'is_read'    => false,
+                        ]);
+                    }
                 }
             }
         }
@@ -231,7 +250,7 @@ class ChatController extends Controller
                 'product_id'  => $product->id,
                 'name'        => $product->name,
                 'price'       => $product->sale_price ?? $product->price,
-                'currency'    => $product->currency ?? 'CDF',
+                'currency'    => $product->currency ?? 'USD',
                 'category'    => $product->category?->name,
                 'seller_name' => $product->seller?->business_name,
                 'seller_slug' => $product->seller?->slug,

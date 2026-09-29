@@ -51,7 +51,7 @@ class ReportController extends Controller
             'pending'        => (clone $ordersQuery)->where('status', 'pending')->count(),
             'total_products' => Product::where('seller_id', $seller->id)->count(),
             'avg_order_value'=> (clone $ordersQuery)->whereIn('status', $deliveredStatuses)->avg('total') ?? 0,
-            'currency'       => 'CDF',
+            'currency'       => 'USD',
         ];
 
         $days = min($from->diffInDays($to) + 1, 31);
@@ -236,7 +236,7 @@ class ReportController extends Controller
             ];
 
             if ($type === 'sales') {
-                fputcsv($handle, ['N° commande', 'Date', 'Acheteur', 'Articles', 'Sous-total (FC)', 'Livraison (FC)', 'Total (FC)', 'Statut']);
+                fputcsv($handle, ['N° commande', 'Date', 'Acheteur', 'Articles', 'Sous-total ($)', 'Livraison ($)', 'Total ($)', 'Statut']);
                 foreach ($data as $order) {
                     fputcsv($handle, [
                         $order->order_number,
@@ -250,7 +250,7 @@ class ReportController extends Controller
                     ]);
                 }
             } elseif ($type === 'products') {
-                fputcsv($handle, ['Produit', 'Catégorie', 'Prix (FC)', 'Stock', 'Statut', 'Vues']);
+                fputcsv($handle, ['Produit', 'Catégorie', 'Prix ($)', 'Stock', 'Statut', 'Vues']);
                 foreach ($data as $product) {
                     fputcsv($handle, [
                         $product->name,

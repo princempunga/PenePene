@@ -211,11 +211,11 @@ export default function ProductCard({ product, badge, showActions = true, compac
                 <div className="mt-auto min-w-0">
                     <div className="flex flex-wrap items-end gap-x-2 gap-y-0.5 mb-1.5 md:mb-2">
                         <span className="text-sm md:text-lg lg:text-xl font-extrabold text-gray-900">
-                            {formatAmount(product.sale_price || product.price, product.currency || 'CDF')}
+                            {formatAmount(product.sale_price || product.price, product.currency || 'USD')}
                         </span>
                         {product.sale_price && (
                             <span className="text-[10px] md:text-sm text-gray-400 line-through font-medium">
-                                {formatAmount(product.price, product.currency || 'CDF')}
+                                {formatAmount(product.price, product.currency || 'USD')}
                             </span>
                         )}
                     </div>

@@ -58,7 +58,10 @@ export function stageIndex(stage) {
     return WORKFLOW_STEPS.findIndex((s) => s.key === stage);
 }
 
-export function formatCurrency(amount, currency = 'CDF') {
+export function formatCurrency(amount, currency = 'USD') {
     if (amount == null || amount === '') return '—';
-    return `${Number(amount).toLocaleString('fr-FR')} ${currency}`;
+    if (currency === 'USD' || currency === '$') {
+        return `$${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    return `${Number(amount).toLocaleString('en-US')} ${currency}`;
 }

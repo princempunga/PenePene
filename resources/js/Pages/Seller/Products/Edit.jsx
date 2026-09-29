@@ -253,7 +253,7 @@ export default function ProductEdit({ product, categories }) {
                             <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Prix et stock</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Prix (CDF)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Prix ($)</label>
                                 <input
                                     type="number"
                                     min="0"

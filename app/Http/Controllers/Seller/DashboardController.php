@@ -101,7 +101,7 @@ class DashboardController extends Controller
                 'ordersThisWeek'   => $ordersThisWeek,
                 'revenueThisWeek'  => (float) $revenueThisWeek,
                 'unreadMessages'   => $unreadMessages,
-                'currency'         => 'CDF',
+                'currency'         => 'USD',
                 'activeInquiries'  => $activeInquiries,
                 'negotiating'      => $negotiating,
                 'dealsConfirmed'   => $dealsConfirmed,

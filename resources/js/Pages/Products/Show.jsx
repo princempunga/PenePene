@@ -278,7 +278,7 @@ export default function Show({
         description: productDescription || undefined,
         offers: {
             '@type': 'Offer',
-            priceCurrency: product.currency || 'CDF',
+            priceCurrency: product.currency || 'USD',
             price: effectivePrice || 0,
             availability: isInStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             url: productPageUrl,
@@ -319,15 +319,21 @@ export default function Show({
 
         router.post('/cart/add', payload, {
             preserveScroll: true,
+            preserveState: true,
             onFinish: () => setAdding(false),
             onSuccess: () => {
                 if (redirect) {
                     router.visit('/cart');
                 } else {
                     dispatchToast(t('product.added_to_cart'));
+                    // Dispatch event so Navbar/MobileBottomNav can update cart badge reactively
+                    window.dispatchEvent(new CustomEvent('cart-updated'));
                 }
             },
-            onError: () => dispatchToast(t('product.cart_error'), 'error'),
+            onError: (errors) => {
+                const msg = errors?.cart || errors?.quantity || t('product.cart_error');
+                dispatchToast(msg, 'error');
+            },
         });
     };
 
@@ -509,11 +515,11 @@ export default function Show({
                         {/* Price Card */}
                         <div className="p-4 sm:p-5 bg-gradient-to-br from-primary-50/60 via-white to-gray-50 border border-primary-100/80 rounded-2xl shadow-xs flex items-baseline gap-3">
                             <span className="text-3xl sm:text-4xl font-black text-primary-600 tracking-tight">
-                                {formatAmount(product.sale_price || product.price, product.currency || 'CDF')}
+                                {formatAmount(product.sale_price || product.price, product.currency || 'USD')}
                             </span>
                             {product.sale_price && (
                                 <span className="text-base text-gray-400 line-through font-medium">
-                                    {formatAmount(product.price, product.currency || 'CDF')}
+                                    {formatAmount(product.price, product.currency || 'USD')}
                                 </span>
                             )}
                         </div>

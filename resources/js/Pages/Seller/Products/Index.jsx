@@ -302,11 +302,11 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     <td className="px-4 py-4">
                                                         <div>
                                                             <span className="font-semibold text-gray-900">
-                                                                 {formatCurrency(product.sale_price || product.price, { currency: product.currency || 'CDF' })}
+                                                                 {formatCurrency(product.sale_price || product.price, { currency: product.currency || 'USD' })}
                                                             </span>
                                                             {product.sale_price && (
                                                                 <span className="block text-xs line-through text-gray-400">
-                                                                     {formatCurrency(product.price, { currency: product.currency || 'CDF' })}
+                                                                     {formatCurrency(product.price, { currency: product.currency || 'USD' })}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -391,7 +391,7 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     </div>
                                                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                                                         <span className="truncate">{product.category?.name || 'Sans catégorie'}</span>
-                                                         <span className="font-semibold text-gray-900">{formatCurrency(product.sale_price || product.price, { currency: product.currency || 'CDF' })}</span>
+                                                         <span className="font-semibold text-gray-900">{formatCurrency(product.sale_price || product.price, { currency: product.currency || 'USD' })}</span>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center justify-between">
@@ -467,7 +467,7 @@ export default function ProductsIndex({ products, filters = {} }) {
 
                                         <div className="mt-2.5 flex items-center justify-between gap-2">
                                             <span className="text-[10px] font-bold text-gray-900">
-                                                 {formatCurrency(product.sale_price || product.price, { currency: product.currency || 'CDF' })}
+                                                 {formatCurrency(product.sale_price || product.price, { currency: product.currency || 'USD' })}
                                             </span>
                                             <div className="flex items-center gap-1.5">
                                                 <Link href={`/seller/products/${product.id}`} className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors" title="Voir">

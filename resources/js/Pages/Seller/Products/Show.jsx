@@ -206,7 +206,7 @@ export default function ProductShow({ product, stats }) {
                     <h3 className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1.5">
                         <Package size={14} className="text-primary-500" /> Informations
                     </h3>
-                    <InfoRow label="Devise" value={product.currency || 'CDF'} />
+                    <InfoRow label="Devise" value={product.currency || 'USD'} />
                     <InfoRow label="Mis en avant" value={product.is_featured ? 'Oui' : 'Non'} />
                     {product.sponsored_until && <InfoRow label="Sponsorisé jusqu'au" value={new Date(product.sponsored_until).toLocaleDateString('fr-FR')} />}
                 </div>

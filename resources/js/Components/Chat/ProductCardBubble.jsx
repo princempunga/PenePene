@@ -30,7 +30,7 @@ export default function ProductCardBubble({ product, isOwnMessage }) {
                 </h4>
                 
                 <p className={`font-extrabold text-lg mb-2 ${isOwnMessage ? 'text-white' : 'text-primary-600'}`}>
-                    {product.currency || 'CDF'} {parseFloat(product.price).toLocaleString()}
+                    {product.currency || 'USD'} {parseFloat(product.price).toLocaleString()}
                 </p>
 
                 {product.seller_name && (

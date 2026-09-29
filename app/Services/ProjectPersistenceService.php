@@ -60,7 +60,7 @@ class ProjectPersistenceService
         $budget = $project->budget ?? new ProjectBudget(['project_id' => $project->id]);
         $budget->fill([
             'contingency_rate'       => $budgetData['contingency_rate'] ?? 10,
-            'currency'               => $budgetData['currency'] ?? 'CDF',
+            'currency'               => $budgetData['currency'] ?? 'USD',
             'defined_by'             => $budgetData['defined_by'] ?? 'creator',
             'creator_unsure'         => (bool) ($budgetData['creator_unsure'] ?? false),
             'internal_expert_notes'  => $budgetData['internal_expert_notes'] ?? null,

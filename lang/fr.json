@@ -139,10 +139,10 @@
         "free": "Gratuit",
         "total": "Total",
         "sign_in_required": "Connexion requise",
-        "sign_in_to_checkout": " pour demander un devis.",
+        "sign_in_to_checkout": " pour contacter le vendeur.",
         "processing_order": "Envoi de la demande...",
-        "confirm_order": "Demander un devis",
-        "sign_in_to_checkout_btn": "Se connecter pour demander un devis",
+        "confirm_order": "Contacter le vendeur",
+        "sign_in_to_checkout_btn": "Se connecter pour contacter le vendeur",
         "continue_shopping": "← Continuer les achats",
         "checkout_error": "Impossible d'envoyer la demande. Veuillez réessayer."
     },

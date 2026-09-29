@@ -65,7 +65,7 @@ function PromoContent({ promo, t }) {
     const imageSrc      = currentProduct?.image_url || promo?.custom_image_url || promo?.product_image || '/images/categories/default.jpg';
     const productName   = currentProduct?.name    || promo?.product_name    || 'Promotion';
     const productSlug   = currentProduct?.slug    || promo?.product_slug;
-    const productCurrency = currentProduct?.currency || promo?.product_currency || 'CDF';
+    const productCurrency = currentProduct?.currency || promo?.product_currency || 'USD';
     const productPrice  = currentProduct?.price   || promo?.product_price   || 0;
     const categoryName  = currentProduct?.category_name || promo?.category_name;
     const shopHref      = productSlug

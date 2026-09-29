@@ -15,7 +15,7 @@ export default function TutelageShow({ project }) {
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border p-6 text-sm space-y-3">
           <p><strong>Concepteur / PM :</strong> {project.user?.name}</p>
-          <p><strong>Budget approuvé :</strong> {Number(project.budget?.approved_amount || 0).toLocaleString()} CDF</p>
+          <p><strong>Budget approuvé :</strong> ${Number(project.budget?.approved_amount || 0).toLocaleString()}</p>
           <p className="text-xs text-slate-500">Proformats budgétaires, factures justificatives et décaissement selon les normes légales.</p>
 
           <h3 className="font-semibold pt-2">Documents</h3>

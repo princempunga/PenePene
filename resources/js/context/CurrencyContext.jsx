@@ -8,9 +8,9 @@ const CurrencyContext = createContext();
 export function CurrencyProvider({ children }) {
     const [currency, setCurrencyState] = useState(() => {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('app_currency') || 'CDF';
+            return localStorage.getItem('app_currency') || 'USD';
         }
-        return 'CDF';
+        return 'USD';
     });
 
     const setCurrency = (newCurrency) => {
@@ -24,11 +24,11 @@ export function CurrencyProvider({ children }) {
     /**
      * Convertit et formate n'importe quel montant selon la devise sélectionnée.
      * @param {number} amount Montant de base
-     * @param {string} sourceCurrency Devise d'origine du montant ('CDF', 'USD', etc.)
+     * @param {string} sourceCurrency Devise d'origine du montant ('USD', 'CDF', etc.)
      */
-    const formatAmount = (amount, sourceCurrency = 'CDF') => {
+    const formatAmount = (amount, sourceCurrency = 'USD') => {
         const val = parseFloat(amount || 0);
-        const src = (sourceCurrency || 'CDF').toUpperCase();
+        const src = (sourceCurrency || 'USD').toUpperCase();
         const target = currency.toUpperCase();
 
         let convertedValue = val;
@@ -40,7 +40,7 @@ export function CurrencyProvider({ children }) {
         }
 
         if (target === 'USD') {
-            return `$ ${convertedValue.toLocaleString('en-US', {
+            return `$${convertedValue.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             })}`;
@@ -61,9 +61,9 @@ export function useCurrency() {
     if (!context) {
         // Fallback si hors du provider
         return {
-            currency: 'CDF',
+            currency: 'USD',
             setCurrency: () => {},
-            formatAmount: (val, src = 'CDF') => `${src || 'CDF'} ${parseFloat(val || 0).toLocaleString()}`,
+            formatAmount: (val, src = 'USD') => `$${parseFloat(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             rate: USD_TO_CDF_RATE,
         };
     }

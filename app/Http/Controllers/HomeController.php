@@ -63,7 +63,7 @@ class HomeController extends Controller
                                 'name'          => $product->name,
                                 'slug'          => $product->slug,
                                 'price'         => $product->sale_price ?? $product->price,
-                                'currency'      => $product->currency ?? 'CDF',
+                                'currency'      => $product->currency ?? 'USD',
                                 'category_name' => $product->category?->name,
                                 'image_url'     => $this->productImageUrl($product),
                             ];
@@ -87,8 +87,8 @@ class HomeController extends Controller
                     ? ($primaryProduct['price'] ?? null)
                     : ($primaryProduct?->sale_price ?? $primaryProduct?->price ?? null);
                 $primaryProductCurrency = is_array($primaryProduct)
-                    ? ($primaryProduct['currency'] ?? 'CDF')
-                    : ($primaryProduct?->currency ?? 'CDF');
+                    ? ($primaryProduct['currency'] ?? 'USD')
+                    : ($primaryProduct?->currency ?? 'USD');
                 $primaryProductSlug = is_array($primaryProduct) ? ($primaryProduct['slug'] ?? null) : ($primaryProduct?->slug ?? null);
                 $primaryProductCategory = is_array($primaryProduct)
                     ? ($primaryProduct['category_name'] ?? null)
@@ -128,7 +128,7 @@ class HomeController extends Controller
                     'product_id'       => $product->id,
                     'product_name'     => $product->name,
                     'product_price'    => $product->sale_price ?? $product->price,
-                    'product_currency' => $product->currency ?? 'CDF',
+                    'product_currency' => $product->currency ?? 'USD',
                     'product_slug'     => $product->slug,
                     'product_image'    => $this->productImageUrl($product),
                     'category_name'    => $product->category?->name,

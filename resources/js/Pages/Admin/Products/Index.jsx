@@ -206,7 +206,7 @@ export default function ProductsIndex({ products, filters }) {
 
                             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                                 <div>
-                                    <p className="font-semibold text-gray-900 text-sm">CDF {parseFloat(product.price).toLocaleString()}</p>
+                                    <p className="font-semibold text-gray-900 text-sm">${parseFloat(product.price).toLocaleString()}</p>
                                     <p className="text-xs text-gray-500">Stock: {product.initial_stock - product.confirmed_sales}</p>
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -317,7 +317,7 @@ export default function ProductsIndex({ products, filters }) {
                                         {product.seller?.business_name || 'N/A'}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <p className="font-semibold text-gray-900">CDF {parseFloat(product.price).toLocaleString()}</p>
+                                        <p className="font-semibold text-gray-900">${parseFloat(product.price).toLocaleString()}</p>
                                         <p className="text-xs text-gray-500">Stock: {product.initial_stock - product.confirmed_sales}</p>
                                     </td>
                                     <td className="px-6 py-4">

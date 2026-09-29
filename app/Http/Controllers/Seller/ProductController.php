@@ -198,7 +198,7 @@ class ProductController extends Controller
             'sale_price'      => $request->sale_price,
             'initial_stock'   => $request->initial_stock,
             'confirmed_sales' => 0,
-            'currency'        => 'CDF',
+            'currency'        => 'USD',
             'status'          => 'active',
         ]);
 
@@ -279,7 +279,7 @@ class ProductController extends Controller
                     'sale_price'      => $item['sale_price'] ?? null,
                     'initial_stock'   => $item['initial_stock'],
                     'confirmed_sales' => 0,
-                    'currency'        => 'CDF',
+                    'currency'        => 'USD',
                     'status'          => 'active',
                 ]);
 

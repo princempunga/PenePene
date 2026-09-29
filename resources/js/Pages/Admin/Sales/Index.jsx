@@ -63,7 +63,7 @@ export default function GlobalSalesIndex({ orders, kpis, sellers, categories, fi
                             </div>
                             <span className="text-sm font-medium text-emerald-100">Chiffre d'Affaires Total (GMV)</span>
                         </div>
-                        <p className="text-3xl font-bold">{formatAmount(kpis.total_gmv, 'CDF')}</p>
+                        <p className="text-3xl font-bold">{formatAmount(kpis.total_gmv, 'USD')}</p>
                         <p className="text-xs text-emerald-200 mt-1">Commandes livrées</p>
                     </div>
 
@@ -85,7 +85,7 @@ export default function GlobalSalesIndex({ orders, kpis, sellers, categories, fi
                             </div>
                             <span className="text-sm font-medium text-blue-100">Panier Moyen</span>
                         </div>
-                        <p className="text-3xl font-bold">{formatAmount(kpis.avg_order, 'CDF')}</p>
+                        <p className="text-3xl font-bold">{formatAmount(kpis.avg_order, 'USD')}</p>
                         <p className="text-xs text-blue-200 mt-1">Par commande livrée</p>
                     </div>
                 </div>
@@ -251,7 +251,7 @@ export default function GlobalSalesIndex({ orders, kpis, sellers, categories, fi
                                                     <p className="text-[11px] text-gray-400 mt-0.5">{category}</p>
                                                 </td>
                                                 <td className="px-4 py-3 text-right font-bold text-gray-900 whitespace-nowrap">
-                                                    {formatAmount(order.total, order.currency || 'CDF')}
+                                                    {formatAmount(order.total, order.currency || 'USD')}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold capitalize ${STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-700'}`}>

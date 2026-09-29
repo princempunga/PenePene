@@ -106,7 +106,7 @@ class HandleInertiaRequests extends Middleware
                 'status'        => $request->user()->seller->status,
                 'logo'          => $request->user()->seller->logo,
             ] : null,
-            'currency' => 'CDF',
+            'currency' => 'USD',
             'active_portal' => session('active_portal'),
             'active_portal_label' => session('active_portal')
                 ? app(\App\Services\PortalAccessService::class)->label(session('active_portal'))

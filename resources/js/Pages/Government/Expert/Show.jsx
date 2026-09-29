@@ -40,9 +40,9 @@ export default function ExpertShow({ project }) {
           <h3 className="font-semibold text-[#002E5D]">Décision</h3>
           <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={4} className="w-full border-gray-300 rounded-lg text-sm" placeholder="Commentaires / corrections..." />
           <label className="block text-xs font-medium text-slate-600">
-            Budget approuvé (CDF) {project.budget?.creator_unsure && <span className="text-red-600">* obligatoire</span>}
+            Budget approuvé ($) {project.budget?.creator_unsure && <span className="text-red-600">* obligatoire</span>}
           </label>
-          <input type="number" value={approvedBudget} onChange={e => setApprovedBudget(e.target.value)} className="w-full border-gray-300 rounded-lg text-sm" placeholder={project.budget?.creator_unsure ? 'Budget établi par les experts' : 'Budget approuvé (CDF)'} />
+          <input type="number" value={approvedBudget} onChange={e => setApprovedBudget(e.target.value)} className="w-full border-gray-300 rounded-lg text-sm" placeholder={project.budget?.creator_unsure ? 'Budget établi par les experts' : 'Budget approuvé ($)'} />
           <button onClick={() => review('approve')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 text-white rounded-lg text-sm font-medium"><CheckCircle size={16} /> Approuver</button>
           <button onClick={() => review('revision')} className="w-full flex items-center justify-center gap-2 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium"><Edit3 size={16} /> Renvoyer pour correction</button>
           <button onClick={() => review('reject')} className="w-full flex items-center justify-center gap-2 py-2 bg-red-600 text-white rounded-lg text-sm font-medium"><XCircle size={16} /> Rejeter</button>

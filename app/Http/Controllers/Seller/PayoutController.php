@@ -35,7 +35,7 @@ class PayoutController extends Controller
                 'pending_requests'    => $pendingRequests,
                 'total_paid_out'      => $totalPaidOut,
                 'has_pending_request' => $pendingRequests > 0,
-                'currency'            => 'CDF',
+                'currency'            => 'USD',
             ],
         ]);
     }
@@ -92,7 +92,7 @@ class PayoutController extends Controller
             Payout::create([
                 'seller_id'      => $lockedSeller->id,
                 'amount'         => $request->amount,
-                'currency'       => 'CDF',
+                'currency'       => 'USD',
                 'status'         => 'pending',
                 'payment_method' => $request->payment_method,
                 'account_number' => $request->account_number,

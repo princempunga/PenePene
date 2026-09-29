@@ -169,7 +169,7 @@ export default function ProductFormCard({
                 <div>
                     <label className="block text-sm font-semibold text-gray-900 mb-1">
                         <span className="text-primary-600 mr-1.5">6.</span>
-                        Prix (CDF)
+                        Prix ($)
                     </label>
                     <input
                         type="number"

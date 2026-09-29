@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Menu, Home, ShoppingCart, Package, User } from 'lucide-react';
@@ -6,9 +6,18 @@ import useTranslation from '@/hooks/useTranslation';
 
 export default function MobileBottomNav({ onMenuClick }) {
     const { url, props } = usePage();
-    const { cart_count } = props;
+    const { cart_count: sharedCartCount } = props;
     const { t } = useTranslation();
     const prefersReduced = useReducedMotion();
+    const [cartCount, setCartCount] = useState(sharedCartCount || 0);
+
+    useEffect(() => { setCartCount(sharedCartCount || 0); }, [sharedCartCount]);
+
+    useEffect(() => {
+        const handler = () => setCartCount((prev) => prev + 1);
+        window.addEventListener('cart-updated', handler);
+        return () => window.removeEventListener('cart-updated', handler);
+    }, []);
 
     const isActive = (path) => {
         if (path === '/' && url === '/') return true;
@@ -34,7 +43,7 @@ export default function MobileBottomNav({ onMenuClick }) {
     const items = [
         { label: t('mobile.menu', 'Menu'), icon: Menu, isButton: true, key: 'menu' },
         { label: t('mobile.home', 'Home'), href: '/', icon: Home, key: 'home' },
-        { label: t('nav.cart', 'Cart'), href: '/cart', icon: ShoppingCart, key: 'cart', badge: (cart_count || 0) > 0, badgeCount: cart_count },
+        { label: t('nav.cart', 'Cart'), href: '/cart', icon: ShoppingCart, key: 'cart', badge: (cartCount || 0) > 0, badgeCount: cartCount },
         { label: t('nav.my_orders', 'Orders'), href: '/buyer/orders', icon: Package, key: 'orders' },
         { label: t('nav.account', 'Account'), href: accountHref, icon: User, key: 'account' },
     ];

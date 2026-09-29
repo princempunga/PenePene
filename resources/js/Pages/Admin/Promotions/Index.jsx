@@ -77,7 +77,7 @@ function mapPromoForPreview(promo, sellers, allProductsBySeller, customImageOver
             name: p.name,
             slug: p.slug,
             price: p.sale_price ?? p.price,
-            currency: p.currency || 'CDF',
+            currency: p.currency || 'USD',
             category_name: p.category_name ?? p.category?.name,
             image_url: p.image_url,
         }));
@@ -90,7 +90,7 @@ function mapPromoForPreview(promo, sellers, allProductsBySeller, customImageOver
         product_id: primary?.id ?? null,
         product_name: primary?.name ?? promo.product_name ?? null,
         product_price: primary?.price ?? null,
-        product_currency: primary?.currency ?? 'CDF',
+        product_currency: primary?.currency ?? 'USD',
         product_slug: primary?.slug ?? null,
         custom_image_url: customImageOverride ?? promo.custom_image_url ?? null,
         headline: promo.headline || null,
@@ -247,7 +247,7 @@ function ProductPicker({ products, loading, selectedIds = [], onToggle, maxSelec
                             </div>
                             <div className="p-2">
                                 <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight">{p.name}</p>
-                                <p className="text-[11px] text-primary-600 font-bold mt-0.5">{parseFloat(p.price).toLocaleString()} {p.currency || 'CDF'}</p>
+                                <p className="text-[11px] text-primary-600 font-bold mt-0.5">{parseFloat(p.price).toLocaleString()} {p.currency || 'USD'}</p>
                             </div>
                             {isSelected && (
                                 <div className="absolute top-1 right-1 w-5 h-5 bg-primary-600 rounded-full flex items-center justify-center">
