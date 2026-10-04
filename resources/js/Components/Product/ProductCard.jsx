@@ -84,10 +84,16 @@ export default function ProductCard({ product, badge, showActions = true, compac
 
         router.post('/cart/add', payload, {
             preserveScroll: true,
+            preserveState: true,
             onFinish: () => setAdding(false),
             onSuccess: () => {
                 setAddedToCart(true);
                 setTimeout(() => setAddedToCart(false), 1200);
+                window.dispatchEvent(new CustomEvent('cart-updated'));
+            },
+            onError: (errors) => {
+                const msg = errors?.cart || errors?.quantity || t('product.cart_error');
+                dispatchToast(msg, 'error');
             },
         });
     };

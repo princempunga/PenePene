@@ -192,7 +192,7 @@ class CartController extends Controller
             if (!$seller) continue;
 
             $conversation = \App\Models\Conversation::firstOrCreate([
-                'buyer_id'  => $buyer->id,
+                'buyer_id'  => auth()->id(),  // FK → users.id, NOT buyers.id
                 'seller_id' => $seller->id,
             ]);
 
@@ -221,7 +221,7 @@ class CartController extends Controller
 
                 \App\Models\Message::create([
                     'conversation_id'  => $conversation->id,
-                    'sender_id'        => $buyer->id,
+                    'sender_id'        => auth()->id(),  // FK → users.id, NOT buyers.id
                     'receiver_id'      => $seller->user_id,
                     'message_type'     => 'product',
                     'product_id'       => $product->id,
@@ -232,7 +232,7 @@ class CartController extends Controller
 
             \App\Models\Message::create([
                 'conversation_id' => $conversation->id,
-                'sender_id'       => $buyer->id,
+                'sender_id'       => auth()->id(),  // FK → users.id, NOT buyers.id
                 'receiver_id'     => $seller->user_id,
                 'message_type'    => 'text',
                 'body'            => $messageBody,

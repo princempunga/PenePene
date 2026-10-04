@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProductImageUrl, handleImageError, DEFAULT_PRODUCT_PLACEHOLDER } from '@/utils/productImage';
 
@@ -80,54 +81,89 @@ export default function ImageGallery({ images, productName }) {
                 )}
             </div>
 
-            {/* Lightbox Modal — only when real images exist */}
-            {isLightboxOpen && hasImages && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm">
-                    <button 
+            {/* Lightbox Modal — rendered via portal to document.body to escape parent overflow:hidden */}
+            {isLightboxOpen && hasImages && createPortal(
+                <div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 99999,
+                        backgroundColor: 'rgba(0,0,0,0.96)',
+                        backdropFilter: 'blur(4px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                    onClick={() => setIsLightboxOpen(false)}
+                >
+                    <button
                         type="button"
-                        onClick={() => setIsLightboxOpen(false)}
-                        className="absolute top-4 right-4 sm:top-6 sm:right-6 text-white/70 hover:text-white p-2"
+                        onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(false); }}
+                        style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', zIndex: 100001 }}
+                        className="text-white/70 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
                         aria-label="Close"
                     >
                         <X size={32} />
                     </button>
 
-                    <div className="absolute top-4 left-4 sm:top-6 sm:left-6 text-white font-medium text-lg">
+                    <div
+                        style={{ position: 'absolute', top: '1.25rem', left: '1.25rem', zIndex: 100001 }}
+                        className="text-white font-medium text-lg select-none"
+                    >
                         {activeIndex + 1} / {displayImages.length}
                     </div>
 
                     {displayImages.length > 1 && (
-                        <button 
+                        <button
                             type="button"
-                            onClick={handlePrevious}
-                            className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); handlePrevious(e); }}
+                            style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', zIndex: 100001 }}
+                            className="text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
                             aria-label="Previous"
                         >
                             <ChevronLeft size={48} />
                         </button>
                     )}
 
-                    <div className="w-full h-full max-w-6xl max-h-screen p-4 sm:p-12 flex items-center justify-center" onClick={() => setIsLightboxOpen(false)}>
-                        <img 
-                            src={activeUrl} 
-                            alt={productName} 
-                            className="max-w-full max-h-full object-contain cursor-default"
-                            onClick={(e) => e.stopPropagation()}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100vw',
+                            height: '100vh',
+                            padding: displayImages.length > 1 ? '4.5rem 5.5rem' : '4.5rem 4.5rem',
+                            boxSizing: 'border-box',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <img
+                            src={activeUrl}
+                            alt={productName}
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                objectFit: 'contain',
+                                display: 'block',
+                                borderRadius: '0.5rem',
+                            }}
                             onError={handleImageError}
                         />
                     </div>
 
                     {displayImages.length > 1 && (
-                        <button 
+                        <button
                             type="button"
-                            onClick={handleNext}
-                            className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); handleNext(e); }}
+                            style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', zIndex: 100001 }}
+                            className="text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
                             aria-label="Next"
                         >
                             <ChevronRight size={48} />
                         </button>
                     )}
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );
