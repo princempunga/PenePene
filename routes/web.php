@@ -150,68 +150,59 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/divisions', [\App\Http\Controllers\AdministrativeDivisionController::class, 'index'])->name('divisions.index');
     Route::get('/api/divisions/{division}/path', [\App\Http\Controllers\AdministrativeDivisionController::class, 'path'])->name('divisions.path');
 
-    // ─── Citizen Projects ───────────────────────────────────────────────────────
-    Route::middleware('portal')->prefix('projects')->name('projects.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\ProjectController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\ProjectController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\ProjectController::class, 'store'])->name('store');
-        Route::get('/archive', [\App\Http\Controllers\ProjectArchiveController::class, 'index'])->name('archive');
-        Route::get('/archive/{project}', [\App\Http\Controllers\ProjectArchiveController::class, 'show'])->name('archive.show');
-        Route::post('/archive/{project}/copy', [\App\Http\Controllers\ProjectArchiveController::class, 'copy'])->name('archive.copy');
-        Route::get('/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('show');
-        Route::get('/{project}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
-        Route::put('/{project}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('update');
-        Route::post('/{project}/submit-experts', [\App\Http\Controllers\ProjectController::class, 'submitExperts'])->name('submit-experts');
-        Route::get('/{project}/execution', [\App\Http\Controllers\ProjectController::class, 'executionDashboard'])->name('execution');
-        Route::post('/{project}/final-report', [\App\Http\Controllers\ProjectController::class, 'submitFinalReport'])->name('final-report');
-        Route::post('/{project}/tasks/{task}/report', [\App\Http\Controllers\ProjectTaskController::class, 'submitReport'])->name('tasks.report');
-        Route::post('/{project}/tasks/{task}/delay', [\App\Http\Controllers\ProjectTaskController::class, 'reportDelay'])->name('tasks.delay');
-    });
+    // ─── Citizen Projects (DISABLED — government module, not part of PenePene marketplace) ───
+    // Route::middleware('portal')->prefix('projects')->name('projects.')->group(function () {
+    //     Route::get('/', [\App\Http\Controllers\ProjectController::class, 'index'])->name('index');
+    //     Route::get('/create', [\App\Http\Controllers\ProjectController::class, 'create'])->name('create');
+    //     Route::post('/', [\App\Http\Controllers\ProjectController::class, 'store'])->name('store');
+    //     Route::get('/archive', [\App\Http\Controllers\ProjectArchiveController::class, 'index'])->name('archive');
+    //     Route::get('/archive/{project}', [\App\Http\Controllers\ProjectArchiveController::class, 'show'])->name('archive.show');
+    //     Route::post('/archive/{project}/copy', [\App\Http\Controllers\ProjectArchiveController::class, 'copy'])->name('archive.copy');
+    //     Route::get('/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('show');
+    //     Route::get('/{project}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
+    //     Route::put('/{project}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('update');
+    //     Route::post('/{project}/submit-experts', [\App\Http\Controllers\ProjectController::class, 'submitExperts'])->name('submit-experts');
+    //     Route::get('/{project}/execution', [\App\Http\Controllers\ProjectController::class, 'executionDashboard'])->name('execution');
+    //     Route::post('/{project}/final-report', [\App\Http\Controllers\ProjectController::class, 'submitFinalReport'])->name('final-report');
+    //     Route::post('/{project}/tasks/{task}/report', [\App\Http\Controllers\ProjectTaskController::class, 'submitReport'])->name('tasks.report');
+    //     Route::post('/{project}/tasks/{task}/delay', [\App\Http\Controllers\ProjectTaskController::class, 'reportDelay'])->name('tasks.delay');
+    // });
 
-    // Project document download — deliberately OUTSIDE the 'portal'-gated
-    // group above. PortalAccessService::routeRequiresPortal() maps every
-    // 'projects/...' path to the 'citizen' portal, which would redirect
-    // away a government reviewer (active_portal = expert/tutelage) before
-    // this route's own authorization ever ran. Same URL, no portal check —
-    // authorization is fully handled in ProjectDocumentController.
-    Route::get('/projects/{project}/documents/{document}/download', [\App\Http\Controllers\ProjectDocumentController::class, 'download'])->name('projects.documents.download');
+    // Route::get('/projects/{project}/documents/{document}/download', [\App\Http\Controllers\ProjectDocumentController::class, 'download'])->name('projects.documents.download');
 
-    Route::redirect('/proposals', '/projects');
-    Route::redirect('/proposals/create', '/projects/create');
+    // Route::redirect('/proposals', '/projects');
+    // Route::redirect('/proposals/create', '/projects/create');
 
-    // ─── Citizen Proposals (legacy) ─────────────────────────────────────────────
-    Route::prefix('proposals')->name('proposals.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\ProposalController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\ProposalController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\ProposalController::class, 'store'])->name('store');
-        Route::get('/{proposal}', [\App\Http\Controllers\ProposalController::class, 'show'])->name('show');
-        Route::post('/{proposal}/submit', [\App\Http\Controllers\ProposalController::class, 'submit'])->name('submit');
-        Route::post('/{proposal}/reply', [\App\Http\Controllers\ProposalController::class, 'reply'])->name('reply');
-        Route::get('/{proposal}/documents/{document}/download', [\App\Http\Controllers\ProposalController::class, 'downloadDocument'])->name('documents.download');
-    });
+    // ─── Citizen Proposals (DISABLED — legacy government module) ─────────────────
+    // Route::prefix('proposals')->name('proposals.')->group(function () {
+    //     Route::get('/', [\App\Http\Controllers\ProposalController::class, 'index'])->name('index');
+    //     Route::get('/create', [\App\Http\Controllers\ProposalController::class, 'create'])->name('create');
+    //     Route::post('/', [\App\Http\Controllers\ProposalController::class, 'store'])->name('store');
+    //     Route::get('/{proposal}', [\App\Http\Controllers\ProposalController::class, 'show'])->name('show');
+    //     Route::post('/{proposal}/submit', [\App\Http\Controllers\ProposalController::class, 'submit'])->name('submit');
+    //     Route::post('/{proposal}/reply', [\App\Http\Controllers\ProposalController::class, 'reply'])->name('reply');
+    //     Route::get('/{proposal}/documents/{document}/download', [\App\Http\Controllers\ProposalController::class, 'downloadDocument'])->name('documents.download');
+    // });
 
-    // ─── Government Routes ──────────────────────────────────────────────────────
-    Route::middleware(['role:government', 'portal'])->prefix('government')->name('government.')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Government\ProposalController::class, 'dashboard'])->name('dashboard');
-        Route::get('/proposals', [\App\Http\Controllers\Government\ProposalController::class, 'index'])->name('proposals.index');
-        Route::get('/proposals/{proposal}', [\App\Http\Controllers\Government\ProposalController::class, 'show'])->name('proposals.show');
-        Route::post('/proposals/{proposal}/take-charge', [\App\Http\Controllers\Government\ProposalController::class, 'takeCharge'])->name('proposals.take-charge');
-        Route::patch('/proposals/{proposal}/status', [\App\Http\Controllers\Government\ProposalController::class, 'updateStatus'])->name('proposals.status');
-        Route::post('/proposals/{proposal}/comment', [\App\Http\Controllers\Government\ProposalController::class, 'comment'])->name('proposals.comment');
+    // ─── Government Routes (DISABLED — government module, not part of PenePene marketplace) ──
+    // Route::middleware(['role:government', 'portal'])->prefix('government')->name('government.')->group(function () {
+    //     Route::get('/dashboard', [\App\Http\Controllers\Government\ProposalController::class, 'dashboard'])->name('dashboard');
+    //     Route::get('/proposals', [\App\Http\Controllers\Government\ProposalController::class, 'index'])->name('proposals.index');
+    //     Route::get('/proposals/{proposal}', [\App\Http\Controllers\Government\ProposalController::class, 'show'])->name('proposals.show');
+    //     Route::post('/proposals/{proposal}/take-charge', [\App\Http\Controllers\Government\ProposalController::class, 'takeCharge'])->name('proposals.take-charge');
+    //     Route::patch('/proposals/{proposal}/status', [\App\Http\Controllers\Government\ProposalController::class, 'updateStatus'])->name('proposals.status');
+    //     Route::post('/proposals/{proposal}/comment', [\App\Http\Controllers\Government\ProposalController::class, 'comment'])->name('proposals.comment');
+    //     Route::get('/expert/projects', [\App\Http\Controllers\Government\ExpertProjectController::class, 'index'])->name('expert.index');
+    //     Route::get('/expert/projects/{project}', [\App\Http\Controllers\Government\ExpertProjectController::class, 'show'])->name('expert.show');
+    //     Route::post('/expert/projects/{project}/review', [\App\Http\Controllers\Government\ExpertProjectController::class, 'review'])->name('expert.review');
+    //     Route::get('/tutelage/projects', [\App\Http\Controllers\Government\TutelageProjectController::class, 'index'])->name('tutelage.index');
+    //     Route::get('/tutelage/projects/{project}', [\App\Http\Controllers\Government\TutelageProjectController::class, 'show'])->name('tutelage.show');
+    //     Route::post('/tutelage/projects/{project}/submit', [\App\Http\Controllers\Government\TutelageProjectController::class, 'submitTutelage'])->name('tutelage.submit');
+    //     Route::post('/tutelage/projects/{project}/documents', [\App\Http\Controllers\Government\TutelageProjectController::class, 'uploadDocument'])->name('tutelage.documents');
+    //     Route::post('/tutelage/projects/{project}/execution', [\App\Http\Controllers\Government\TutelageProjectController::class, 'startExecution'])->name('tutelage.execution');
+    //     Route::patch('/tutelage/projects/{project}/disbursement', [\App\Http\Controllers\Government\TutelageProjectController::class, 'updateDisbursement'])->name('tutelage.disbursement');
+    // });
 
-        // Expert group — project review
-        Route::get('/expert/projects', [\App\Http\Controllers\Government\ExpertProjectController::class, 'index'])->name('expert.index');
-        Route::get('/expert/projects/{project}', [\App\Http\Controllers\Government\ExpertProjectController::class, 'show'])->name('expert.show');
-        Route::post('/expert/projects/{project}/review', [\App\Http\Controllers\Government\ExpertProjectController::class, 'review'])->name('expert.review');
-
-        // Tutelage service
-        Route::get('/tutelage/projects', [\App\Http\Controllers\Government\TutelageProjectController::class, 'index'])->name('tutelage.index');
-        Route::get('/tutelage/projects/{project}', [\App\Http\Controllers\Government\TutelageProjectController::class, 'show'])->name('tutelage.show');
-        Route::post('/tutelage/projects/{project}/submit', [\App\Http\Controllers\Government\TutelageProjectController::class, 'submitTutelage'])->name('tutelage.submit');
-        Route::post('/tutelage/projects/{project}/documents', [\App\Http\Controllers\Government\TutelageProjectController::class, 'uploadDocument'])->name('tutelage.documents');
-        Route::post('/tutelage/projects/{project}/execution', [\App\Http\Controllers\Government\TutelageProjectController::class, 'startExecution'])->name('tutelage.execution');
-        Route::patch('/tutelage/projects/{project}/disbursement', [\App\Http\Controllers\Government\TutelageProjectController::class, 'updateDisbursement'])->name('tutelage.disbursement');
-    });
 
     // Favorites / wishlist (buyer)
     Route::middleware('role:buyer')->group(function () {

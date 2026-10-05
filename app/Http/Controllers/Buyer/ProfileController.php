@@ -41,7 +41,7 @@ class ProfileController extends Controller
         $buyer->update([
             'address' => $request->address,
             'city'    => $request->city,
-            'country' => $request->country,
+            'country' => $request->country ?? $buyer->country ?? 'TZ',
         ]);
 
         return back()->with('success', 'Profile updated successfully.');

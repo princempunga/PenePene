@@ -101,8 +101,9 @@ class PortalAccessService
     /** Portail déduit du profil (fallback après connexion sans sélection). */
     public function detectPortalForUser(User $user): ?string
     {
+        // Buyers are marketplace users — they don't need a government portal.
         if ($user->isBuyer()) {
-            return 'citizen';
+            return null;
         }
 
         if (! $user->isGovernment()) {
