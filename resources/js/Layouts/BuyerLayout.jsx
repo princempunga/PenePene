@@ -55,17 +55,6 @@ export default function BuyerLayout({ children, title, subtitle }) {
             dashboardHref="/buyer/orders"
             brandVariant="default"
             badges={badges}
-            profile={{
-                name: user?.name || t('buyer.buyer_account'),
-                subtitle: user?.email,
-                avatar: user?.avatar ? `/storage/${user.avatar}` : null,
-                initials,
-                badge: {
-                    label: t('buyer.active_buyer'),
-                    icon: <ShieldCheck size={11} />,
-                    tone: 'success',
-                },
-            }}
         >
             <div className="dashboard-content space-y-6">{children}</div>
         </DashboardShell>

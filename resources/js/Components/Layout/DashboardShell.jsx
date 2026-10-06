@@ -147,72 +147,74 @@ export default function DashboardShell({
     const SidebarContent = () => (
         <div className="flex h-full flex-col min-h-0">
             {/* Profil boutique */}
-            <div className={`shrink-0 mb-5 ${isDarkSidebar ? 'px-1' : 'mx-1 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'}`}>
-                {isDarkSidebar ? (
-                    <div className="rounded-2xl bg-white/[0.06] ring-1 ring-white/10 p-4 backdrop-blur-sm">
-                        <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 ring-2 ring-[#FFB300]/40 shadow-lg bg-[#003366] flex items-center justify-center text-lg font-bold text-[#FFB300]">
-                                {profile.avatar ? (
-                                    <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                    profile.initials
-                                )}
+            {profile && (
+                <div className={`shrink-0 mb-5 ${isDarkSidebar ? 'px-1' : 'mx-1 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'}`}>
+                    {isDarkSidebar ? (
+                        <div className="rounded-2xl bg-white/[0.06] ring-1 ring-white/10 p-4 backdrop-blur-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 ring-2 ring-[#FFB300]/40 shadow-lg bg-[#003366] flex items-center justify-center text-lg font-bold text-[#FFB300]">
+                                    {profile.avatar ? (
+                                        <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        profile.initials
+                                    )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-white truncate text-[15px] leading-tight">{profile.name}</p>
+                                    <p className="text-[11px] text-blue-200/60 truncate mt-0.5">{profile.subtitle}</p>
+                                    {profile.badge && (
+                                        <span className={`inline-flex items-center gap-1 mt-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                            profile.badge.tone === 'success'
+                                                ? 'bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-400/20'
+                                                : profile.badge.tone === 'warning'
+                                                    ? 'bg-[#FFB300]/15 text-[#FFB300] ring-1 ring-[#FFB300]/25'
+                                                    : 'bg-white/10 text-blue-200'
+                                        }`}>
+                                            {profile.badge.icon}
+                                            {profile.badge.label}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="font-bold text-white truncate text-[15px] leading-tight">{profile.name}</p>
-                                <p className="text-[11px] text-blue-200/60 truncate mt-0.5">{profile.subtitle}</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className={`h-12 ${
+                                isSeller
+                                    ? 'bg-gradient-to-r from-[#002E5D] via-[#003366] to-[#0056B3]'
+                                    : 'bg-gradient-to-r from-[#002E5D] via-[#003366] to-[#0056B3]'
+                            }`} />
+                            <div className="px-4 pb-4 -mt-7">
+                                <div className={`w-14 h-14 rounded-xl overflow-hidden shadow-md flex items-center justify-center text-lg font-bold ${
+                                    isSeller
+                                        ? 'ring-4 ring-[#FFB300]/35 ring-offset-2 ring-offset-white bg-gradient-to-br from-[#002E5D] to-[#0056B3] text-[#FFB300]'
+                                        : 'ring-4 ring-white bg-gradient-to-br from-[#002E5D] to-[#0056B3] text-[#FFB300]'
+                                }`}>
+                                    {profile.avatar ? (
+                                        <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        profile.initials
+                                    )}
+                                </div>
+                                <p className="font-bold text-[#002E5D] truncate mt-3 text-[15px]">{profile.name}</p>
+                                <p className="text-xs text-gray-500 truncate mt-0.5">{profile.subtitle}</p>
                                 {profile.badge && (
-                                    <span className={`inline-flex items-center gap-1 mt-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    <span className={`inline-flex items-center gap-1 mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                                         profile.badge.tone === 'success'
-                                            ? 'bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-400/20'
+                                            ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
                                             : profile.badge.tone === 'warning'
-                                                ? 'bg-[#FFB300]/15 text-[#FFB300] ring-1 ring-[#FFB300]/25'
-                                                : 'bg-white/10 text-blue-200'
+                                                ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100'
+                                                : 'bg-slate-100 text-slate-600'
                                     }`}>
                                         {profile.badge.icon}
                                         {profile.badge.label}
                                     </span>
                                 )}
                             </div>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <div className={`h-12 ${
-                            isSeller
-                                ? 'bg-gradient-to-r from-[#002E5D] via-[#003366] to-[#0056B3]'
-                                : 'bg-gradient-to-r from-[#002E5D] via-[#003366] to-[#0056B3]'
-                        }`} />
-                        <div className="px-4 pb-4 -mt-7">
-                            <div className={`w-14 h-14 rounded-xl overflow-hidden shadow-md flex items-center justify-center text-lg font-bold ${
-                                isSeller
-                                    ? 'ring-4 ring-[#FFB300]/35 ring-offset-2 ring-offset-white bg-gradient-to-br from-[#002E5D] to-[#0056B3] text-[#FFB300]'
-                                    : 'ring-4 ring-white bg-gradient-to-br from-[#002E5D] to-[#0056B3] text-[#FFB300]'
-                            }`}>
-                                {profile.avatar ? (
-                                    <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                    profile.initials
-                                )}
-                            </div>
-                            <p className="font-bold text-[#002E5D] truncate mt-3 text-[15px]">{profile.name}</p>
-                            <p className="text-xs text-gray-500 truncate mt-0.5">{profile.subtitle}</p>
-                            {profile.badge && (
-                                <span className={`inline-flex items-center gap-1 mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                    profile.badge.tone === 'success'
-                                        ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
-                                        : profile.badge.tone === 'warning'
-                                            ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100'
-                                            : 'bg-slate-100 text-slate-600'
-                                }`}>
-                                    {profile.badge.icon}
-                                    {profile.badge.label}
-                                </span>
-                            )}
-                        </div>
-                    </>
-                )}
-            </div>
+                        </>
+                    )}
+                </div>
+            )}
 
             {/* Navigation */}
             <nav className={`flex-1 overflow-y-auto dashboard-scrollbar space-y-5 pb-3 ${isDarkSidebar ? 'pr-0.5' : ''}`}>
@@ -291,7 +293,7 @@ export default function DashboardShell({
                     {isRdc ? (
                         <RdcGovLogo href={homeHref} variant="compact" onDark className="max-w-[200px]" />
                     ) : (
-                        <Logo href={homeHref} surface className="h-8 w-auto max-w-[140px]" />
+                        <Logo href={homeHref} className="h-8 w-auto max-w-[140px]" />
                     )}
                     <span className="text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-[#FFB300] text-[#002E5D] shrink-0">
                         {t(headerBadgeKey)}
