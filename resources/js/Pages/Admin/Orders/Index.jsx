@@ -63,7 +63,7 @@ export default function OrdersIndex({ orders, filters }) {
                             </div>
                             <div className="flex justify-between gap-2">
                                 <span className="text-gray-500">Amount</span>
-                                <span className="text-gray-900 font-semibold">TZS {parseFloat(order.total_amount).toLocaleString()}</span>
+                                <span className="text-gray-900 font-semibold">USD {parseFloat(order.total_amount).toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -106,7 +106,7 @@ export default function OrdersIndex({ orders, filters }) {
                                 </td>
                                 <td className="px-6 py-4">{order.buyer?.user?.name || 'N/A'}</td>
                                 <td className="px-6 py-4">{order.seller?.business_name || 'N/A'}</td>
-                                <td className="px-6 py-4 font-semibold text-gray-900">TZS {parseFloat(order.total_amount).toLocaleString()}</td>
+                                <td className="px-6 py-4 font-semibold text-gray-900">USD {parseFloat(order.total_amount).toLocaleString()}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded text-xs font-semibold uppercase ${statusColors[order.status]}`}>
                                         {order.status}

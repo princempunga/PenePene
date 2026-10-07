@@ -5,6 +5,7 @@ import { MapPin, Store, Package, X, Star } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import useStatusLabel from '@/hooks/useStatusLabel';
 import { getProductImageUrl, handleImageError } from '@/utils/productImage';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 const statusColors = {
     pending:   'bg-amber-100 text-amber-800',
@@ -117,8 +118,8 @@ export default function OrderShow({ order }) {
                                                 <p className="text-sm text-gray-500 mt-1">{t('orders.qty')} {item.quantity}</p>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <p className="font-bold text-gray-900">TZS {parseFloat(item.total_price).toLocaleString()}</p>
-                                                <p className="text-xs text-gray-500">@ TZS {parseFloat(item.unit_price).toLocaleString()} {t('orders.each')}</p>
+                                                <p className="font-bold text-gray-900">{formatCurrency(item.total_price, { currency: order.currency })}</p>
+                                                <p className="text-xs text-gray-500">@ {formatCurrency(item.unit_price, { currency: order.currency })} {t('orders.each')}</p>
                                             </div>
                                         </div>
                                     );
@@ -141,15 +142,15 @@ export default function OrderShow({ order }) {
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between text-gray-600">
                                     <span>{t('orders.subtotal')}</span>
-                                    <span>TZS {parseFloat(order.subtotal).toLocaleString()}</span>
+                                    <span>{formatCurrency(order.subtotal, { currency: order.currency })}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
                                     <span>{t('orders.shipping')}</span>
-                                    <span>{order.shipping_cost > 0 ? `TZS ${parseFloat(order.shipping_cost).toLocaleString()}` : t('orders.free')}</span>
+                                    <span>{order.shipping_cost > 0 ? formatCurrency(order.shipping_cost, { currency: order.currency }) : t('orders.free')}</span>
                                 </div>
                                 <div className="border-t pt-2 flex justify-between font-bold text-gray-900 text-base">
                                     <span>{t('orders.total')}</span>
-                                    <span>TZS {parseFloat(order.total_amount).toLocaleString()}</span>
+                                    <span>{formatCurrency(order.total_amount, { currency: order.currency })}</span>
                                 </div>
                             </div>
 

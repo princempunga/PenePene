@@ -17,7 +17,7 @@ export function formatCurrency(amount, options = {}) {
     } = options;
 
     const resolvedSymbol = currency
-        ? (currency.toUpperCase() === 'USD' ? '$' : currency.toUpperCase() === 'EUR' ? '€' : currency.toUpperCase() === 'CDF' ? 'FC' : currency)
+        ? (currency.toUpperCase() === 'USD' ? '$' : currency.toUpperCase() === 'CDF' ? 'FC' : currency)
         : symbol;
 
     const value = parseFloat(amount || 0);

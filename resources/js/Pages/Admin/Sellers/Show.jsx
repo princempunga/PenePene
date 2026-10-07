@@ -452,7 +452,7 @@ export default function SellerShow({ seller }) {
                                                     <p className="font-semibold text-gray-900">
                                                         {new Date().getFullYear() > 2024
                                                             ? `${parseFloat(product.price).toLocaleString()} FC`
-                                                            : `TZS ${parseFloat(product.price).toLocaleString()}`}
+                                                            : `USD ${parseFloat(product.price).toLocaleString()}`}
                                                     </p>
                                                 </div>
                                                 <div>
@@ -552,7 +552,7 @@ export default function SellerShow({ seller }) {
                                                 <td className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
                                                     {new Date().getFullYear() > 2024
                                                         ? `${parseFloat(product.price).toLocaleString()} FC`
-                                                        : `TZS ${parseFloat(product.price).toLocaleString()}`}
+                                                        : `USD ${parseFloat(product.price).toLocaleString()}`}
                                                 </td>
                                                 <td className="px-6 py-4 text-gray-700">
                                                     {available}

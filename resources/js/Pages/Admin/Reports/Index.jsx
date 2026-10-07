@@ -67,7 +67,7 @@ export default function AdminReportsIndex({ stats }) {
                 <StatCard
                     icon={DollarSign}
                     value={parseFloat(stats.total_gmv || 0).toLocaleString()}
-                    label="Total GMV (TZS)"
+                    label="Total GMV (USD)"
                     color="bg-green-100 text-green-600"
                 />
                 <StatCard

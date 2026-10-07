@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('commission_rate', 5, 2)->default(0); // percentage e.g. 10.00
             $table->decimal('commission_amount', 12, 2)->default(0);
             $table->decimal('seller_payout', 12, 2)->default(0); // amount after commission
-            $table->string('currency', 10)->default('TZS');
+            $table->string('currency', 10)->default('USD');
             $table->enum('status', ['pending', 'confirmed', 'paid', 'refunded'])->default('pending');
             $table->timestamp('paid_at')->nullable();
             $table->text('notes')->nullable();

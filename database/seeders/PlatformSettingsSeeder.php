@@ -15,7 +15,7 @@ class PlatformSettingsSeeder extends Seeder
             ['key' => 'site_tagline',      'value' => 'Your Local Marketplace',         'type' => 'string',  'group' => 'general', 'label' => 'Site Tagline'],
             ['key' => 'site_email',        'value' => 'info@penepene.com',              'type' => 'string',  'group' => 'general', 'label' => 'Contact Email'],
             ['key' => 'site_phone',        'value' => '+255 000 000 000',               'type' => 'string',  'group' => 'general', 'label' => 'Contact Phone'],
-            ['key' => 'default_currency',  'value' => 'TZS',                            'type' => 'string',  'group' => 'general', 'label' => 'Default Currency'],
+            ['key' => 'default_currency',  'value' => 'USD',                            'type' => 'string',  'group' => 'general', 'label' => 'Default Currency'],
             ['key' => 'default_country',   'value' => 'TZ',                             'type' => 'string',  'group' => 'general', 'label' => 'Default Country'],
 
             // Features

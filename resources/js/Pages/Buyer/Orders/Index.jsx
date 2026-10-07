@@ -6,6 +6,7 @@ import Pagination from '@/Components/UI/Pagination';
 import { Package } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 import { getProductImageUrl, handleImageError } from '@/utils/productImage';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 const statusColors = {
     pending:   'bg-amber-100 text-amber-800',
@@ -50,7 +51,7 @@ export default function OrdersIndex({ orders }) {
 
                                             <div className="flex items-center gap-4 shrink-0">
                                                 <span className="text-lg font-bold text-gray-900">
-                                                    TZS {parseFloat(order.total_amount).toLocaleString()}
+                                                    {formatCurrency(order.total_amount, { currency: order.currency })}
                                                 </span>
                                                 <Link
                                                     href={`/buyer/orders/${order.id}`}

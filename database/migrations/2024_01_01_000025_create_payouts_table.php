@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('seller_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
-            $table->string('currency', 10)->default('TZS');
+            $table->string('currency', 10)->default('USD');
             $table->enum('status', ['pending', 'processing', 'completed', 'failed', 'cancelled'])->default('pending');
             $table->string('payment_method')->nullable(); // e.g. "mobile_money", "bank_transfer"
             $table->string('account_number')->nullable();

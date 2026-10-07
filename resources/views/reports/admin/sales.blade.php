@@ -34,7 +34,7 @@
                     <th>Date</th>
                     <th>Buyer</th>
                     <th>Seller</th>
-                    <th>Total (TZS)</th>
+                    <th>Total (USD)</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -55,7 +55,7 @@
         </table>
         <div style="margin-top: 24px; padding: 16px; background: #f1f5f9; border-radius: 8px;">
             <strong>Summary:</strong> {{ $data->count() }} orders •
-            Total Revenue: TZS {{ number_format($data->sum('total'), 2) }}
+            Total Revenue: USD {{ number_format($data->sum('total'), 2) }}
         </div>
     </div>
     <div class="footer">PenePene Marketplace — Confidential Admin Report — {{ now()->format('d M Y') }}</div>

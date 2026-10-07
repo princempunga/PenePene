@@ -12,7 +12,7 @@ export default function SubscriptionPlansIndex({ plans }) {
         name: '',
         description: '',
         price: '',
-        currency: 'TZS',
+        currency: 'USD',
         billing_cycle: 'monthly',
         duration_days: 30,
         features: '', // Will process as newline separated string
@@ -143,7 +143,7 @@ export default function SubscriptionPlansIndex({ plans }) {
                                         <input type="text" value={data.name} onChange={e=>setData('name', e.target.value)} required className="w-full border-gray-300 rounded-lg"/>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Price (TZS)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Price (USD)</label>
                                         <input type="number" value={data.price} onChange={e=>setData('price', e.target.value)} required min="0" className="w-full border-gray-300 rounded-lg"/>
                                     </div>
                                 </div>

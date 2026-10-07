@@ -59,9 +59,9 @@ class AdminReportExport implements FromCollection, WithHeadings, WithStyles
     public function headings(): array
     {
         return match ($this->type) {
-            'sales'    => ['Order #', 'Date', 'Buyer', 'Seller', 'Total (TZS)', 'Status'],
+            'sales'    => ['Order #', 'Date', 'Buyer', 'Seller', 'Total (USD)', 'Status'],
             'sellers'  => ['Business Name', 'City', 'Total Sales', 'Rating', 'Status'],
-            'products' => ['Product', 'Seller', 'Category', 'Price (TZS)', 'Stock', 'Status'],
+            'products' => ['Product', 'Seller', 'Category', 'Price (USD)', 'Stock', 'Status'],
             default    => [],
         };
     }

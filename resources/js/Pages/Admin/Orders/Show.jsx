@@ -185,8 +185,8 @@ export default function OrdersShow({ order }) {
                                             <p className="text-sm text-gray-500 mt-1">Qty: {item.quantity}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-semibold text-gray-900">TZS {parseFloat(item.price * item.quantity).toLocaleString()}</p>
-                                            <p className="text-xs text-gray-500 mt-1">TZS {parseFloat(item.price).toLocaleString()} each</p>
+                                            <p className="font-semibold text-gray-900">USD {parseFloat(item.price * item.quantity).toLocaleString()}</p>
+                                            <p className="text-xs text-gray-500 mt-1">USD {parseFloat(item.price).toLocaleString()} each</p>
                                         </div>
                                     </div>
                                 );
@@ -225,15 +225,15 @@ export default function OrdersShow({ order }) {
                         <div className="space-y-2 text-sm text-gray-600">
                             <div className="flex justify-between">
                                 <span>Subtotal</span>
-                                <span>TZS {parseFloat(order.subtotal).toLocaleString()}</span>
+                                <span>USD {parseFloat(order.subtotal).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Shipping Fee</span>
-                                <span>TZS {parseFloat(order.shipping_cost).toLocaleString()}</span>
+                                <span>USD {parseFloat(order.shipping_cost).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between border-t border-gray-200 pt-2 mt-2 font-bold text-gray-900 text-lg">
                                 <span>Total Amount</span>
-                                <span>TZS {parseFloat(order.total_amount).toLocaleString()}</span>
+                                <span>USD {parseFloat(order.total_amount).toLocaleString()}</span>
                             </div>
                         </div>
                     </div>

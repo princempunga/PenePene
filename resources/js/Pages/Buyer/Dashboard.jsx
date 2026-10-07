@@ -3,6 +3,7 @@ import useTranslation from '@/hooks/useTranslation';
 import { Head, Link, usePage } from '@inertiajs/react';
 import BuyerLayout from '@/Layouts/BuyerLayout';
 import { Package, Heart, MessageCircle, ShoppingBag, Bell } from 'lucide-react';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 const statusColors = {
     pending:   'bg-amber-100 text-amber-800',
@@ -62,7 +63,7 @@ export default function Dashboard({ buyer, recentOrders, stats }) {
                             </div>
                         </div>
                         <p className="text-2xl font-bold text-gray-900">
-                            TZS {parseFloat(stats.totalSpent || 0).toLocaleString()}
+                            {formatCurrency(stats.totalSpent || 0, { currency: 'USD' })}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">Total Spent</p>
                     </div>
@@ -118,7 +119,7 @@ export default function Dashboard({ buyer, recentOrders, stats }) {
                                             {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                         </span>
                                         <span className="text-sm font-bold text-gray-900">
-                                            TZS {parseFloat(order.total_amount).toLocaleString()}
+                                            {formatCurrency(order.total_amount, { currency: order.currency || 'USD' })}
                                         </span>
                                         <Link href={`/buyer/orders/${order.id}`} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                                             View

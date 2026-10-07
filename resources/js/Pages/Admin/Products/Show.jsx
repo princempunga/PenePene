@@ -153,12 +153,12 @@ export default function ProductShow({ product }) {
                         <div className="p-5 space-y-3 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-gray-500">Price</span>
-                                <span className="font-semibold text-gray-900">TZS {parseFloat(product.price).toLocaleString()}</span>
+                                <span className="font-semibold text-gray-900">USD {parseFloat(product.price).toLocaleString()}</span>
                             </div>
                             {product.sale_price && (
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">Sale Price</span>
-                                    <span className="font-semibold text-red-600">TZS {parseFloat(product.sale_price).toLocaleString()}</span>
+                                    <span className="font-semibold text-red-600">USD {parseFloat(product.sale_price).toLocaleString()}</span>
                                 </div>
                             )}
                             <div className="flex justify-between">
