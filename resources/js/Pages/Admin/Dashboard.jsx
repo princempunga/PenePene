@@ -4,11 +4,13 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import {
     Users, Store, ShoppingBag, DollarSign, Clock,
     FileDown, Ticket, Shield, ChevronRight, BarChart3,
+    Heart, Package, Tag,
 } from 'lucide-react';
 
 import { useCurrency } from '@/context/CurrencyContext';
+import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
-export default function Dashboard({ stats, pendingSellers, recentOrders }) {
+export default function Dashboard({ stats, pendingSellers, recentOrders, topFavoritedProducts = [] }) {
     const { formatAmount } = useCurrency();
 
     return (
@@ -204,6 +206,49 @@ export default function Dashboard({ stats, pendingSellers, recentOrders }) {
                     </div>
                 </div>
 
+                {/* Top Favorited Products */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="p-4 sm:p-5 border-b border-gray-100 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <Heart className="text-amber-500 shrink-0" size={18} />
+                            <h2 className="font-bold text-gray-900 text-sm sm:text-base">Top Favorited Products</h2>
+                        </div>
+                        <Link href="/admin/products" className="text-xs sm:text-sm text-primary-600 font-medium hover:text-primary-700 whitespace-nowrap">View All</Link>
+                    </div>
+                    {topFavoritedProducts.length > 0 ? (
+                        <div className="divide-y divide-gray-100">
+                            {topFavoritedProducts.map(product => (
+                                <div key={product.id} className="p-3 sm:p-4 flex items-center justify-between hover:bg-gray-50 gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <Link href={`/admin/products/${product.id}`} className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden shrink-0 hover:ring-2 hover:ring-primary-300 transition-all">
+                                            <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" onError={handleImageError} />
+                                        </Link>
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-gray-900 text-sm truncate">{product.name}</p>
+                                            <p className="text-xs text-gray-500 truncate">
+                                                {product.seller?.business_name} · {product.category?.name}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 shrink-0">
+                                        <span className="inline-flex items-center gap-1 text-amber-600 font-bold text-sm">
+                                            <Heart size={14} fill="currentColor" />
+                                            {product.favorites_count}
+                                        </span>
+                                        <Link
+                                            href={`/admin/products/${product.id}`}
+                                            className="shrink-0 px-2.5 py-1.5 bg-primary-50 text-primary-700 hover:bg-primary-100 text-xs font-medium rounded-lg transition-colors"
+                                        >
+                                            View
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="p-8 text-center text-gray-500 text-sm">No favorited products yet.</div>
+                    )}
+                </div>
             </AdminLayout>
         </>
     );

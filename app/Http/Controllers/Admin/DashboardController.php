@@ -35,10 +35,18 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Top Favorited Products
+        $topFavoritedProducts = Product::with(['seller', 'category', 'images'])
+            ->withCount('favorites')
+            ->orderByDesc('favorites_count')
+            ->take(5)
+            ->get();
+
         return Inertia::render('Admin/Dashboard', [
-            'stats'          => $stats,
-            'pendingSellers' => $pendingSellers,
-            'recentOrders'   => $recentOrders,
+            'stats'                => $stats,
+            'pendingSellers'       => $pendingSellers,
+            'recentOrders'         => $recentOrders,
+            'topFavoritedProducts' => $topFavoritedProducts,
         ]);
     }
 }

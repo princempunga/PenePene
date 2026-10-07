@@ -78,7 +78,7 @@ class LoginController extends Controller
 
         // Redirect based on user role for PenePene marketplace
         if ($user->isBuyer()) {
-            return redirect()->route('buyer.dashboard');
+            return redirect()->route('home');
         }
 
         if ($user->isSeller()) {

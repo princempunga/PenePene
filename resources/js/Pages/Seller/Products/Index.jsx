@@ -4,7 +4,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/lib/formatCurrency';
 import SellerLayout from '@/Layouts/SellerLayout';
 import Pagination from '@/Components/UI/Pagination';
-import { Plus, Edit, Trash2, Eye, Package, Search, Folder, Tag, DollarSign, Layers, Check, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package, Search, Folder, Tag, DollarSign, Layers, Check, ToggleLeft, ToggleRight, Heart } from 'lucide-react';
 
 import { getProductImageUrl, handleImageError } from '@/utils/productImage';
 
@@ -255,28 +255,30 @@ export default function ProductsIndex({ products, filters = {} }) {
                         <div className="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden lg:overflow-visible">
                             <div className="w-full overflow-x-auto lg:overflow-visible scrollbar-thin">
                                 <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="sticky top-0 z-10 text-gray-700 font-semibold border-b border-gray-200">
-                                        <tr>
-                                            <th className="px-4 py-4 w-12 bg-gray-50">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={allSelected}
-                                                    onChange={toggleSelectAll}
-                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                                                />
-                                            </th>
-                                            <th className="px-4 py-4 bg-gray-50">Produit</th>
-                                            <th className="px-4 py-4 bg-gray-50">Catégorie</th>
-                                            <th className="px-4 py-4 bg-gray-50">Prix</th>
-                                            <th className="px-4 py-4 bg-gray-50">Stock</th>
-                                            <th className="px-4 py-4 bg-gray-50">Statut</th>
-                                            <th className="px-4 py-4 text-right bg-gray-50">Actions</th>
-                                        </tr>
-                                    </thead>
+<thead className="sticky top-0 z-10 text-gray-700 font-semibold border-b border-gray-200">
+                                    <tr>
+                                        <th className="px-4 py-4 w-12 bg-gray-50">
+                                            <input
+                                                type="checkbox"
+                                                checked={allSelected}
+                                                onChange={toggleSelectAll}
+                                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                            />
+                                        </th>
+                                        <th className="px-4 py-4 bg-gray-50">Produit</th>
+                                        <th className="px-4 py-4 bg-gray-50">Catégorie</th>
+                                        <th className="px-4 py-4 bg-gray-50">Prix</th>
+                                        <th className="px-4 py-4 bg-gray-50">Stock</th>
+                                        <th className="px-4 py-4 bg-gray-50">Favoris</th>
+                                        <th className="px-4 py-4 bg-gray-50">Statut</th>
+                                        <th className="px-4 py-4 text-right bg-gray-50">Actions</th>
+                                    </tr>
+                                </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {products.data.map((product) => {
                                             const availableStock = product.initial_stock - product.confirmed_sales;
                                             const isSelected = selectedIds.includes(product.id);
+                                            const favoritesCount = product.favorites_count ?? 0;
 
                                             return (
                                                 <tr key={product.id} className={`transition-colors ${isSelected ? 'bg-primary-50/30' : 'hover:bg-gray-50'}`}>
@@ -314,6 +316,12 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                     <td className="px-4 py-4">
                                                         <span className={availableStock <= 0 ? 'text-red-600 font-medium' : ''}>
                                                             {availableStock}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <span className="inline-flex items-center gap-1 text-gray-600 font-medium">
+                                                            <Heart size={14} className="text-amber-500" fill="currentColor" />
+                                                            {favoritesCount}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-4">
@@ -399,6 +407,10 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                         <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'text-gray-600'}>
                                                             Stock: <span className="font-semibold">{availableStock}</span>
                                                         </span>
+                                                        <span className="text-gray-500">
+                                                            <Heart size={10} className="text-amber-500 inline" fill="currentColor" />
+                                                            {favoritesCount} favori{favoritesCount > 1 ? 's' : ''}
+                                                        </span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
                                                         <Link href={`/seller/products/${product.id}`} className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors" title="Voir">
@@ -459,10 +471,14 @@ export default function ProductsIndex({ products, filters = {} }) {
                                                 <Tag size={10} className="text-gray-400 shrink-0" />
                                                 <span className="line-clamp-1">{product.subcategory?.name || 'Non spécifiée'}</span>
                                             </div>
-                                            <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                                                <Layers size={10} className="text-gray-400 shrink-0" />
-                                                <span>Stock: <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>{availableStock}</span></span>
-                                            </div>
+<div className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                    <Layers size={10} className="text-gray-400 shrink-0" />
+                                                    <span>Stock: <span className={availableStock <= 0 ? 'text-red-600 font-medium' : 'font-medium text-gray-900'}>{availableStock}</span></span>
+                                                    <span>
+                                                        <Heart size={10} className="text-amber-500 inline" fill="currentColor" />
+                                                        {favoritesCount} favori{favoritesCount > 1 ? 's' : ''}
+                                                    </span>
+                                                </div>
                                         </div>
 
                                         <div className="mt-2.5 flex items-center justify-between gap-2">
