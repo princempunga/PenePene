@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { Bell, LogOut, Menu, X } from 'lucide-react';
+import { Bell, LogOut, Menu, X, Home, LayoutGrid, Package, Heart, User } from 'lucide-react';
 import Logo from '@/Components/Brand/Logo';
 import RdcGovLogo from '@/Components/Brand/RdcGovLogo';
 import useTranslation from '@/hooks/useTranslation';
@@ -360,7 +360,7 @@ export default function DashboardShell({
                 <SidebarContent />
             </aside>
 
-            <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-16 lg:ml-[18.5rem]">
+            <main className={`min-h-0 flex-1 overflow-y-auto overscroll-contain pt-16 lg:ml-[18.5rem] ${isBuyer ? 'pb-16 lg:pb-0' : ''}`}>
                 <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
                     {(title || subtitle) && (
                         <header className="mb-6 sm:mb-8 dashboard-page-enter">
@@ -376,6 +376,36 @@ export default function DashboardShell({
                     <div key={currentPath} className="dashboard-page-enter">{children}</div>
                 </div>
             </main>
+
+            {/* Mobile Bottom Navigation for Buyer */}
+            {isBuyer && (
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around z-40 lg:hidden pb-safe">
+                    {[
+                        { icon: Home, label: t('navigation.home') || 'Accueil', href: '/' },
+                        { icon: LayoutGrid, label: t('navigation.categories') || 'Catégories', href: '/categories' },
+                        { icon: Package, label: t('buyer.my_orders') || 'Commandes', href: '/buyer/orders' },
+                        { icon: Heart, label: t('buyer.wishlist') || 'Favoris', href: '/buyer/wishlist' },
+                        { icon: User, label: t('buyer.profile') || 'Profil', href: '/buyer/profile' },
+                    ].map((item) => {
+                        const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`flex flex-col items-center justify-center w-full py-2.5 gap-1 relative transition-colors ${
+                                    isActive ? 'text-[#0056B3]' : 'text-gray-400 hover:text-[#0056B3]'
+                                }`}
+                            >
+                                <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                                <span className="text-[10px] font-medium">{item.label}</span>
+                                {isActive && (
+                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-[#0056B3] rounded-t-md" />
+                                )}
+                            </Link>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }
