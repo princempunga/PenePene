@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { Home, Package, ShoppingCart, Bell, Menu } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, MessageSquare, Store, Menu } from 'lucide-react';
 import useTranslation from '@/hooks/useTranslation';
 
 export default function SellerMobileBottomNav({ onMenuClick }) {
@@ -17,14 +17,18 @@ export default function SellerMobileBottomNav({ onMenuClick }) {
     };
 
     const navItems = [
-        { key: 'Accueil', href: '/seller/dashboard', icon: Home, badge: null },
-        { key: 'Produits', href: '/seller/products', icon: Package, badge: null },
-        { key: 'Commandes', href: '/seller/orders', icon: ShoppingCart, badge: null },
-        { key: 'Notifications', href: '/seller/notifications', icon: Bell, badge: 'notifications' },
+        { label: t('nav.dashboard', 'Dashboard'), href: '/seller/dashboard', icon: LayoutDashboard, badge: null, key: 'dashboard' },
+        { label: t('nav.products', 'Produits'), href: '/seller/products', icon: Package, badge: null, key: 'products' },
+        { label: t('nav.orders', 'Commandes'), href: '/seller/orders', icon: ShoppingCart, badge: null, key: 'orders' },
+        { label: t('nav.messages', 'Messages'), href: '/seller/notifications', icon: MessageSquare, badge: 'notifications', key: 'notifications' },
+        { label: t('nav.store', 'Boutique'), href: '/seller/profile', icon: Store, badge: null, key: 'profile' },
     ];
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-around items-center px-1 h-[60px] pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div 
+            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-between items-stretch px-1 shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', minHeight: '60px' }}
+        >
             {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -32,37 +36,51 @@ export default function SellerMobileBottomNav({ onMenuClick }) {
 
                 return (
                     <Link
-                        key={item.href}
+                        key={item.key}
                         href={item.href}
-                        className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-                            active ? 'text-primary-600 font-semibold' : 'text-gray-500 hover:text-primary-600'
+                        className={`relative flex flex-col items-center justify-center flex-1 py-1 min-w-[55px] min-h-[44px] transition-colors hover:text-gray-700 ${
+                            active ? 'text-primary-600' : 'text-gray-500'
                         }`}
                     >
-                        <div className={`relative flex items-center justify-center ${
-                            active ? 'w-8 h-8 rounded-lg bg-primary-50 text-primary-600' : ''
+                        {/* Barre indicatrice en haut */}
+                        <span className={`absolute top-0 left-1/2 -translate-x-1/2 h-0.5 rounded-full transition-all duration-300 ${
+                            active ? 'w-8 bg-primary-500' : 'w-0 bg-transparent'
+                        }`} />
+                        
+                        {/* Icône avec fond actif */}
+                        <span className={`relative flex items-center justify-center w-9 h-8 rounded-lg transition-all duration-200 ${
+                            active ? 'bg-primary-50 text-primary-600' : 'text-gray-500'
                         }`}>
-                            <Icon size={20} />
+                            <Icon size={22} strokeWidth={active ? 2.5 : 2} />
                             {count > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] min-w-[15px] h-[15px] flex items-center justify-center rounded-full font-bold shadow-sm px-0.5">
-                                    {count > 9 ? '9+' : count}
+                                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full font-bold shadow-sm px-1 z-10">
+                                    {count > 99 ? '99+' : count}
                                 </span>
                             )}
-                        </div>
-                        <span className="text-[10px] mt-0.5 font-medium truncate">{item.key}</span>
+                        </span>
+                        
+                        {/* Label */}
+                        <span className={`text-[10px] mt-1 font-medium tracking-tight whitespace-nowrap w-full text-center px-0.5 ${
+                            active ? 'text-primary-600 font-semibold' : 'text-gray-500'
+                        }`}>
+                            {item.label}
+                        </span>
                     </Link>
                 );
             })}
 
-            {/* Opens the full sidebar drawer — Profil, Messages, Avis, Documents,
-                Rapports, Paramètres boutique, Abonnements all live there and have
-                no other entry point on mobile. */}
+            {/* Menu sidebar button */}
             <button
                 type="button"
                 onClick={onMenuClick}
-                className="flex flex-col items-center justify-center flex-1 py-1 text-gray-500 hover:text-primary-600 transition-colors"
+                className="relative flex flex-col items-center justify-center flex-1 py-1 min-w-[55px] min-h-[44px] text-gray-500 hover:text-gray-700 transition-colors"
             >
-                <Menu size={20} />
-                <span className="text-[10px] mt-0.5 font-medium truncate">{t('mobile.menu', 'Menu')}</span>
+                <span className="relative flex items-center justify-center w-9 h-8 rounded-lg transition-all duration-200">
+                    <Menu size={22} strokeWidth={2} />
+                </span>
+                <span className="text-[10px] mt-1 font-medium tracking-tight whitespace-nowrap w-full text-center px-0.5 text-gray-500">
+                    {t('nav.menu', 'Menu')}
+                </span>
             </button>
         </div>
     );
