@@ -4,6 +4,7 @@ import { Bell, LogOut, Menu, X, Home, LayoutGrid, Package, Heart, User } from 'l
 import Logo from '@/Components/Brand/Logo';
 import RdcGovLogo from '@/Components/Brand/RdcGovLogo';
 import useTranslation from '@/hooks/useTranslation';
+import MobileBottomNav from '@/Components/Layout/MobileBottomNav';
 
 function isNavActive(currentPath, href, variant) {
     if (href === '/seller/dashboard' || href === '/admin/dashboard') {
@@ -337,12 +338,12 @@ export default function DashboardShell({
             </header>
 
             {sidebarOpen && (
-                <div className="fixed inset-0 z-40 bg-[#001a33]/60 backdrop-blur-sm lg:hidden" onClick={closeSidebar} aria-hidden="true" />
+                <div className="fixed inset-0 z-[55] bg-[#001a33]/60 backdrop-blur-sm lg:hidden" onClick={closeSidebar} aria-hidden="true" />
             )}
 
             {/* Sidebar mobile */}
             <aside className={`
-                fixed top-16 left-0 bottom-0 z-40 w-[18.5rem] p-4 border-r
+                fixed top-16 left-0 bottom-0 z-[60] w-[18.5rem] p-4 border-r
                 transform transition-transform duration-300 ease-out lg:hidden
                 ${sidebarClass}
                 ${isDarkSidebar ? 'sidebar-dark' : ''}
@@ -379,32 +380,7 @@ export default function DashboardShell({
 
             {/* Mobile Bottom Navigation for Buyer */}
             {isBuyer && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around z-40 lg:hidden pb-safe">
-                    {[
-                        { icon: Home, label: t('navigation.home') || 'Accueil', href: '/' },
-                        { icon: LayoutGrid, label: t('navigation.categories') || 'Catégories', href: '/categories' },
-                        { icon: Package, label: t('buyer.my_orders') || 'Commandes', href: '/buyer/orders' },
-                        { icon: Heart, label: t('buyer.wishlist') || 'Favoris', href: '/buyer/wishlist' },
-                        { icon: User, label: t('buyer.profile') || 'Profil', href: '/buyer/profile' },
-                    ].map((item) => {
-                        const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex flex-col items-center justify-center w-full py-2.5 gap-1 relative transition-colors ${
-                                    isActive ? 'text-[#0056B3]' : 'text-gray-400 hover:text-[#0056B3]'
-                                }`}
-                            >
-                                <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                                <span className="text-[10px] font-medium">{item.label}</span>
-                                {isActive && (
-                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-[#0056B3] rounded-t-md" />
-                                )}
-                            </Link>
-                        );
-                    })}
-                </div>
+                <MobileBottomNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
             )}
         </div>
     );
