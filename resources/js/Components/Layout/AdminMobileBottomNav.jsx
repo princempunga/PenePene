@@ -24,16 +24,16 @@ export default function AdminMobileBottomNav({ onMenuClick }) {
 
     return (
         <div
-            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-between items-stretch px-0.5 shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar"
+            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-evenly items-stretch px-0.5 shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar"
             style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', minHeight: '60px' }}
         >
             {/* Bouton Menu (pas un lien) */}
             <button
                 onClick={onMenuClick}
-                className="relative flex flex-col items-center justify-center flex-none w-[65px] py-1 min-h-[44px] text-gray-500 hover:text-gray-700 transition-colors"
+                className="relative flex flex-col items-center justify-center flex-1 py-1 min-w-[44px] min-h-[44px] text-gray-500 hover:text-gray-700 transition-colors"
             >
-                <span className="flex items-center justify-center w-9 h-8 rounded-lg">
-                    <Menu size={22} strokeWidth={2} />
+                <span className="flex items-center justify-center w-11 h-11 rounded-xl">
+                    <Menu size={24} strokeWidth={2} />
                 </span>
                 <span className="text-[10px] mt-1 font-medium tracking-tight whitespace-nowrap text-gray-500">
                     {t('nav.menu', 'Menu')}
@@ -47,7 +47,7 @@ export default function AdminMobileBottomNav({ onMenuClick }) {
                     <Link
                         key={item.key}
                         href={item.href}
-                        className={`relative flex flex-col items-center justify-center flex-none w-[65px] py-1 min-h-[44px] transition-colors ${
+                        className={`relative flex flex-col items-center justify-center flex-1 py-1 min-w-[44px] min-h-[44px] transition-colors ${
                             active ? 'text-primary-600' : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
@@ -58,10 +58,10 @@ export default function AdminMobileBottomNav({ onMenuClick }) {
                             }`}
                         />
                         {/* Icône avec fond actif */}
-                        <span className={`flex items-center justify-center w-9 h-8 rounded-lg transition-all duration-200 ${
+                        <span className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 ${
                             active ? 'bg-primary-50 text-primary-600' : 'text-gray-500'
                         }`}>
-                            <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+                            <Icon size={24} strokeWidth={active ? 2.5 : 2} />
                         </span>
                         <span className={`text-[10px] mt-1 font-medium tracking-tight whitespace-nowrap w-full text-center px-0.5 ${
                             active ? 'text-primary-600 font-semibold' : 'text-gray-500'

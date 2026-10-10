@@ -17,12 +17,19 @@ function resolveKey(translations, key) {
 export default function useTranslation() {
     const { locale, translations = {}, availableLocales = {} } = usePage().props;
 
-    const t = (key, replacements = {}) => {
+    const t = (key, fallbackOrReplacements = {}) => {
         let value = resolveKey(translations, key);
 
         if (value === undefined) {
+            // If the second argument is a string, use it as a fallback
+            if (typeof fallbackOrReplacements === 'string') {
+                return fallbackOrReplacements;
+            }
             return key;
         }
+
+        // If the second argument is a string, there are no replacements
+        const replacements = typeof fallbackOrReplacements === 'string' ? {} : fallbackOrReplacements;
 
         if (typeof value !== 'string') {
             return value;

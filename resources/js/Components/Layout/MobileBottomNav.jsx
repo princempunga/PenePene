@@ -29,7 +29,7 @@ export default function MobileBottomNav({ onMenuClick }) {
          : '/admin/dashboard')
         : '/login';
 
-    const items = [
+const items = [
         { label: t('nav.home', 'Accueil'), href: '/', icon: Home, key: 'home' },
         { label: t('nav.categories', 'Catégories'), icon: LayoutGrid, isButton: true, key: 'menu' },
         { label: t('nav.cart', 'Panier'), href: '/cart', icon: ShoppingCart, key: 'cart', badge: (cartCount || 0) > 0, badgeCount: cartCount },
@@ -39,8 +39,8 @@ export default function MobileBottomNav({ onMenuClick }) {
     ];
 
     return (
-        <div 
-            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-between items-stretch px-1 shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar"
+        <div
+            className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-evenly items-stretch px-1 shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.08)] overflow-x-auto no-scrollbar"
             style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', minHeight: '60px' }}
         >
             {items.map((item) => {
@@ -53,19 +53,19 @@ export default function MobileBottomNav({ onMenuClick }) {
                         <span className={`absolute top-0 left-1/2 -translate-x-1/2 h-0.5 rounded-full transition-all duration-300 ${
                             active ? 'w-8 bg-primary-500' : 'w-0 bg-transparent'
                         }`} />
-                        
+
                         {/* Icône avec fond actif */}
-                        <span className={`relative flex items-center justify-center w-9 h-8 rounded-lg transition-all duration-200 ${
+                        <span className={`relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 ${
                             active ? 'bg-primary-50 text-primary-600' : 'text-gray-500'
                         }`}>
-                            <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+                            <Icon size={24} strokeWidth={active ? 2.5 : 2} />
                             {item.badge && (
                                 <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full font-bold shadow-sm px-1 z-10">
                                     {item.badgeCount > 99 ? '99+' : item.badgeCount}
                                 </span>
                             )}
                         </span>
-                        
+
                         {/* Label */}
                         <span className={`text-[10px] mt-1 font-medium tracking-tight whitespace-nowrap w-full text-center px-0.5 ${
                             active ? 'text-primary-600 font-semibold' : 'text-gray-500'
@@ -80,7 +80,7 @@ export default function MobileBottomNav({ onMenuClick }) {
                         <button
                             key={item.key}
                             onClick={onMenuClick}
-                            className={`relative flex flex-col items-center justify-center flex-1 py-1 min-w-[55px] min-h-[44px] transition-colors hover:text-gray-700 ${
+                            className={`relative flex flex-col items-center justify-center flex-1 py-1 min-w-[44px] min-h-[44px] transition-colors hover:text-gray-700 ${
                                 active ? 'text-primary-600' : 'text-gray-500'
                             }`}
                         >
@@ -93,7 +93,7 @@ export default function MobileBottomNav({ onMenuClick }) {
                     <Link
                         key={item.key}
                         href={item.href}
-                        className={`relative flex flex-col items-center justify-center flex-1 py-1 min-w-[55px] min-h-[44px] transition-colors hover:text-gray-700 ${
+                        className={`relative flex flex-col items-center justify-center flex-1 py-1 min-w-[44px] min-h-[44px] transition-colors hover:text-gray-700 ${
                             active ? 'text-primary-600' : 'text-gray-500'
                         }`}
                     >
